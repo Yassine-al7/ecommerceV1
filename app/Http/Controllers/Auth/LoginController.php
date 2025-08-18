@@ -8,17 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    protected function authenticated(Request $request, $user)
-    {
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard'); // ✅ correct
-        }
-        if ($user->role === 'seller') {
-            return redirect()->route('seller.dashboard');
-        }
-    }
-
-
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
@@ -29,22 +18,26 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-public function login(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-    
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Redirection selon le rôle
+            // Vérification du rôle et redirection appropriée
             $user = Auth::user();
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
+            } elseif ($user->role === 'seller') {
+                return redirect()->route('seller.dashboard');
+            } else {
+                // Fallback pour les autres rôles
+                return redirect()->route('seller.dashboard');
             }
-            return redirect()->route('seller.dashboard');
         }
 
         return back()->withErrors([

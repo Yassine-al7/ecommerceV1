@@ -9,12 +9,22 @@ class Order extends Model
 {
     use HasFactory;
 
+    // Spécifier la table française
+    protected $table = 'commandes';
+
     protected $fillable = [
-        'user_id',
+        'reference',
+        'nom_client',
+        'ville',
+        'adresse_client',
+        'numero_telephone_client',
+        'produits',
+        'taille_produit',
+        'quantite_produit',
+        'prix_produit',
+        'prix_commande',
         'status',
-        'total_amount',
-        'created_at',
-        'updated_at',
+        'commentaire',
     ];
 
     public function user()

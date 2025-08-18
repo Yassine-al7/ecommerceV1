@@ -10,7 +10,19 @@ use App\Http\Controllers\Seller\ProductController as SellerProductController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Gestion des produits
+    Route::get('/products', [AdminDashboardController::class, 'products'])->name('products.index');
+
+    // Gestion des vendeurs
+    Route::get('/sellers', [AdminDashboardController::class, 'sellers'])->name('sellers.index');
+
+    // Statistiques
+    Route::get('/statistics', [AdminDashboardController::class, 'statistics'])->name('statistics.index');
+
+    // Gestion du stock
+    Route::get('/stock', [AdminDashboardController::class, 'stock'])->name('stock.index');
 });
 
 

@@ -9,14 +9,17 @@ class Product extends Model
 {
     use HasFactory;
 
+    // Spécifier la table française
+    protected $table = 'produits';
+
     protected $fillable = [
         'name',
-        'description',
-        'price',
-        'supplier_id',
-        'stock_quantity',
-        'color',
-        'size',
+        'couleur',
+        'tailles',
+        'image',
+        'quantite_stock',
+        'categorie_id',
+        'vendeur_id',
     ];
 
     public function orders()
