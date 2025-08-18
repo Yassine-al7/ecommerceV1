@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with(['category', 'assignedUsers'])->get();
         return view('admin.products', compact('products'));
     }
 
@@ -42,8 +42,7 @@ class ProductController extends Controller
         // Convertir les tailles en JSON
         $data['tailles'] = json_encode($data['tailles']);
 
-        // Définir vendeur_id à null pour les produits créés par l'admin
-        $data['vendeur_id'] = null;
+        // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
 
         // Gérer l'upload d'image
         if ($request->hasFile('image')) {
@@ -82,8 +81,7 @@ class ProductController extends Controller
         // Convertir les tailles en JSON
         $data['tailles'] = json_encode($data['tailles']);
 
-        // Garder vendeur_id inchangé lors de la mise à jour
-        unset($data['vendeur_id']);
+        // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
 
         // Gérer l'upload d'image
         if ($request->hasFile('image')) {
@@ -122,13 +120,21 @@ class ProductController extends Controller
             'visible' => 'nullable|boolean',
         ]);
 
+        // Utiliser les prix du produit si non spécifiés
+        $prixAdmin = $data['prix_admin'] ?? $product->prix_admin;
+        $prixVente = $data['prix_vente'] ?? $product->prix_vente;
+
+        // Assigner le produit au vendeur via la table pivot
         $product->assignedSellers()->syncWithoutDetaching([
             $data['user_id'] => [
-                'prix_admin' => $data['prix_admin'] ?? null,
-                'prix_vente' => $data['prix_vente'] ?? null,
+                'prix_admin' => $prixAdmin,
+                'prix_vente' => $prixVente,
                 'visible' => $data['visible'] ?? true,
             ],
         ]);
+
+        // Note: vendeur_id n'est plus utilisé car nous utilisons la table pivot product_user
+        // pour gérer les relations entre produits et vendeurs
 
         return redirect()->route('admin.products.index')->with('success', 'Produit assigné au vendeur.');
     }

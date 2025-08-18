@@ -73,9 +73,40 @@
                             <a href="{{ route('seller.dashboard') }}" class="flex items-center space-x-3 hover:underline">
                                 <i class="fas fa-gauge"></i><span>Dashboard</span>
                             </a>
-                            <a href="{{ route('seller.orders.index') }}" class="flex items-center space-x-3 hover:underline">
-                                <i class="fas fa-list-check"></i><span>Mes Commandes</span>
+
+                                                        <a href="{{ route('seller.products.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-box"></i><span>Mes Produits</span>
                             </a>
+
+                            <!-- Menu déroulant des commandes -->
+                            <div class="relative group">
+                                <button class="flex items-center space-x-3 hover:underline w-full text-left">
+                                    <i class="fas fa-list-check"></i>
+                                    <span>Commandes</span>
+                                    <i class="fas fa-chevron-down ml-auto text-sm transition-transform group-hover:rotate-180"></i>
+                                </button>
+
+                                <!-- Sous-menu déroulant -->
+                                <div class="absolute left-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div class="py-2">
+                                        <a href="{{ route('seller.orders.create') }}" class="block px-4 py-2 hover:bg-blue-50 rounded-lg">
+                                            <i class="fas fa-plus mr-2 text-blue-600"></i>Nouvelle commande
+                                        </a>
+                                        <a href="{{ route('seller.orders.index') }}" class="block px-4 py-2 hover:bg-blue-50 rounded-lg">
+                                            <i class="fas fa-list mr-2 text-gray-600"></i>Toutes les commandes
+                                        </a>
+                                        <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="block px-4 py-2 hover:bg-blue-100 rounded-lg">
+                                            <i class="fas fa-clock mr-2 text-yellow-600"></i>En attente
+                                        </a>
+                                        <a href="{{ route('seller.orders.index', ['status' => 'livre']) }}" class="block px-4 py-2 hover:bg-blue-100 rounded-lg">
+                                            <i class="fas fa-check-circle mr-2 text-green-600"></i>Livré
+                                        </a>
+                                        <a href="{{ route('seller.orders.index', ['status' => 'annule']) }}" class="block px-4 py-2 hover:bg-blue-100 rounded-lg">
+                                            <i class="fas fa-times-circle mr-2 text-red-600"></i>Annulé
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </nav>
                     @endif
                 @else

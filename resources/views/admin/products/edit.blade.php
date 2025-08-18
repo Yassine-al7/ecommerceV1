@@ -45,11 +45,37 @@
                     <!-- Couleur -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Couleur *</label>
-                        <div class="flex items-center space-x-3">
-                            <input type="color" name="couleur" value="{{ old('couleur', $product->couleur) }}" required
-                                   class="w-16 h-12 border-2 border-gray-300 rounded-lg cursor-pointer">
-                            <input type="text" name="couleur_text" value="{{ old('couleur_text', $product->couleur) }}" placeholder="Nom de la couleur (ex: Rouge, Bleu)"
-                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="space-y-3">
+                            <!-- Color picker principal -->
+                            <div class="flex items-center space-x-3">
+                                <input type="color" name="couleur" value="{{ old('couleur', $product->couleur) }}" required
+                                       class="w-16 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm">
+                                <input type="text" name="couleur_text" value="{{ old('couleur_text', $product->couleur) }}" placeholder="Nom de la couleur (ex: Rouge, Bleu)"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+
+                            <!-- Palette de couleurs prédéfinies -->
+                            <div>
+                                <p class="text-xs text-gray-600 mb-2">Couleurs populaires :</p>
+                                <div class="grid grid-cols-8 gap-2">
+                                    @php
+                                        $popularColors = [
+                                            '#ff0000' => 'Rouge', '#00ff00' => 'Vert', '#0000ff' => 'Bleu', '#ffff00' => 'Jaune',
+                                            '#ff00ff' => 'Magenta', '#00ffff' => 'Cyan', '#000000' => 'Noir', '#ffffff' => 'Blanc',
+                                            '#ffa500' => 'Orange', '#800080' => 'Violet', '#ffc0cb' => 'Rose', '#a52a2a' => 'Marron',
+                                            '#ff4500' => 'Orange-Rouge', '#32cd32' => 'Lime', '#4169e1' => 'Royal Blue', '#ffd700' => 'Or'
+                                        ];
+                                    @endphp
+                                    @foreach($popularColors as $hex => $name)
+                                        <button type="button"
+                                                class="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-blue-500 transition-colors shadow-sm"
+                                                style="background-color: {{ $hex }}"
+                                                onclick="selectColor('{{ $hex }}', '{{ $name }}')"
+                                                title="{{ $name }}">
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                         @error('couleur')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -147,7 +173,8 @@ document.querySelector('input[name="couleur"]').addEventListener('change', funct
     const colorNames = {
         '#ff0000': 'Rouge', '#00ff00': 'Vert', '#0000ff': 'Bleu', '#ffff00': 'Jaune',
         '#ff00ff': 'Magenta', '#00ffff': 'Cyan', '#000000': 'Noir', '#ffffff': 'Blanc',
-        '#ffa500': 'Orange', '#800080': 'Violet', '#ffc0cb': 'Rose', '#a52a2a': 'Marron'
+        '#ffa500': 'Orange', '#800080': 'Violet', '#ffc0cb': 'Rose', '#a52a2a': 'Marron',
+        '#ff4500': 'Orange-Rouge', '#32cd32': 'Lime', '#4169e1': 'Royal Blue', '#ffd700': 'Or'
     };
 
     const colorInput = document.querySelector('input[name="couleur_text"]');
@@ -155,6 +182,25 @@ document.querySelector('input[name="couleur"]').addEventListener('change', funct
 
     if (colorNames[selectedColor]) {
         colorInput.value = colorNames[selectedColor];
+    }
+});
+
+// Fonction pour sélectionner une couleur depuis la palette
+function selectColor(hex, name) {
+    document.querySelector('input[name="couleur"]').value = hex;
+    document.querySelector('input[name="couleur_text"]').value = name;
+
+    // Mise à jour visuelle
+    document.querySelector('input[name="couleur"]').dispatchEvent(new Event('change'));
+}
+
+// Pré-remplir le nom de couleur au chargement si une couleur est sélectionnée
+document.addEventListener('DOMContentLoaded', function() {
+    const colorInput = document.querySelector('input[name="couleur"]');
+    const colorTextInput = document.querySelector('input[name="couleur_text"]');
+
+    if (colorInput.value && !colorTextInput.value) {
+        colorInput.dispatchEvent(new Event('change'));
     }
 });
 </script>

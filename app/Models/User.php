@@ -65,4 +65,20 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withPivot(['prix_admin', 'prix_vente', 'visible'])
             ->withTimestamps();
     }
+
+    /**
+     * Relation avec les commandes du vendeur
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'seller_id');
+    }
+
+    /**
+     * Relation avec les commandes livrées du vendeur
+     */
+    public function deliveredOrders()
+    {
+        return $this->hasMany(Order::class, 'seller_id')->where('status', 'livré');
+    }
 }

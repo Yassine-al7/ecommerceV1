@@ -70,14 +70,43 @@
                                         <div class="text-sm leading-5 text-gray-900">{{ $order->ville }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                        <form method="POST" action="{{ route('admin.orders.update-status', $order->id) }}" class="inline-block">
+                                        <div class="flex items-center space-x-2">
+                                            <!-- Statut actuel avec couleur -->
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                                @if($order->status == 'en attente') bg-yellow-100 text-yellow-800
+                                                @elseif($order->status == 'en livraison') bg-blue-100 text-blue-800
+                                                @elseif($order->status == 'livré') bg-green-100 text-green-800
+                                                @elseif($order->status == 'retourné') bg-red-100 text-red-800
+                                                @elseif($order->status == 'refusé confirmé') bg-red-100 text-red-800
+                                                @elseif($order->status == 'non confirmé') bg-gray-100 text-gray-800
+                                                @elseif($order->status == 'pas de réponse') bg-orange-100 text-orange-800
+                                                @else bg-gray-100 text-gray-800
+                                                @endif">
+                                                {{ ucfirst($order->status) }}
+                                            </span>
+
+                                            <!-- Bouton de modification -->
+                                            <button onclick="toggleStatusEdit({{ $order->id }})"
+                                                    class="text-blue-600 hover:text-blue-800 text-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Formulaire de modification du statut (caché par défaut) -->
+                                        <form id="statusForm{{ $order->id }}" method="POST"
+                                              action="{{ route('admin.orders.update-status', $order->id) }}"
+                                              class="hidden mt-2">
                                             @csrf
                                             @method('PATCH')
-                                            <select name="status" onchange="this.form.submit()" class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500">
+                                            <select name="status" onchange="this.form.submit()"
+                                                    class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full">
                                                 <option value="en attente" @selected($order->status == 'en attente')>En attente</option>
-                                                <option value="en cours" @selected($order->status == 'en cours')>En cours</option>
+                                                <option value="en livraison" @selected($order->status == 'en livraison')>En livraison</option>
                                                 <option value="livré" @selected($order->status == 'livré')>Livré</option>
-                                                <option value="annulé" @selected($order->status == 'annulé')>Annulé</option>
+                                                <option value="retourné" @selected($order->status == 'retourné')>Retourné</option>
+                                                <option value="refusé confirmé" @selected($order->status == 'refusé confirmé')>Refusé confirmé</option>
+                                                <option value="non confirmé" @selected($order->status == 'non confirmé')>Non confirmé</option>
+                                                <option value="pas de réponse" @selected($order->status == 'pas de réponse')>Pas de réponse</option>
                                             </select>
                                         </form>
                                     </td>
@@ -121,6 +150,17 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleStatusEdit(orderId) {
+            const form = document.getElementById('statusForm' + orderId);
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+            } else {
+                form.classList.add('hidden');
+            }
+        }
+    </script>
     @endsection
 </body>
 </html>

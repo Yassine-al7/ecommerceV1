@@ -29,7 +29,7 @@ class OrderController extends Controller
     public function create()
     {
         // Produits assignés au vendeur
-        $products = auth()->user()->assignedProducts()->select('products.id','products.name')->get();
+        $products = auth()->user()->assignedProducts()->select('produits.id','produits.name')->get();
         return view('seller.order_form', compact('products'));
     }
 
@@ -47,7 +47,7 @@ class OrderController extends Controller
             'commentaire' => 'nullable|string',
         ]);
         // Calcul des prix à partir du pivot assigné
-        $product = auth()->user()->assignedProducts()->where('products.id', $data['product_id'])->firstOrFail();
+        $product = auth()->user()->assignedProducts()->where('produits.id', $data['product_id'])->firstOrFail();
         $prixVente = (float) optional($product->pivot)->prix_vente;
         $data['prix_produit'] = $prixVente;
         $data['prix_commande'] = $prixVente * (int) $data['quantite_produit'];
@@ -68,7 +68,7 @@ class OrderController extends Controller
     public function edit($id)
     {
         $order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
-        $products = auth()->user()->assignedProducts()->select('products.id','products.name')->get();
+        $products = auth()->user()->assignedProducts()->select('produits.id','produits.name')->get();
         return view('seller.order_form', compact('order','products'));
     }
 
@@ -87,7 +87,7 @@ class OrderController extends Controller
             'quantite_produit' => 'required|integer|min:1',
             'commentaire' => 'nullable|string',
         ]);
-        $product = auth()->user()->assignedProducts()->where('products.id', $data['product_id'])->firstOrFail();
+        $product = auth()->user()->assignedProducts()->where('produits.id', $data['product_id'])->firstOrFail();
         $prixVente = (float) optional($product->pivot)->prix_vente;
         $data['prix_produit'] = $prixVente;
         $data['prix_commande'] = $prixVente * (int) $data['quantite_produit'];

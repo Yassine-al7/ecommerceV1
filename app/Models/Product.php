@@ -20,7 +20,6 @@ class Product extends Model
         'prix_vente',
         'quantite_stock',
         'categorie_id',
-        'vendeur_id',
     ];
 
     protected $casts = [
@@ -34,15 +33,19 @@ class Product extends Model
         return $this->belongsTo(Category::class, 'categorie_id');
     }
 
-    public function seller()
-    {
-        return $this->belongsTo(User::class, 'vendeur_id');
-    }
+    // Note: vendeur_id relationship removed - using assignedUsers() pivot table instead
 
     public function assignedUsers()
     {
         return $this->belongsToMany(User::class, 'product_user', 'product_id', 'user_id')
             ->withPivot('prix_admin', 'prix_vente', 'visible');
+    }
+
+    public function assignedSellers()
+    {
+        return $this->belongsToMany(User::class, 'product_user', 'product_id', 'user_id')
+            ->withPivot('prix_admin', 'prix_vente', 'visible')
+            ->where('role', 'seller');
     }
 
     public function orders()

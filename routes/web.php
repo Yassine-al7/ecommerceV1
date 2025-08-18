@@ -33,6 +33,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Invoices
     Route::get('/invoices', [App\Http\Controllers\Admin\InvoiceController::class, 'index'])->name('invoices.index');
     Route::patch('/invoices/{order}/status', [App\Http\Controllers\Admin\InvoiceController::class, 'updateStatus'])->name('invoices.update-status');
+    Route::get('/invoices/seller-stats', [App\Http\Controllers\Admin\InvoiceController::class, 'sellerStats'])->name('invoices.seller-stats');
+    Route::post('/invoices/mark-all-paid', [App\Http\Controllers\Admin\InvoiceController::class, 'markAllAsPaid'])->name('invoices.mark-all-paid');
+    Route::get('/invoices/export', [App\Http\Controllers\Admin\InvoiceController::class, 'export'])->name('invoices.export');
+    Route::get('/invoices/filtered-data', [App\Http\Controllers\Admin\InvoiceController::class, 'getFilteredData'])->name('invoices.filtered-data');
 });
 
 
