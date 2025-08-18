@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordNotification;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -53,5 +53,12 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function assignedProducts()
+    {
+        return $this->belongsToMany(Product::class, 'product_user', 'user_id', 'product_id')
+            ->withPivot(['prix_admin', 'prix_vente', 'visible'])
+            ->withTimestamps();
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use App\Models\PendingRegistration;
 
 class RegisterController extends Controller
 {
@@ -62,91 +63,84 @@ class RegisterController extends Controller
             throw $e;
         }
 
-        // Test d'envoi d'email de vérification
-        if (!$this->canSendEmailTo($validatedData['email'])) {
-            return back()->withErrors([
-                'email' => 'We cannot send emails to this address. Please use a different email address.'
-            ])->withInput($request->except('password', 'password_confirmation'));
-        }
-
-        try {
-            // Create the user
-            $user = User::create([
+        // Create a pending registration and send code
+        $code = (string) random_int(100000, 999999);
+        PendingRegistration::updateOrCreate(
+            ['email' => $validatedData['email']],
+            [
                 'name' => $validatedData['name'],
-                'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
-                'role' => 'seller',
-                'email_verified_at' => null, // L'email n'est pas encore vérifié
-            ]);
+                'password_hash' => Hash::make($validatedData['password']),
+                'code' => $code,
+                'expires_at' => now()->addMinutes(15),
+            ]
+        );
 
-            Log::info('User created successfully: ' . $user->email);
+        $this->sendVerificationCode($validatedData['email'], $code, $validatedData['name']);
 
-            // Envoyer un email de vérification
-            $this->sendVerificationEmail($user);
-
-            // Ne pas connecter l'utilisateur automatiquement
-            return redirect()->route('login')->with('status',
-                'Your account has been created! Please check your email (' . $user->email . ') and click the verification link to activate your account.'
-            );
-
-        } catch (\Exception $e) {
-            Log::error('Registration failed with exception: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-
-            return back()->withErrors([
-                'email' => 'There was an error creating your account. Please try again. Error: ' . $e->getMessage()
-            ])->withInput($request->except('password', 'password_confirmation'));
-        }
+        return redirect()->route('register.verify.form', ['email' => $validatedData['email']])
+            ->with('status', 'A verification code has been sent to your email. Please enter it to complete your registration.');
     }
 
     /**
-     * Tester si on peut envoyer un email à cette adresse
+     * Envoyer un code de vérification par e-mail
      */
-    private function canSendEmailTo(string $email): bool
+    private function sendVerificationCode(string $email, string $code, string $name): void
     {
         try {
-            // Test simple d'envoi d'email
-            Mail::raw('Email verification test', function ($message) use ($email) {
-                $message->to($email)
-                        ->subject('Email Verification Test')
-                        ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-
-            Log::info('Email verification test successful for: ' . $email);
-            return true;
-
-        } catch (\Exception $e) {
-            Log::error('Email verification test failed for ' . $email . ': ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Envoyer un email de vérification
-     */
-    private function sendVerificationEmail(User $user): void
-    {
-        try {
-            $verificationUrl = url('/email/verify/' . base64_encode($user->email));
-
             Mail::raw(
-                "Hello {$user->name},\n\n" .
-                "Please click the link below to verify your email address:\n" .
-                "{$verificationUrl}\n\n" .
-                "If you did not create an account, please ignore this email.\n\n" .
-                "Best regards,\n" .
+                "Hello {$name},\n\n" .
+                "Your verification code is: {$code}\n\n" .
+                "This code expires in 15 minutes. If you did not request this, please ignore this email.\n\n" .
+                "Regards,\n" .
                 config('app.name'),
-                function ($message) use ($user) {
-                    $message->to($user->email)
-                            ->subject('Verify Your Email Address')
+                function ($message) use ($email) {
+                    $message->to($email)
+                            ->subject('Your Verification Code')
                             ->from(config('mail.from.address'), config('mail.from.name'));
                 }
             );
-
-            Log::info('Verification email sent to: ' . $user->email);
+            Log::info('Verification code sent to: ' . $email);
 
         } catch (\Exception $e) {
-            Log::error('Failed to send verification email to ' . $user->email . ': ' . $e->getMessage());
+            Log::error('Failed to send verification code to ' . $email . ': ' . $e->getMessage());
+        }
+    }
+
+    public function showVerifyCodeForm(Request $request)
+    {
+        return view('auth.verify-code', ['email' => $request->get('email')]);
+    }
+
+    public function verifyCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string',
+        ]);
+
+        $pending = PendingRegistration::where('email', $request->email)->first();
+
+        if (!$pending || $pending->code !== $request->code || $pending->expires_at->isPast()) {
+            return back()->withErrors(['code' => 'Invalid or expired verification code.'])->withInput();
+        }
+
+        try {
+            $user = User::create([
+                'name' => $pending->name,
+                'email' => $pending->email,
+                'password' => $pending->password_hash,
+                'role' => 'seller',
+                'email_verified_at' => now(),
+            ]);
+
+            // Cleanup and login
+            $pending->delete();
+            Auth::login($user);
+
+            return redirect()->route('seller.dashboard')->with('success', 'Account created and email verified. Welcome!');
+        } catch (\Exception $e) {
+            Log::error('Failed to complete registration for ' . $request->email . ': ' . $e->getMessage());
+            return back()->withErrors(['email' => 'Unable to complete registration.'])->withInput();
         }
     }
     public function showSellerRegistrationForm()

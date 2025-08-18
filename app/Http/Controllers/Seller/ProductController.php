@@ -17,12 +17,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        // For now, return a simple view with dummy data
-        $products = collect([
-            (object) ['id' => 1, 'name' => 'Sample Product 1', 'price' => 29.99, 'status' => 'active'],
-            (object) ['id' => 2, 'name' => 'Sample Product 2', 'price' => 49.99, 'status' => 'inactive'],
-        ]);
-
+        $products = auth()->user()->assignedProducts()->with('stock')->get();
         return view('seller.products.index', compact('products'));
     }
 

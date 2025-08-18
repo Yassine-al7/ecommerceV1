@@ -21,6 +21,9 @@
         <div class="bg-white rounded-lg shadow-lg p-6">
             <div class="mb-4">
                 <h2 class="text-xl font-semibold text-gray-800">Liste des Produits</h2>
+                <div class="mt-3">
+                    <a href="{{ route('admin.products.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">Créer un produit</a>
+                </div>
             </div>
 
             @if($products->count() > 0)
@@ -59,8 +62,13 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</button>
-                                        <button class="text-red-600 hover:text-red-900">Supprimer</button>
+                                        <a href="{{ route('admin.products.assign', $product) }}" class="text-blue-600 hover:text-blue-900 mr-3">Assigner</a>
+                                        <a href="{{ route('admin.products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Modifier</a>
+                                        <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="text-red-600 hover:text-red-900" onclick="return confirm('Supprimer ce produit ?')">Supprimer</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

@@ -25,9 +25,66 @@
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
-    <div class="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-7xl mx-auto">
-            @yield('content')
+    <div class="min-h-screen">
+        <div class="flex min-h-screen">
+            <aside class="w-72 text-white p-6 space-y-6 glass-effect">
+                @auth
+                    @if(auth()->user()->isAdmin())
+                        <div class="text-2xl font-bold tracking-wide">Admin Panel</div>
+                        <nav class="space-y-2">
+                            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-gauge"></i><span>Dashboard</span>
+                            </a>
+                            <a href="{{ route('admin.products.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-box"></i><span>Produits</span>
+                            </a>
+                            <a href="{{ route('admin.orders.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-list-check"></i><span>Commandes</span>
+                            </a>
+                            <a href="{{ route('admin.sellers.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-store"></i><span>Vendeurs</span>
+                            </a>
+                            <a href="{{ route('admin.statistics.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-chart-line"></i><span>Statistiques</span>
+                            </a>
+                            <a href="{{ route('admin.invoices.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-file-invoice-dollar"></i><span>Facturation</span>
+                            </a>
+                        </nav>
+                    @else
+                        <div class="text-2xl font-bold tracking-wide">Seller Panel</div>
+                        <nav class="space-y-2">
+                            <a href="{{ route('seller.dashboard') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-gauge"></i><span>Dashboard</span>
+                            </a>
+                            <a href="{{ route('seller.orders.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-list-check"></i><span>Mes Commandes</span>
+                            </a>
+                        </nav>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}" class="pt-4">
+                        @csrf
+                        <button class="flex items-center space-x-3 hover:underline">
+                            <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+                        </button>
+                    </form>
+                @else
+                    <div class="text-xl font-bold tracking-wide">Bienvenue</div>
+                    <nav class="space-y-2">
+                        <a href="{{ route('login') }}" class="flex items-center space-x-3 hover:underline">
+                            <i class="fas fa-right-to-bracket"></i><span>Login</span>
+                        </a>
+                        <a href="{{ route('register') }}" class="flex items-center space-x-3 hover:underline">
+                            <i class="fas fa-user-plus"></i><span>Register</span>
+                        </a>
+                    </nav>
+                @endauth
+            </aside>
+            <main class="flex-1 py-6 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto">
+                    @yield('content')
+                </div>
+            </main>
         </div>
     </div>
 

@@ -22,6 +22,11 @@
         </div>
     </div>
 
+    @php
+        $visibleCount = $products->filter(function($p){ return (bool) optional($p->pivot)->visible; })->count();
+        $hiddenCount = $products->count() - $visibleCount;
+        $totalSaleValue = $products->sum(function($p){ return (float) optional($p->pivot)->prix_vente; });
+    @endphp
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white/10 rounded-xl p-6 text-center card-hover">
@@ -29,16 +34,16 @@
             <div class="text-blue-100">Total Products</div>
         </div>
         <div class="bg-white/10 rounded-xl p-6 text-center card-hover">
-            <div class="text-3xl font-bold text-green-300 mb-2">{{ $products->where('status', 'active')->count() }}</div>
-            <div class="text-blue-100">Active Products</div>
+            <div class="text-3xl font-bold text-green-300 mb-2">{{ $visibleCount }}</div>
+            <div class="text-blue-100">Visible</div>
         </div>
         <div class="bg-white/10 rounded-xl p-6 text-center card-hover">
-            <div class="text-3xl font-bold text-yellow-300 mb-2">{{ $products->where('status', 'inactive')->count() }}</div>
-            <div class="text-blue-100">Inactive Products</div>
+            <div class="text-3xl font-bold text-yellow-300 mb-2">{{ $hiddenCount }}</div>
+            <div class="text-blue-100">Masqués</div>
         </div>
         <div class="bg-white/10 rounded-xl p-6 text-center card-hover">
-            <div class="text-3xl font-bold text-blue-300 mb-2">${{ number_format($products->sum('price'), 2) }}</div>
-            <div class="text-blue-100">Total Value</div>
+            <div class="text-3xl font-bold text-blue-300 mb-2">€{{ number_format($totalSaleValue, 2) }}</div>
+            <div class="text-blue-100">Valeur totale (vente)</div>
         </div>
     </div>
 
@@ -89,10 +94,10 @@
                             <i class="fas fa-list mr-2"></i>Category
                         </th>
                         <th class="px-8 py-4 text-left text-sm font-semibold text-blue-100 uppercase tracking-wider">
-                            <i class="fas fa-dollar-sign mr-2"></i>Price
+                            <i class="fas fa-dollar-sign mr-2"></i>Prices
                         </th>
                         <th class="px-8 py-4 text-left text-sm font-semibold text-blue-100 uppercase tracking-wider">
-                            <i class="fas fa-chart-line mr-2"></i>Status
+                            <i class="fas fa-chart-line mr-2"></i>Visibility
                         </th>
                         <th class="px-8 py-4 text-left text-sm font-semibold text-blue-100 uppercase tracking-wider">
                             <i class="fas fa-calendar mr-2"></i>Created
@@ -120,23 +125,28 @@
                             </td>
                             <td class="px-8 py-6 whitespace-nowrap">
                                 <span class="px-3 py-1 text-sm font-medium bg-blue-500/20 text-blue-200 rounded-full">
-                                    Electronics
+                                    Catégorie #{{ $product->categorie_id }}
                                 </span>
                             </td>
                             <td class="px-8 py-6 whitespace-nowrap">
-                                <div class="text-lg font-semibold text-white">${{ number_format($product->price, 2) }}</div>
+                                <div class="text-lg font-semibold text-white">€{{ number_format(optional($product->pivot)->prix_vente ?? 0, 2) }}</div>
+                                <div class="text-sm text-blue-200">Admin: €{{ number_format(optional($product->pivot)->prix_admin ?? 0, 2) }}</div>
                             </td>
                             <td class="px-8 py-6 whitespace-nowrap">
-                                <span class="px-3 py-1 text-sm font-semibold rounded-full
-                                    {{ $product->status === 'active' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300' }}">
-                                    <i class="fas {{ $product->status === 'active' ? 'fa-check-circle' : 'fa-times-circle' }} mr-1"></i>
-                                    {{ ucfirst($product->status) }}
-                                </span>
+                                @if(optional($product->pivot)->visible)
+                                    <span class="px-3 py-1 text-sm font-semibold rounded-full bg-green-500/20 text-green-300">
+                                        <i class="fas fa-eye mr-1"></i> Visible
+                                    </span>
+                                @else
+                                    <span class="px-3 py-1 text-sm font-semibold rounded-full bg-red-500/20 text-red-300">
+                                        <i class="fas fa-eye-slash mr-1"></i> Masqué
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-8 py-6 whitespace-nowrap">
                                 <div class="text-sm text-blue-200">
                                     <i class="fas fa-calendar mr-1"></i>
-                                    {{ now()->subDays(rand(1, 30))->format('M d, Y') }}
+                                    {{ optional($product->created_at)->format('M d, Y') }}
                                 </div>
                             </td>
                             <td class="px-8 py-6 whitespace-nowrap text-center">

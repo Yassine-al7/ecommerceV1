@@ -24,12 +24,14 @@ class Order extends Model
         'prix_produit',
         'prix_commande',
         'status',
+        'seller_id',
+        'facturation_status',
         'commentaire',
     ];
 
-    public function user()
+    public function seller()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'seller_id');
     }
 
     public function orderItems()

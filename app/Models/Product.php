@@ -17,6 +17,8 @@ class Product extends Model
         'couleur',
         'tailles',
         'image',
+        'prix_admin',
+        'prix_vente',
         'quantite_stock',
         'categorie_id',
         'vendeur_id',
@@ -35,5 +37,12 @@ class Product extends Model
     public function stock()
     {
         return $this->hasOne(Stock::class);
+    }
+
+    public function assignedSellers()
+    {
+        return $this->belongsToMany(User::class, 'product_user', 'product_id', 'user_id')
+            ->withPivot(['prix_admin', 'prix_vente', 'visible'])
+            ->withTimestamps();
     }
 }
