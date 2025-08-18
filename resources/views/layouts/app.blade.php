@@ -42,15 +42,31 @@
                                 <i class="fas fa-list-check"></i><span>Commandes</span>
                             </a>
                             <a href="{{ route('admin.sellers.index') }}" class="flex items-center space-x-3 hover:underline">
-                                <i class="fas fa-store"></i><span>Vendeurs</span>
+                                <i class="fas fa-users"></i><span>Vendeurs</span>
                             </a>
                             <a href="{{ route('admin.statistics.index') }}" class="flex items-center space-x-3 hover:underline">
-                                <i class="fas fa-chart-line"></i><span>Statistiques</span>
+                                <i class="fas fa-chart-bar"></i><span>Statistiques</span>
+                            </a>
+                            <a href="{{ route('admin.stock.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-boxes"></i><span>Stock</span>
                             </a>
                             <a href="{{ route('admin.invoices.index') }}" class="flex items-center space-x-3 hover:underline">
-                                <i class="fas fa-file-invoice-dollar"></i><span>Facturation</span>
+                                <i class="fas fa-file-invoice"></i><span>Facturation</span>
+                            </a>
+                            <a href="{{ route('admin.admins.index') }}" class="flex items-center space-x-3 hover:underline">
+                                <i class="fas fa-user-shield"></i><span>Administrateurs</span>
                             </a>
                         </nav>
+
+                        <!-- Déconnexion séparé -->
+                        <div class="mt-6 pt-6 border-t border-gray-700">
+                            <form method="POST" action="{{ route('logout') }}" class="w-full">
+                                @csrf
+                                <button type="submit" class="flex items-center space-x-3 hover:underline w-full text-left text-gray-300 hover:text-white">
+                                    <i class="fas fa-sign-out-alt"></i><span>Déconnexion</span>
+                                </button>
+                            </form>
+                        </div>
                     @else
                         <div class="text-2xl font-bold tracking-wide">Seller Panel</div>
                         <nav class="space-y-2">
@@ -62,12 +78,6 @@
                             </a>
                         </nav>
                     @endif
-                    <form method="POST" action="{{ route('logout') }}" class="pt-4">
-                        @csrf
-                        <button class="flex items-center space-x-3 hover:underline">
-                            <i class="fas fa-right-from-bracket"></i><span>Logout</span>
-                        </button>
-                    </form>
                 @else
                     <div class="text-xl font-bold tracking-wide">Bienvenue</div>
                     <nav class="space-y-2">

@@ -10,16 +10,19 @@ class PendingRegistration extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
         'email',
-        'password_hash',
-        'code',
+        'verification_code',
         'expires_at',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
     ];
+
+    public function isExpired()
+    {
+        return $this->expires_at->isPast();
+    }
 }
 
 

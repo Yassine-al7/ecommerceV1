@@ -13,6 +13,31 @@
         <p class="text-blue-200 mt-2">Sign in to your account</p>
     </div>
 
+    <!-- Success Message -->
+    @if(session('success'))
+        <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        </div>
+    @endif
+
+    <!-- Error Messages -->
+    @if($errors->any())
+        <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span class="font-medium">Erreurs de validation :</span>
+            </div>
+            <ul class="list-disc list-inside ml-4">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <!-- Login Form -->
     <form method="POST" action="{{ route('login') }}" class="space-y-6">
         @csrf

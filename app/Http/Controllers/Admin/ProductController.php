@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -17,64 +18,87 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = \DB::table('categories')->get();
+        $categories = \App\Models\Category::all();
         return view('admin.products.create', compact('categories'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'couleur' => 'required|string|max:100',
-            'tailles' => 'nullable|string', // comma-separated sizes
-            'image' => 'nullable|string',
+            'couleur' => 'required|string',
+            'couleur_text' => 'nullable|string',
+            'tailles' => 'required|array|min:1',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'quantite_stock' => 'required|integer|min:0',
             'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'nullable|numeric',
-            'prix_vente' => 'nullable|numeric',
+            'prix_admin' => 'required|numeric|min:0',
+            'prix_vente' => 'required|numeric|min:0',
         ]);
 
-        $payload = $validated;
-        if (!empty($validated['tailles'])) {
-            $sizes = array_values(array_filter(array_map('trim', explode(',', $validated['tailles']))));
-            $payload['tailles'] = json_encode($sizes);
-        } else {
-            $payload['tailles'] = json_encode([]);
+        // Utiliser le nom de couleur si fourni, sinon la valeur hex
+        $data['couleur'] = $data['couleur_text'] ?: $data['couleur'];
+
+        // Convertir les tailles en JSON
+        $data['tailles'] = json_encode($data['tailles']);
+
+        // Définir vendeur_id à null pour les produits créés par l'admin
+        $data['vendeur_id'] = null;
+
+        // Gérer l'upload d'image
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+            $data['image'] = '/storage/' . $imagePath;
         }
 
-        Product::create($payload);
+        Product::create($data);
 
-        return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
+        return redirect()->route('admin.products.index')->with('success', 'Produit créé avec succès!');
     }
 
     public function edit(Product $product)
     {
-        $categories = \DB::table('categories')->get();
-        return view('admin.products.edit', compact('product','categories'));
+        $categories = \App\Models\Category::all();
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
     public function update(Request $request, Product $product)
     {
-        $validated = $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'couleur' => 'required|string|max:100',
-            'tailles' => 'nullable|string',
-            'image' => 'nullable|string',
+            'couleur' => 'required|string',
+            'couleur_text' => 'nullable|string',
+            'tailles' => 'required|array|min:1',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'quantite_stock' => 'required|integer|min:0',
             'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'nullable|numeric',
-            'prix_vente' => 'nullable|numeric',
+            'prix_admin' => 'required|numeric|min:0',
+            'prix_vente' => 'required|numeric|min:0',
         ]);
 
-        $payload = $validated;
-        if (array_key_exists('tailles', $validated)) {
-            $sizes = array_values(array_filter(array_map('trim', explode(',', $validated['tailles']))));
-            $payload['tailles'] = json_encode($sizes);
+        // Utiliser le nom de couleur si fourni, sinon la valeur hex
+        $data['couleur'] = $data['couleur_text'] ?: $data['couleur'];
+
+        // Convertir les tailles en JSON
+        $data['tailles'] = json_encode($data['tailles']);
+
+        // Garder vendeur_id inchangé lors de la mise à jour
+        unset($data['vendeur_id']);
+
+        // Gérer l'upload d'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($product->image && Storage::disk('public')->exists(str_replace('/storage/', '', $product->image))) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $product->image));
+            }
+
+            $imagePath = $request->file('image')->store('products', 'public');
+            $data['image'] = '/storage/' . $imagePath;
         }
 
-        $product->update($payload);
+        $product->update($data);
 
-        return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
+        return redirect()->route('admin.products.index')->with('success', 'Produit mis à jour avec succès!');
     }
 
     public function destroy(Product $product)

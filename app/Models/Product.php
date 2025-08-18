@@ -9,7 +9,6 @@ class Product extends Model
 {
     use HasFactory;
 
-    // Spécifier la table française
     protected $table = 'produits';
 
     protected $fillable = [
@@ -24,25 +23,30 @@ class Product extends Model
         'vendeur_id',
     ];
 
-    public function orders()
+    protected $casts = [
+        'tailles' => 'array',
+        'prix_admin' => 'decimal:2',
+        'prix_vente' => 'decimal:2',
+    ];
+
+    public function category()
     {
-        return $this->belongsToMany(Order::class)->withPivot('quantity');
+        return $this->belongsTo(Category::class, 'categorie_id');
     }
 
-    public function supplier()
+    public function seller()
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(User::class, 'vendeur_id');
     }
 
-    public function stock()
-    {
-        return $this->hasOne(Stock::class);
-    }
-
-    public function assignedSellers()
+    public function assignedUsers()
     {
         return $this->belongsToMany(User::class, 'product_user', 'product_id', 'user_id')
-            ->withPivot(['prix_admin', 'prix_vente', 'visible'])
-            ->withTimestamps();
+            ->withPivot('prix_admin', 'prix_vente', 'visible');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'produits');
     }
 }

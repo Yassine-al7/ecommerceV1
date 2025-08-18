@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pending_registrations', function (Blueprint $table) {
-            $table->id();
-            $table->string('email')->unique();
-            $table->string('verification_code', 6);
-            $table->timestamp('expires_at');
-            $table->timestamps();
+        Schema::table('produits', function (Blueprint $table) {
+            $table->unsignedBigInteger('vendeur_id')->nullable()->change();
         });
     }
 
@@ -25,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pending_registrations');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->unsignedBigInteger('vendeur_id')->nullable(false)->change();
+        });
     }
 };
-
-

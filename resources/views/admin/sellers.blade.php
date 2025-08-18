@@ -10,66 +10,89 @@
     @extends('layouts.app')
 
     @section('content')
-    <div class="container mx-auto mt-5">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-white">Gestion des Vendeurs</h1>
-            <a href="{{ route('admin.dashboard') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                ← Retour au Dashboard
-            </a>
-        </div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold text-gray-800">Gestion des Vendeurs</h1>
+                </div>
 
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <div class="mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">Liste des Vendeurs</h2>
-            </div>
+                @if(session('success'))
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-            @if($sellers->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border border-gray-300">
-                        <thead class="bg-gray-100">
+                    <table class="min-w-full bg-white border border-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Nom
+                                <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                    Nom complet
                                 </th>
-                                <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                     Email
                                 </th>
-                                <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                    Magasin
+                                </th>
+                                <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                    Téléphone
+                                </th>
+                                <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                     Date d'inscription
                                 </th>
-                                <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
+                                <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                    Statut
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($sellers as $seller)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ $seller->name }}
+                        <tbody class="bg-white">
+                            @forelse($sellers as $seller)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                        <div class="text-sm leading-5 text-gray-900 font-medium">{{ $seller->name }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $seller->email }}
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                        <div class="text-sm leading-5 text-gray-900">{{ $seller->email }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $seller->created_at->format('d/m/Y') }}
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                        <div class="text-sm leading-5 text-gray-900">{{ $seller->store_name ?? 'N/A' }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 mr-3">Voir détails</button>
-                                        <button class="text-yellow-600 hover:text-yellow-900 mr-3">Modifier</button>
-                                        <button class="text-red-600 hover:text-red-900">Désactiver</button>
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                        <div class="text-sm leading-5 text-gray-900">{{ $seller->numero_telephone ?? 'N/A' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                        <div class="text-sm leading-5 text-gray-500">{{ $seller->created_at->format('d/m/Y H:i') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                            @if($seller->email_verified_at) bg-green-100 text-green-800
+                                            @else bg-yellow-100 text-yellow-800
+                                            @endif">
+                                            @if($seller->email_verified_at)
+                                                Vérifié
+                                            @else
+                                                En attente
+                                            @endif
+                                        </span>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                        Aucun vendeur trouvé
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-            @else
-                <div class="text-center py-8">
-                    <p class="text-gray-500 text-lg">Aucun vendeur trouvé.</p>
-                    <p class="text-gray-400 mt-2">Les vendeurs apparaîtront ici une fois qu'ils s'inscriront.</p>
+
+                <div class="mt-6 text-center text-sm text-gray-500">
+                    <p>Total des vendeurs : {{ $sellers->count() }}</p>
                 </div>
-            @endif
+            </div>
         </div>
     </div>
     @endsection

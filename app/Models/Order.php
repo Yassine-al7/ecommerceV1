@@ -9,10 +9,10 @@ class Order extends Model
 {
     use HasFactory;
 
-    // Spécifier la table française
     protected $table = 'commandes';
 
     protected $fillable = [
+        'seller_id',
         'reference',
         'nom_client',
         'ville',
@@ -24,9 +24,14 @@ class Order extends Model
         'prix_produit',
         'prix_commande',
         'status',
-        'seller_id',
         'facturation_status',
         'commentaire',
+    ];
+
+    protected $casts = [
+        'produits' => 'array',
+        'prix_produit' => 'decimal:2',
+        'prix_commande' => 'decimal:2',
     ];
 
     public function seller()
@@ -34,18 +39,8 @@ class Order extends Model
         return $this->belongsTo(User::class, 'seller_id');
     }
 
-    public function orderItems()
+    public function products()
     {
-        return $this->hasMany(OrderItem::class);
-    }
-
-    public function getStatusAttribute($value)
-    {
-        return ucfirst($value);
-    }
-
-    public function calculateTotalAmount()
-    {
-        return $this->orderItems->sum('price');
+        return $this->belongsToMany(Product::class, 'produits');
     }
 }

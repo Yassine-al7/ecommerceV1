@@ -12,7 +12,8 @@ class EmailVerificationController extends Controller
 {
     public function notice()
     {
-        return view('auth.verify');
+        // Rediriger vers la page de connexion au lieu d'afficher la notice de vérification
+        return redirect()->route('login')->with('warning', 'Veuillez vous connecter pour accéder à l\'application.');
     }
 
     public function resend(Request $request)

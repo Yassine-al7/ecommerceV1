@@ -7,13 +7,15 @@ use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\ProductSeeder;
 use Database\Seeders\SupplierSeeder;
+use Database\Seeders\CategorySeeder;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $this->call([
             RoleSeeder::class,
+            CategorySeeder::class,
             UserSeeder::class,
             ProductSeeder::class,
             SupplierSeeder::class,
