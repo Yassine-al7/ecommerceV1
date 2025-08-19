@@ -213,39 +213,82 @@ class InvoiceController extends Controller
         $callback = function() use ($orders) {
             $file = fopen('php://output', 'w');
 
+            // En-têtes CSV avec BOM UTF-8 pour Excel
+            fwrite($file, "\xEF\xBB\xBF");
+
             // En-têtes CSV
             fputcsv($file, [
                 'ID Commande',
-                'Référence',
+                'Reference',
                 'Vendeur',
                 'Client',
                 'Ville',
                 'Produits',
-                'Prix Vente (MAD)',
-                'Prix Produit (MAD)',
-                'Bénéfice (MAD)',
+                'Prix Commande (MAD)',
+                'Cout Vendeur (MAD)',
+                'Benefice Vendeur (MAD)',
                 'Statut Paiement',
                 'Date Livraison'
-            ]);
+            ], ';'); // Utiliser ; au lieu de , pour Excel
 
             // Données
             foreach ($orders as $order) {
-                $produits = is_array($order->produits) ? implode(', ', $order->produits) : $order->produits;
-                $benefice = $order->prix_commande - $order->prix_produit;
+                // Décoder les produits JSON
+                $produits = '';
+                if (is_string($order->produits)) {
+                    $decodedProducts = json_decode($order->produits, true);
+                    if (is_array($decodedProducts)) {
+                        $productNames = [];
+                        foreach ($decodedProducts as $produit) {
+                            if (isset($produit['product_id']) && isset($produit['qty'])) {
+                                $product = \App\Models\Product::find($produit['product_id']);
+                                $productName = $product ? $product->name : 'Produit ID: ' . $produit['product_id'];
+                                $productNames[] = $productName . ' (x' . $produit['qty'] . ')';
+                            }
+                        }
+                        $produits = implode(' | ', $productNames);
+                    }
+                } elseif (is_array($order->produits)) {
+                    $produits = implode(' | ', $order->produits);
+                } else {
+                    $produits = $order->produits;
+                }
+
+                // Calculer le coût vendeur et bénéfice
+                $coutVendeur = 0;
+                if (is_string($order->produits)) {
+                    $decodedProducts = json_decode($order->produits, true);
+                    if (is_array($decodedProducts)) {
+                        foreach ($decodedProducts as $produit) {
+                            if (isset($produit['product_id']) && isset($produit['qty'])) {
+                                $productUser = \DB::table('product_user')
+                                    ->where('product_id', $produit['product_id'])
+                                    ->where('user_id', $order->seller_id)
+                                    ->first();
+
+                                if ($productUser) {
+                                    $coutVendeur += ($productUser->prix_admin ?? 0) * $produit['qty'];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                $beneficeVendeur = $order->prix_commande - $coutVendeur;
 
                 fputcsv($file, [
                     $order->id,
-                    $order->reference,
+                    $order->reference ?? 'N/A',
                     $order->seller->name ?? 'N/A',
-                    $order->nom_client,
-                    $order->ville,
+                    $order->nom_client ?? 'N/A',
+                    $order->ville ?? 'N/A',
                     $produits,
-                    $order->prix_commande,
-                    $order->prix_produit,
-                    $benefice,
-                    $order->facturation_status ?? 'non payé',
+                    $order->prix_commande, // Nombre brut sans formatage
+                    $coutVendeur, // Nombre brut sans formatage
+                    $beneficeVendeur, // Nombre brut sans formatage
+                    $order->facturation_status ?? 'non paye',
                     $order->updated_at->format('d/m/Y H:i')
-                ]);
+                ], ';'); // Utiliser ; au lieu de , pour Excel
             }
 
             fclose($file);

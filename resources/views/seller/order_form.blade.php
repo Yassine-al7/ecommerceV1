@@ -21,7 +21,7 @@
         @endif
 
         <div class="bg-white rounded-lg shadow-lg p-8">
-            <form method="POST" action="{{ isset($order) ? route('seller.orders.update', $order->id) : route('seller.orders.store') }}" class="space-y-6">
+            <form method="POST" action="{{ isset($order) ? route('seller.orders.update', $order->id) : route('seller.orders.store') }}" class="space-y-6" onsubmit="return confirmOrder()">
                 @csrf
                 @if(isset($order))
                     @method('PUT')
@@ -71,7 +71,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Produit *</label>
-                            <select name="product_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <select name="product_id" id="productSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                 <option value="">Sélectionnez un produit</option>
                                 @foreach(($products ?? []) as $p)
                                     <option value="{{ $p->id }}" @selected(old('product_id', isset($order) && isset(json_decode($order->produits,true)[0]['product_id']) ? json_decode($order->produits,true)[0]['product_id'] : null) == $p->id)>
@@ -82,8 +82,9 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Taille *</label>
-                            <input type="text" name="taille_produit" value="{{ old('taille_produit', $order->taille_produit ?? '') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <select name="taille_produit" id="sizeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="">Sélectionnez d'abord un produit</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Quantité *</label>
@@ -117,5 +118,80 @@
     </div>
 </div>
 @endsection
+
+<script>
+function confirmOrder() {
+    // Si c'est une modification, pas de confirmation
+    if (document.querySelector('input[name="_method"]') && document.querySelector('input[name="_method"]').value === 'PUT') {
+        return true;
+    }
+
+    // Si c'est une création, demander confirmation
+    return confirm('Êtes-vous sûr de vouloir passer cette commande ?\n\nCette action créera une nouvelle commande en statut "en attente".');
+}
+</script>
+
+<script>
+// Précharger la map produit->tailles depuis Blade
+const productSizesMap = {
+@foreach(($products ?? []) as $p)
+    @php
+        $sizesRaw = $p->tailles;
+        $sizes = is_string($sizesRaw) ? json_decode($sizesRaw, true) : (array) $sizesRaw;
+        if (!is_array($sizes)) {
+            $sizes = [];
+            if (is_string($sizesRaw) && $sizesRaw !== '') {
+                if (preg_match_all('/"([^\"]+)"/u', $sizesRaw, $m) && !empty($m[1])) {
+                    $sizes = $m[1];
+                } else {
+                    $clean = trim($sizesRaw);
+                    $clean = trim($clean, '[]');
+                    $clean = str_replace(['"','“','”','‟','’','‘'], ' ', $clean);
+                    $parts = preg_split('/\s*,\s*|\s*;\s*|\r?\n+/u', $clean);
+                    $sizes = array_values(array_filter(array_map('trim', $parts)));
+                }
+            }
+        }
+        if (is_array($sizes)) { $sizes = array_values(array_filter(array_unique($sizes))); }
+    @endphp
+    {{ $p->id }}: {!! json_encode($sizes, JSON_UNESCAPED_UNICODE) !!},
+@endforeach
+};
+
+function populateSizes(productId, preselected) {
+    const sizeSelect = document.getElementById('sizeSelect');
+    sizeSelect.innerHTML = '';
+    if (!productId || !productSizesMap[productId] || productSizesMap[productId].length === 0) {
+        // Aucun jeu de tailles défini => taille unique
+        sizeSelect.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.value = 'Taille unique';
+        opt.textContent = 'Taille unique';
+        opt.selected = true;
+        sizeSelect.appendChild(opt);
+        return;
+    }
+    sizeSelect.insertAdjacentHTML('beforeend', '<option value="">Sélectionnez une taille</option>');
+    productSizesMap[productId].forEach(sz => {
+        const opt = document.createElement('option');
+        opt.value = sz;
+        opt.textContent = sz;
+        if (preselected && preselected === sz) opt.selected = true;
+        sizeSelect.appendChild(opt);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const productSelect = document.getElementById('productSelect');
+    const preselectedProduct = productSelect.value || null;
+    const existingOrderSize = @json(old('taille_produit', $order->taille_produit ?? ''));
+    if (preselectedProduct) {
+        populateSizes(preselectedProduct, existingOrderSize);
+    }
+    productSelect.addEventListener('change', function() {
+        populateSizes(this.value, null);
+    });
+});
+</script>
 
 

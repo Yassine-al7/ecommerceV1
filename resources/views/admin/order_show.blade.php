@@ -42,11 +42,54 @@
                     <p class="text-sm text-gray-500">Statut</p>
                     <p class="text-lg text-gray-900">{{ $order->status }}</p>
                 </div>
+                @if($order->commentaire)
+                <div class="md:col-span-2">
+                    <p class="text-sm text-gray-500">Commentaire</p>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                        <p class="text-lg text-gray-900">{{ $order->commentaire }}</p>
+                    </div>
+                </div>
+                @endif
             </div>
 
             <div>
                 <p class="text-sm text-gray-500 mb-2">Produits</p>
-                <pre class="bg-gray-50 p-4 rounded border text-sm">{{ json_encode(json_decode($order->produits, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                <div class="bg-gray-50 p-4 rounded border">
+                    @php
+                        $decodedProducts = json_decode($order->produits, true);
+                    @endphp
+
+                    @if(is_array($decodedProducts) && count($decodedProducts) > 0)
+                        <div class="space-y-3">
+                            @foreach($decodedProducts as $produit)
+                                @if(is_array($produit) && isset($produit['product_id']) && isset($produit['qty']))
+                                    @php
+                                        $product = App\Models\Product::find($produit['product_id']);
+                                        $productName = $product ? $product->name : 'Produit non trouvé';
+                                        $category = $product && $product->category ? $product->category->name : 'Catégorie inconnue';
+                                        $price = $product ? $product->prix_vente : 0;
+                                        $totalPrice = $price * $produit['qty'];
+                                    @endphp
+
+                                    <div class="flex items-center justify-between bg-white p-3 rounded border">
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">{{ $productName }}</h4>
+                                            <p class="text-sm text-gray-500">Catégorie: {{ $category }}</p>
+                                            <p class="text-sm text-gray-500">Prix unitaire: {{ number_format($price, 0) }} MAD</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium text-gray-900">Quantité: {{ $produit['qty'] }}</p>
+                                            <p class="text-sm text-green-600 font-medium">Total: {{ number_format($totalPrice, 0) }} MAD</p>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-gray-500 italic">Aucun produit trouvé ou format invalide</p>
+                        <pre class="mt-2 text-xs text-gray-400">{{ $order->produits }}</pre>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

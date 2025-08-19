@@ -48,6 +48,11 @@ class Product extends Model
             ->where('role', 'seller');
     }
 
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class, 'product_id');
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class, 'produits');

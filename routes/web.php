@@ -75,7 +75,7 @@ Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logou
 Route::middleware(['auth', 'verified'])->prefix('seller')->name('seller.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Seller\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/products', [App\Http\Controllers\Seller\ProductController::class, 'index'])->name('products.index');
-    Route::resource('orders', App\Http\Controllers\Seller\OrderController::class);
+    Route::resource('orders', App\Http\Controllers\Seller\OrderController::class)->except(['destroy']);
 });
 
 // Home redirect

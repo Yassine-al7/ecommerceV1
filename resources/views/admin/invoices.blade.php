@@ -9,11 +9,15 @@
 <body>
     @extends('layouts.app')
 
+@php
+use Illuminate\Support\Facades\DB;
+@endphp
+
     @section('title', 'Gestion des Facturations')
 
     @section('content')
     <div class="min-h-screen bg-gray-50 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- En-tête -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">Gestion des Facturations</h1>
@@ -52,29 +56,53 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 bg-yellow-100 rounded-lg">
-                            <i class="fas fa-money-bill-wave text-yellow-600 text-xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-yellow-600">Total Ventes</p>
-                            <p class="text-2xl font-bold text-yellow-900" id="totalVentes">{{ number_format($orders->sum('prix_commande'), 0) }} MAD</p>
-                        </div>
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 rounded-lg">
+                        <i class="fas fa-money-bill-wave text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-yellow-600">Total Commandes</p>
+                        <p class="text-2xl font-bold text-yellow-900" id="totalVentes">{{ number_format($orders->sum('prix_commande'), 0) }} MAD</p>
+                        <p class="text-xs text-yellow-600">Chiffre d'affaires global</p>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 bg-purple-100 rounded-lg">
-                            <i class="fas fa-chart-line text-purple-600 text-xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-purple-600">Bénéfices</p>
-                            <p class="text-2xl font-bold text-purple-900" id="totalBenefices">{{ number_format($orders->sum('prix_commande') - $orders->sum('prix_produit'), 0) }} MAD</p>
-                        </div>
+
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-green-600">Bénéfice Total Vendeurs</p>
+                        @php
+                            $totalCoutVendeurs = 0;
+                            foreach ($orders as $order) {
+                                if (is_array($order->produits)) {
+                                    foreach ($order->produits as $produit) {
+                                        if (is_array($produit) && isset($produit['product_id']) && isset($produit['qty'])) {
+                                            $productUser = DB::table('product_user')
+                                                ->where('product_id', $produit['product_id'])
+                                                ->where('user_id', $order->seller_id)
+                                                ->first();
+                                            if ($productUser) {
+                                                $totalCoutVendeurs += ($productUser->prix_admin ?? 0) * $produit['qty'];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            $totalBeneficeVendeurs = $orders->sum('prix_commande') - $totalCoutVendeurs;
+                            $pourcentageBenefice = $orders->sum('prix_commande') > 0 ? round(($totalBeneficeVendeurs / $orders->sum('prix_commande')) * 100, 1) : 0;
+                        @endphp
+                        <p class="text-2xl font-bold text-green-900" id="totalBenefices">{{ number_format($totalBeneficeVendeurs, 0) }} MAD</p>
+                        <p class="text-xs text-green-600">Marge: {{ $pourcentageBenefice }}%</p>
                     </div>
                 </div>
+            </div>
             </div>
 
             <!-- Section des actions et filtres -->
@@ -138,47 +166,47 @@
                     <p class="text-sm text-gray-600 mt-1">
                         <span id="tableSummary">Total: {{ $orders->total() }} commandes livrées</span>
                     </p>
-                </div>
+        </div>
 
                 @if($orders->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+            <div class="overflow-x-auto">
+                    <table class="w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Vendeur
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Client
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Produits
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Prix Vente
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Prix Produit
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Bénéfice
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Statut Paiement
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
+                                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/8">
+                                    Vendeur
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/8">
+                                    Client
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                                    Produits
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                    Prix Commande
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                    Coût Vendeur
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                    Bénéfice Vendeur
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                    Statut
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                    Actions
+                                </th>
+                        </tr>
+                    </thead>
                             <tbody class="bg-white divide-y divide-gray-200" id="invoicesTableBody">
-                                @foreach($orders as $order)
+                        @foreach($orders as $order)
                                     <tr class="hover:bg-gray-50 invoice-row"
                                         data-seller-id="{{ $order->seller_id }}"
                                         data-payment-status="{{ $order->facturation_status ?? 'non payé' }}"
                                         data-client-name="{{ strtolower($order->nom_client) }}">
-                                        <!-- Vendeur -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                                            <!-- Vendeur -->
+                                    <td class="px-4 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-10 w-10">
                                                     <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -196,62 +224,154 @@
                                             </div>
                                         </td>
 
-                                        <!-- Client -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                                            <!-- Client -->
+                                    <td class="px-4 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ $order->nom_client }}</div>
                                             <div class="text-sm text-gray-500">{{ $order->ville }}</div>
                                         </td>
 
-                                        <!-- Produits -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">
-                                                @if(is_array($order->produits))
-                                                    @foreach(array_slice($order->produits, 0, 2) as $produit)
-                                                        <div class="mb-1">{{ $produit }}</div>
+                                                                                                                <!-- Produits -->
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            @if(is_array($order->produits))
+                                                @foreach($order->produits as $produit)
+                                                    @php
+                                                        $productName = '';
+                                                        $quantity = '';
+
+                                                        if (is_array($produit)) {
+                                                            if (isset($produit['product_id'])) {
+                                                                $product = App\Models\Product::find($produit['product_id']);
+                                                                $productName = $product ? $product->name : 'Produit ID: ' . $produit['product_id'];
+                                                            }
+                                                            if (isset($produit['qty'])) {
+                                                                $quantity = ' (x' . $produit['qty'] . ')';
+                                                            }
+                                                        } else {
+                                                            $productName = $produit;
+                                                        }
+                                                    @endphp
+                                                    <div class="mb-1">
+                                                        <span class="font-medium">{{ $productName }}</span>
+                                                        @if($quantity)
+                                                            <span class="text-blue-600">{{ $quantity }}</span>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            @elseif(is_string($order->produits) && json_decode($order->produits))
+                                                @php
+                                                    $decodedProducts = json_decode($order->produits, true);
+                                                @endphp
+                                                @if(is_array($decodedProducts))
+                                                    @foreach($decodedProducts as $produit)
+                                                        @php
+                                                            $productName = '';
+                                                            $quantity = '';
+
+                                                            if (is_array($produit)) {
+                                                                if (isset($produit['product_id'])) {
+                                                                    $product = App\Models\Product::find($produit['product_id']);
+                                                                    $productName = $product ? $product->name : 'Produit ID: ' . $produit['product_id'];
+                                                                }
+                                                                if (isset($produit['qty'])) {
+                                                                    $quantity = ' (x' . $produit['qty'] . ')';
+                                                                }
+                                                            } else {
+                                                                $productName = $produit;
+                                                            }
+                                                        @endphp
+                                                        <div class="mb-1">
+                                                            <span class="font-medium">{{ $productName }}</span>
+                                                            @if($quantity)
+                                                                <span class="text-blue-600">{{ $quantity }}</span>
+                                                            @endif
+                                                        </div>
                                                     @endforeach
-                                                    @if(count($order->produits) > 2)
-                                                        <div class="text-xs text-gray-500">+{{ count($order->produits) - 2 }} autres</div>
-                                                    @endif
                                                 @else
                                                     {{ $order->produits }}
                                                 @endif
-                                            </div>
-                                        </td>
+                                            @else
+                                                {{ $order->produits }}
+                                            @endif
+                                        </div>
+                                    </td>
 
-                                        <!-- Prix Vente -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-semibold text-green-600">
-                                                {{ number_format($order->prix_commande, 0) }} MAD
-                                            </div>
-                                        </td>
+                                                                                                                <!-- Prix Commande (ce que le client paie) -->
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-blue-600">
+                                            {{ number_format($order->prix_commande, 0) }} MAD
+                                        </div>
+                                    </td>
 
-                                        <!-- Prix Produit -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-600">
-                                                {{ number_format($order->prix_produit, 0) }} MAD
-                                            </div>
-                                        </td>
+                                                                                                                                                <!-- Coût Vendeur (ce que le vendeur paie pour acheter) -->
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                                                                                                                                @php
+                                            $coutVendeur = 0;
+                                            $quantiteTotale = 0;
 
-                                        <!-- Bénéfice -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @php
-                                                $benefice = $order->prix_commande - $order->prix_produit;
-                                            @endphp
-                                            <div class="text-sm font-semibold {{ $benefice >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                                                {{ number_format($benefice, 0) }} MAD
-                                            </div>
-                                        </td>
+                                            // DÉCODER LE JSON EN TABLEAU
+                                            $produits = is_string($order->produits) ? json_decode($order->produits, true) : $order->produits;
 
-                                        <!-- Statut Paiement -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            if (is_array($produits)) {
+                                                foreach ($produits as $produit) {
+                                                    if (is_array($produit) && isset($produit['product_id']) && isset($produit['qty'])) {
+                                                        // Debug: afficher les valeurs exactes
+                                                        $productId = $produit['product_id'];
+                                                        $sellerId = $order->seller_id;
+                                                        $qty = $produit['qty'];
+
+                                                        // Récupérer le prix admin (ce que le vendeur paie pour acheter) depuis la table pivot
+                                                        $productUser = DB::table('product_user')
+                                                            ->where('product_id', $productId)
+                                                            ->where('user_id', $sellerId)
+                                                            ->first();
+
+                                                        // Debug: afficher le résultat de la requête
+                                                        if ($productUser) {
+                                                            $coutVendeur += ($productUser->prix_admin ?? 0) * $qty;
+                                                            $quantiteTotale += $qty;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        @endphp
+                                        <div class="text-sm">
+                                            <div class="font-semibold text-orange-600">
+                                                {{ number_format($coutVendeur, 0) }} MAD
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Qty: {{ $quantiteTotale }}
+                                            </div>
+
+                                        </div>
+                                    </td>
+
+                                    <!-- Bénéfice Vendeur (prix client - coût vendeur) -->
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        @php
+                                            $beneficeVendeur = $order->prix_commande - $coutVendeur; // Bénéfice du vendeur
+                                            $pourcentageBenefice = $order->prix_commande > 0 ? round(($beneficeVendeur / $order->prix_commande) * 100, 1) : 0;
+                                        @endphp
+                                        <div class="text-sm">
+                                            <div class="font-semibold text-green-600">
+                                                {{ number_format($beneficeVendeur, 0) }} MAD
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Marge: {{ $pourcentageBenefice }}%
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                                                            <!-- Statut Paiement -->
+                                    <td class="px-4 py-4 whitespace-nowrap">
                                             <span class="px-2 py-1 text-xs font-medium rounded-full
                                                 {{ $order->facturation_status == 'payé' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                                 {{ ucfirst($order->facturation_status ?? 'non payé') }}
                                             </span>
                                         </td>
 
-                                        <!-- Actions -->
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                                            <!-- Actions -->
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                             <button onclick="togglePaymentStatus({{ $order->id }})"
                                                     class="text-blue-600 hover:text-blue-800 mr-3">
                                                 <i class="fas fa-edit"></i> Modifier
@@ -261,24 +381,24 @@
                                             <form id="paymentForm{{ $order->id }}" method="POST"
                                                   action="{{ route('admin.invoices.update-status', $order->id) }}"
                                                   class="hidden mt-2">
-                                                @csrf
-                                                @method('PATCH')
+                                    @csrf
+                                    @method('PATCH')
                                                 <select name="facturation_status" onchange="this.form.submit()"
                                                         class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full">
                                                     <option value="non payé" @selected($order->facturation_status == 'non payé')>Non payé</option>
                                                     <option value="payé" @selected($order->facturation_status == 'payé')>Payé</option>
-                                                </select>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
                     <!-- Pagination -->
                     <div class="px-6 py-4 border-t border-gray-200">
-                        {{ $orders->links() }}
+                {{ $orders->links() }}
                     </div>
                 @else
                     <!-- État vide -->
@@ -334,7 +454,7 @@
 
             // Vérifier les filtres
             const sellerMatch = !selectedSeller || sellerId === selectedSeller;
-            const paymentMatch = !selectedPayment || paymentStatus.includes(selectedPayment);
+            const paymentMatch = !selectedPayment || paymentStatus === selectedPayment || selectedPayment === 'Tous les statuts';
             const searchMatch = !searchTerm || clientName.includes(searchTerm);
 
             if (sellerMatch && paymentMatch && searchMatch) {
@@ -342,12 +462,13 @@
                 visibleCount++;
 
                 // Calculer les totaux pour les lignes visibles
-                const prixVente = parseFloat(row.querySelector('td:nth-child(4) .text-green-600').textContent.replace(' MAD', '').replace(',', ''));
-                const prixProduit = parseFloat(row.querySelector('td:nth-child(5) .text-gray-600').textContent.replace(' MAD', '').replace(',', ''));
+                const prixCommande = parseFloat(row.querySelector('td:nth-child(4) .text-blue-600').textContent.replace(' MAD', '').replace(',', ''));
+                const coutVendeur = parseFloat(row.querySelector('td:nth-child(5) .text-orange-600').textContent.replace(' MAD', '').replace(',', ''));
+                const beneficeVendeur = parseFloat(row.querySelector('td:nth-child(6) .text-green-600').textContent.replace(' MAD', '').replace(',', ''));
 
-                totalRevenue += prixVente;
-                totalCost += prixProduit;
-                totalProfit += (prixVente - prixProduit);
+                totalRevenue += prixCommande; // Total des commandes
+                totalCost += coutVendeur; // Coût total des vendeurs
+                totalProfit += beneficeVendeur; // Bénéfice total des vendeurs
             } else {
                 row.style.display = 'none';
             }
@@ -360,15 +481,29 @@
         updateFilterSummary(selectedSeller, selectedPayment, searchTerm, visibleCount);
     }
 
-    function updateStatistics(visibleCount, totalRevenue, totalCost, totalProfit) {
+            function updateStatistics(visibleCount, totalRevenue, totalCost, totalProfit) {
         // Mettre à jour le nombre de commandes
         document.getElementById('totalCommandes').textContent = visibleCount;
 
-        // Mettre à jour le total des ventes
+        // Mettre à jour le total des commandes (chiffre d'affaires)
         document.getElementById('totalVentes').textContent = numberFormat(totalRevenue) + ' MAD';
 
-        // Mettre à jour les bénéfices
+        // Mettre à jour le coût total des vendeurs
+        document.getElementById('totalCoutVendeurs').textContent = numberFormat(totalCost) + ' MAD';
+
+        // Mettre à jour le bénéfice admin
         document.getElementById('totalBenefices').textContent = numberFormat(totalProfit) + ' MAD';
+
+        // Calculer et mettre à jour le pourcentage de marge admin
+        const pourcentageMarge = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100 * 10) / 10 : 0;
+        const beneficesElement = document.getElementById('totalBenefices');
+        const parentDiv = beneficesElement.parentElement;
+
+        // Mettre à jour l'élément de pourcentage de marge
+        let margeElement = parentDiv.querySelector('.text-xs');
+        if (margeElement) {
+            margeElement.textContent = `Marge: ${pourcentageMarge}%`;
+        }
 
         // Mettre à jour le résumé du tableau
         document.getElementById('tableSummary').textContent = `Total: ${visibleCount} commandes livrées`;

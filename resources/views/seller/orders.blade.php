@@ -41,7 +41,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium text-yellow-600">En attente</p>
-                                <p class="text-lg font-semibold text-yellow-900">{{ $orders->where('status', 'en attente')->count() }}</p>
+                                <p class="text-lg font-semibold text-yellow-900">{{ $orders->getCollection()->where('status', 'en attente')->count() }}</p>
                             </div>
                         </div>
                     </div>
@@ -53,7 +53,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium text-green-600">Livré</p>
-                                <p class="text-lg font-semibold text-green-900">{{ $orders->where('status', 'livré')->count() }}</p>
+                                <p class="text-lg font-semibold text-green-900">{{ $orders->getCollection()->where('status', 'livré')->count() }}</p>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium text-red-600">Annulé</p>
-                                <p class="text-lg font-semibold text-red-900">{{ $orders->where('status', 'annulé')->count() }}</p>
+                                <p class="text-lg font-semibold text-red-900">{{ $orders->getCollection()->where('status', 'annulé')->count() }}</p>
                             </div>
                         </div>
                     </div>
@@ -77,36 +77,7 @@
                     </div>
                 @endif
 
-                <!-- Filtres -->
-                <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                    <form method="GET" action="{{ route('seller.orders.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Tous les statuts</option>
-                                <option value="en attente" @selected(request('status') == 'en attente')>En attente</option>
-                                <option value="en cours" @selected(request('status') == 'en cours')>En cours</option>
-                                <option value="livré" @selected(request('status') == 'livré')>Livré</option>
-                                <option value="annulé" @selected(request('status') == 'annulé')>Annulé</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
-                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Référence, client, ville..."
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div class="flex items-end">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                <i class="fas fa-search mr-2"></i>Filtrer
-                            </button>
-                            @if(request('status') || request('q'))
-                                <a href="{{ route('seller.orders.index') }}" class="ml-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                                    <i class="fas fa-times mr-2"></i>Effacer
-                                </a>
-                            @endif
-                        </div>
-                    </form>
-                </div>
+
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border border-gray-200">
@@ -166,13 +137,6 @@
                                             <a href="{{ route('seller.orders.edit', $order->id) }}" class="text-green-600 hover:text-green-900">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form method="POST" action="{{ route('seller.orders.destroy', $order->id) }}" class="inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>

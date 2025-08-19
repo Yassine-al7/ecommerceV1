@@ -88,7 +88,9 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                             @php
                                 $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '36', '38', '40', '42', '44', '46', '48', '50', '52'];
-                                $currentSizes = json_decode($product->tailles, true) ?? [];
+                                $currentSizes = is_string($product->tailles)
+                                    ? (json_decode($product->tailles, true) ?? [])
+                                    : (is_array($product->tailles) ? $product->tailles : []);
                             @endphp
                             @foreach($sizes as $size)
                                 <label class="flex items-center space-x-2 cursor-pointer">

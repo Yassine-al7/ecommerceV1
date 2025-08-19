@@ -5,7 +5,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
-        <!-- Header Section -->
+    <!-- Header Section -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-800 mb-2">Mes Produits Assignés</h1>
             <p class="text-gray-600">Consultez tous les produits qui vous ont été assignés par l'administrateur</p>
@@ -22,8 +22,8 @@
                         <p class="text-sm font-medium text-blue-600">Total Produits</p>
                         <p class="text-2xl font-bold text-blue-900">{{ $products->count() }}</p>
                     </div>
-                </div>
-            </div>
+        </div>
+    </div>
 
             <div class="bg-green-50 border border-green-200 rounded-lg p-6">
                 <div class="flex items-center">
@@ -32,22 +32,22 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-green-600">Visibles</p>
-                        <p class="text-2xl font-bold text-green-900">{{ $products->where('pivot.visible', true)->count() }}</p>
+                        <p class="text-2xl font-bold text-green-900">{{ $products->where('visible', 1)->count() }}</p>
                     </div>
                 </div>
-            </div>
+        </div>
 
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-yellow-100 rounded-lg">
                         <i class="fas fa-eye-slash text-yellow-600 text-xl"></i>
-                    </div>
+        </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-yellow-600">Masqués</p>
-                        <p class="text-2xl font-bold text-yellow-900">{{ $products->where('pivot.visible', false)->count() }}</p>
-                    </div>
-                </div>
-            </div>
+                        <p class="text-2xl font-bold text-yellow-900">{{ $products->where('visible', 0)->count() }}</p>
+        </div>
+        </div>
+    </div>
 
             <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
                 <div class="flex items-center">
@@ -56,17 +56,17 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-purple-600">Valeur Totale</p>
-                        <p class="text-2xl font-bold text-purple-900">{{ number_format($products->sum('pivot.prix_vente'), 2) }} MAD</p>
+                        <p class="text-2xl font-bold text-purple-900">{{ number_format($products->sum('prix_vente'), 0) }} MAD</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        @if(session('success'))
+    @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
                 <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-            </div>
-        @endif
+        </div>
+    @endif
 
         <!-- Filtres -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -98,37 +98,16 @@
 
         <!-- Grille des produits -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productsGrid">
-            @forelse($products as $product)
+                        @forelse($products as $product)
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden product-card"
-                     data-category="{{ $product->category->name ?? 'Sans catégorie' }}"
-                     data-visibility="{{ $product->pivot->visible ? 'visible' : 'hidden' }}"
+                     data-category="{{ $product->category_name ?? 'Sans catégorie' }}"
+                     data-visibility="{{ $product->visible ? 'visible' : 'hidden' }}"
                      data-name="{{ strtolower($product->name) }}">
 
-                    <!-- Image du produit -->
+                                        <!-- Image du produit -->
                     <div class="h-48 bg-gray-100 flex items-center justify-center overflow-hidden relative">
-                                                @php
-                            // Gérer les différents formats de chemins d'images
-                            $imagePath = $product->image;
-                            $imageSrc = null;
-
-                            if ($imagePath && !empty(trim($imagePath))) {
-                                // Si le chemin commence déjà par /storage/, l'utiliser tel quel
-                                if (str_starts_with($imagePath, '/storage/')) {
-                                    $imageSrc = $imagePath;
-                                }
-                                // Si c'est juste le nom du fichier, ajouter /storage/products/
-                                elseif (!str_contains($imagePath, '/')) {
-                                    $imageSrc = '/storage/products/' . $imagePath;
-                                }
-                                // Sinon utiliser tel quel
-                                else {
-                                    $imageSrc = $imagePath;
-                                }
-                            }
-                        @endphp
-
-                        @if($imageSrc)
-                            <img src="{{ $imageSrc }}"
+                        @if($product->image)
+                            <img src="{{ $product->image }}"
                                  alt="{{ $product->name }}"
                                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -143,34 +122,38 @@
                                 <p class="text-sm">Aucune image</p>
                             </div>
                         @endif
-                    </div>
+    </div>
 
                     <!-- Informations du produit -->
                     <div class="p-4">
                         <div class="flex items-start justify-between mb-2">
                             <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">{{ $product->name }}</h3>
                             <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full
-                                {{ $product->pivot->visible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $product->pivot->visible ? 'Visible' : 'Masqué' }}
+                                {{ $product->visible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $product->visible ? 'Visible' : 'Masqué' }}
                             </span>
-                        </div>
+                                        </div>
 
-                        @if($product->category)
+                        @if($product->category_name)
                             <p class="text-sm text-gray-600 mb-2">
-                                <i class="fas fa-tag mr-1"></i>{{ $product->category->name }}
+                                <i class="fas fa-tag mr-1"></i>{{ $product->category_name }}
                             </p>
                         @endif
+
+
 
                         <div class="space-y-2 mb-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-gray-600">Prix Admin:</span>
-                                <span class="font-semibold text-gray-800">{{ number_format($product->pivot->prix_admin ?? 0, 0) }} MAD</span>
+                                <span class="font-semibold text-gray-800">{{ $product->prix_admin ?? 0 }} MAD</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-gray-600">Prix Vente:</span>
-                                <span class="font-semibold text-blue-600 text-lg">{{ number_format($product->pivot->prix_vente ?? 0, 0) }} MAD</span>
+                                <span class="font-semibold text-blue-600 text-lg">{{ $product->prix_vente ?? 0 }} MAD</span>
                             </div>
                         </div>
+
+
 
                         @if($product->couleur)
                             <div class="flex items-center mb-2">
@@ -197,37 +180,40 @@
                                     @if($isHexColor)
                                         <!-- Si c'est une couleur hex, afficher un petit indicateur -->
                                         <div class="w-2 h-2 rounded-full bg-white opacity-80"></div>
-                                    @endif
+                                @endif
                                 </div>
                                 <span class="ml-3 text-sm font-medium text-gray-800">{{ ucfirst($product->couleur) }}</span>
                             </div>
                         @endif
 
-                        @if($product->tailles && is_array($product->tailles))
+                        @php $sizes = is_array($product->tailles_parsed ?? null) ? $product->tailles_parsed : []; @endphp
+                        @if(!empty($sizes))
                             <div class="mb-2">
                                 <span class="text-sm text-gray-600">Tailles disponibles:</span>
                                 <div class="flex flex-wrap gap-1 mt-1">
-                                    @foreach($product->tailles as $taille)
+                                    @foreach($sizes as $taille)
                                         <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ $taille }}</span>
                                     @endforeach
                                 </div>
                             </div>
                         @endif
 
-                        <div class="text-xs text-gray-500 text-center pt-2 border-t border-gray-100">
-                            <i class="fas fa-calendar mr-1"></i>
-                            Assigné le {{ $product->pivot->created_at ? $product->pivot->created_at->format('d/m/Y') : 'N/A' }}
-                        </div>
+                        @if(!empty($product->pivot_created_at))
+                            <div class="text-xs text-gray-500 text-center pt-2 border-t border-gray-100">
+                                <i class="fas fa-calendar mr-1"></i>
+                                Assigné le {{ \Carbon\Carbon::parse($product->pivot_created_at)->format('d/m') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
-            @empty
+                    @empty
                 <div class="col-span-full text-center py-12">
                     <div class="text-gray-500">
-                        <i class="fas fa-box-open text-6xl mb-4 opacity-50"></i>
+                                    <i class="fas fa-box-open text-6xl mb-4 opacity-50"></i>
                         <h3 class="text-xl font-medium mb-2">Aucun produit assigné</h3>
                         <p class="text-gray-600">Vous n'avez pas encore de produits assignés par l'administrateur.</p>
-                    </div>
-                </div>
+        </div>
+    </div>
             @endforelse
         </div>
     </div>

@@ -84,9 +84,10 @@
                     <!-- Tailles -->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Tailles Disponibles *</label>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <p class="text-xs text-gray-500 mb-2">Cochez des tailles standards ou ajoutez des tailles personnalisées (ex: 37, 32 Bébé, ESPA 37).</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             @php
-                                $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '36', '38', '40', '42', '44', '46', '48', '50', '52'];
+                                $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
                             @endphp
                             @foreach($sizes as $size)
                                 <label class="flex items-center space-x-2 cursor-pointer">
@@ -97,6 +98,12 @@
                                 </label>
                             @endforeach
                         </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="customSizeInput" placeholder="Ex: ESPA 37, 32 Bébé" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <button type="button" onclick="addCustomSize()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Ajouter</button>
+                        </div>
+                        <div id="customSizesContainer" class="flex flex-wrap gap-2 mt-3"></div>
+                        <input type="hidden" id="customSizesHidden" name="tailles[]">
                         @error('tailles')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -196,6 +203,30 @@ document.addEventListener('DOMContentLoaded', function() {
         colorInput.dispatchEvent(new Event('change'));
     }
 });
+
+// Gestion des tailles personnalisées
+function addCustomSize() {
+    const input = document.getElementById('customSizeInput');
+    const container = document.getElementById('customSizesContainer');
+    let value = (input.value || '').trim();
+    if (!value) return;
+
+    // Normalisation simple (éviter les doublons exacts)
+    const exists = Array.from(document.querySelectorAll('input[name="tailles[]"]'))
+        .some(el => el.value.toLowerCase() === value.toLowerCase());
+    if (exists) {
+        input.value = '';
+        return;
+    }
+
+    // Créer un tag + checkbox masquée
+    const id = 'custom-size-' + Date.now();
+    const wrapper = document.createElement('span');
+    wrapper.className = 'inline-flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200';
+    wrapper.innerHTML = `<input type="checkbox" name="tailles[]" id="${id}" value="${value}" checked class="hidden"><span class="mr-2">${value}</span><button type="button" class="text-blue-600 hover:text-blue-800" onclick="this.parentElement.remove()">&times;</button>`;
+    container.appendChild(wrapper);
+    input.value = '';
+}
 </script>
 @endsection
 

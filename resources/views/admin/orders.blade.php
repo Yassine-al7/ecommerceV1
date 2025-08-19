@@ -46,6 +46,9 @@
                                     Statut
                                 </th>
                                 <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+                                    Commentaire
+                                </th>
+                                <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                     Prix Total
                                 </th>
                                 <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
@@ -55,7 +58,7 @@
                         </thead>
                         <tbody class="bg-white">
                             @forelse($orders as $order)
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50 {{ $order->commentaire ? 'bg-yellow-50 border-l-4 border-yellow-400' : '' }}">
                                     <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                                         <div class="text-sm leading-5 text-gray-900">{{ $order->reference }}</div>
                                     </td>
@@ -110,6 +113,18 @@
                                             </select>
                                         </form>
                                     </td>
+                                    <td class="px-6 py-4 border-b border-gray-200">
+                                        @if($order->commentaire)
+                                            <div class="max-w-xs">
+                                                <div class="text-sm text-gray-900 font-medium mb-1">Commentaire :</div>
+                                                <div class="text-sm text-gray-700 bg-yellow-50 p-2 rounded border-l-4 border-yellow-400">
+                                                    {{ $order->commentaire }}
+                                                </div>
+                                            </div>
+                                        @else
+                                            <span class="text-sm text-gray-500 italic">Aucun commentaire</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                                         <div class="text-sm leading-5 text-gray-900 font-medium">{{ number_format($order->prix_commande, 2) }} MAD</div>
                                     </td>
@@ -133,7 +148,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                                         Aucune commande trouvée
                                     </td>
                                 </tr>

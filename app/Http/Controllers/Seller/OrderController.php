@@ -8,108 +8,121 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index()
-    {
-        $query = Order::where('seller_id', auth()->id());
-        if (request('status')) {
-            $query->where('status', request('status'));
-        }
-        if (request('q')) {
-            $q = '%' . request('q') . '%';
-            $query->where(function ($s) use ($q) {
-                $s->where('reference', 'like', $q)
-                  ->orWhere('nom_client', 'like', $q)
-                  ->orWhere('ville', 'like', $q);
-            });
-        }
-        $orders = $query->latest()->paginate(15);
-        return view('seller.orders', compact('orders'));
-    }
+	public function index()
+	{
+		$allowedStatuses = ['en attente', 'en cours', 'livré', 'annulé'];
 
-    public function create()
-    {
-        // Produits assignés au vendeur
-        $products = auth()->user()->assignedProducts()->select('produits.id','produits.name')->get();
-        return view('seller.order_form', compact('products'));
-    }
+		$ordersQuery = Order::where('seller_id', auth()->id());
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'reference' => 'required|string',
-            'nom_client' => 'required|string',
-            'ville' => 'required|string',
-            'adresse_client' => 'required|string',
-            'numero_telephone_client' => 'required|string',
-            'product_id' => 'required|exists:produits,id',
-            'taille_produit' => 'required|string',
-            'quantite_produit' => 'required|integer|min:1',
-            'commentaire' => 'nullable|string',
-        ]);
-        // Calcul des prix à partir du pivot assigné
-        $product = auth()->user()->assignedProducts()->where('produits.id', $data['product_id'])->firstOrFail();
-        $prixVente = (float) optional($product->pivot)->prix_vente;
-        $data['prix_produit'] = $prixVente;
-        $data['prix_commande'] = $prixVente * (int) $data['quantite_produit'];
-        $data['produits'] = json_encode([['product_id' => $data['product_id'], 'qty' => (int) $data['quantite_produit']]]);
-        $data['status'] = 'en attente';
-        $data['seller_id'] = auth()->id();
-        Order::create($data);
+		if (request()->filled('status') && in_array(request('status'), $allowedStatuses, true)) {
+			$ordersQuery->where('status', request('status'));
+		}
 
-        return redirect()->route('seller.orders.index')->with('success', 'Commande créée (en attente).');
-    }
+		$orders = $ordersQuery->latest()->paginate(15);
+		return view('seller.orders', compact('orders'));
+	}
 
-    public function show($id)
-    {
-        $order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
-        return view('seller.order_detail', compact('order'));
-    }
+	public function create()
+	{
+		// Produits assignés au vendeur
+		$products = auth()->user()->assignedProducts()->select('produits.id','produits.name','produits.tailles')->get();
+		return view('seller.order_form', compact('products'));
+	}
 
-    public function edit($id)
-    {
-        $order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
-        $products = auth()->user()->assignedProducts()->select('produits.id','produits.name')->get();
-        return view('seller.order_form', compact('order','products'));
-    }
+	public function store(Request $request)
+	{
+		$data = $request->validate([
+			'reference' => 'required|string',
+			'nom_client' => 'required|string',
+			'ville' => 'required|string',
+			'adresse_client' => 'required|string',
+			'numero_telephone_client' => 'required|string',
+			'product_id' => 'required|exists:produits,id',
+			'taille_produit' => 'required|string|max:50',
+			'quantite_produit' => 'required|integer|min:1',
+			'commentaire' => 'nullable|string',
+		]);
+		// Calcul des prix à partir du pivot assigné
+		$product = auth()->user()->assignedProducts()->where('produits.id', $data['product_id'])->firstOrFail();
+		// Vérifier que la taille choisie fait partie des tailles définies par l'admin (si des tailles sont définies)
+		$availableRaw = $product->tailles;
+		$availableSizes = is_string($availableRaw) ? json_decode($availableRaw, true) : (array) $availableRaw;
+		$availableSizes = is_array($availableSizes) ? array_map(static function ($v) { return trim((string) $v); }, $availableSizes) : [];
+		$availableSizes = array_values(array_filter($availableSizes, static function ($v) { return $v !== ''; }));
+		if (!empty($availableSizes)) {
+			if (!in_array(trim((string)$data['taille_produit']), $availableSizes, true)) {
+				return back()->withErrors(['taille_produit' => 'Taille invalide pour ce produit'])->withInput();
+			}
+		}
+		// Si aucune taille n'est définie, accepter n'importe quelle taille (produit "taille unique")
+		$prixVente = (float) optional($product->pivot)->prix_vente;
+		$data['prix_produit'] = $prixVente;
+		$data['prix_commande'] = $prixVente * (int) $data['quantite_produit'];
+		$data['produits'] = json_encode([['product_id' => $data['product_id'], 'qty' => (int) $data['quantite_produit']]]);
+		$data['status'] = 'en attente';
+		$data['seller_id'] = auth()->id();
+		Order::create($data);
 
-    public function update(Request $request, $id)
-    {
-        $order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
+		return redirect()->route('seller.orders.index')->with('success', 'Commande créée (en attente).');
+	}
 
-        $data = $request->validate([
-            'reference' => 'required|string',
-            'nom_client' => 'required|string',
-            'ville' => 'required|string',
-            'adresse_client' => 'required|string',
-            'numero_telephone_client' => 'required|string',
-            'product_id' => 'required|exists:produits,id',
-            'taille_produit' => 'required|string',
-            'quantite_produit' => 'required|integer|min:1',
-            'commentaire' => 'nullable|string',
-        ]);
-        $product = auth()->user()->assignedProducts()->where('produits.id', $data['product_id'])->firstOrFail();
-        $prixVente = (float) optional($product->pivot)->prix_vente;
-        $data['prix_produit'] = $prixVente;
-        $data['prix_commande'] = $prixVente * (int) $data['quantite_produit'];
-        $data['produits'] = json_encode([['product_id' => $data['product_id'], 'qty' => (int) $data['quantite_produit']]]);
-        $order->update($data);
+	public function show($id)
+	{
+		$order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
+		return view('seller.order_detail', compact('order'));
+	}
 
-        return redirect()->route('seller.orders.index')->with('success', 'Commande mise à jour.');
-    }
+	public function edit($id)
+	{
+		$order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
+		$products = auth()->user()->assignedProducts()->select('produits.id','produits.name','produits.tailles')->get();
+		return view('seller.order_form', compact('order','products'));
+	}
 
-    public function updateStatus(Request $request, $id)
-    {
-        $order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
-        $order->status = $request->input('status');
-        $order->save();
+	public function update(Request $request, $id)
+	{
+		$order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
 
-        return redirect()->route('seller.orders.index')->with('success', 'Order status updated successfully.');
-    }
+		$data = $request->validate([
+			'reference' => 'required|string',
+			'nom_client' => 'required|string',
+			'ville' => 'required|string',
+			'adresse_client' => 'required|string',
+			'numero_telephone_client' => 'required|string',
+			'product_id' => 'required|exists:produits,id',
+			'taille_produit' => 'required|string|max:50',
+			'quantite_produit' => 'required|integer|min:1',
+			'commentaire' => 'nullable|string',
+		]);
+		$product = auth()->user()->assignedProducts()->where('produits.id', $data['product_id'])->firstOrFail();
+		// Vérifier que la taille choisie fait partie des tailles définies par l'admin (si des tailles sont définies)
+		$availableRaw = $product->tailles;
+		$availableSizes = is_string($availableRaw) ? json_decode($availableRaw, true) : (array) $availableRaw;
+		$availableSizes = is_array($availableSizes) ? array_map(static function ($v) { return trim((string) $v); }, $availableSizes) : [];
+		$availableSizes = array_values(array_filter($availableSizes, static function ($v) { return $v !== ''; }));
+		if (!empty($availableSizes)) {
+			if (!in_array(trim((string)$data['taille_produit']), $availableSizes, true)) {
+				return back()->withErrors(['taille_produit' => 'Taille invalide pour ce produit'])->withInput();
+			}
+		}
+		// Si aucune taille n'est définie, accepter n'importe quelle taille (produit "taille unique")
+		$prixVente = (float) optional($product->pivot)->prix_vente;
+		$data['prix_produit'] = $prixVente;
+		$data['prix_commande'] = $prixVente * (int) $data['quantite_produit'];
+		$data['produits'] = json_encode([['product_id' => $data['product_id'], 'qty' => (int) $data['quantite_produit']]]);
+		$order->update($data);
 
-    public function destroy($id)
-    {
-        $order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
-        $order->delete();
-        return redirect()->route('seller.orders.index')->with('success', 'Commande supprimée.');
-    }
+		return redirect()->route('seller.orders.index')->with('success', 'Commande mise à jour.');
+	}
+
+	public function updateStatus(Request $request, $id)
+	{
+		$order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
+		$order->status = $request->input('status');
+		$order->save();
+
+		return redirect()->route('seller.orders.index')->with('success', 'Order status updated successfully.');
+	}
+
+
 }
