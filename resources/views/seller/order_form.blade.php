@@ -167,6 +167,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Prix total commande (DH)</label>
                             <input type="text" id="prixTotalCommande" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-semibold text-center text-lg" readonly>
+                            <p class="text-xs text-gray-500 mt-1">💡 <strong>Note:</strong> Le prix total est la somme des prix de vente au client (pas × quantité)</p>
                         </div>
 
                         <div>
@@ -262,8 +263,8 @@ function updateDeliveryPrice() {
         prixLivraison.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold text-center';
     }
 
-    // Recalculer les totaux
-    calculateTotals();
+    // Recalculer les totaux avec protection
+    safeCalculateTotals();
 }
 
 function addProduct() {
@@ -353,6 +354,9 @@ function addProduct() {
     console.log(`🆕 Configuration des événements pour le nouveau Produit #${productCounter}`);
     setupProductEvents(newProduct);
 
+    // Calculer le prix d'achat initial pour le nouveau produit
+    calculatePurchasePrice(newProduct);
+
     // Mettre à jour l'affichage du bouton de suppression
     updateRemoveButtons();
 }
@@ -394,8 +398,8 @@ function removeProduct(button) {
     // Mettre à jour l'affichage du bouton de suppression
     updateRemoveButtons();
 
-    // Recalculer les totaux
-    calculateTotals();
+    // Recalculer les totaux avec protection
+    safeCalculateTotals();
 }
 
 function updateRemoveButtons() {
@@ -513,6 +517,9 @@ function setupProductEvents(productItem) {
             prixAchatDisplay.value = prixAdmin || '0.00';
             console.log('💰 Prix d\'achat affiché:', prixAchatDisplay.value);
 
+            // Calculer le prix d'achat total selon la quantité actuelle
+            calculatePurchasePrice(productItem);
+
                                             // Remplir les tailles
                     sizeSelect.innerHTML = '<option value="">Sélectionnez une taille</option>';
 
@@ -614,7 +621,7 @@ function setupProductEvents(productItem) {
             console.log('❌ Aucun produit sélectionné');
         }
 
-        calculateTotals();
+        safeCalculateTotals();
     });
 
     // Événement de sélection de taille
@@ -622,21 +629,24 @@ function setupProductEvents(productItem) {
         if (this.value) {
             console.log(`📏 Taille sélectionnée: ${this.value}`);
             // Recalculer les totaux quand la taille change
-            calculateTotals();
+            safeCalculateTotals();
         }
     });
 
     // Événements pour recalculer la marge
     quantityInput.addEventListener('input', () => {
         console.log('🔢 Quantité modifiée');
+        // Calculer d'abord le nouveau prix d'achat selon la quantité
+        calculatePurchasePrice(productItem);
+        // Puis recalculer la marge
         calculateProductMargin(productItem);
-        calculateTotals();
+        safeCalculateTotals();
     });
 
     prixVenteInput.addEventListener('input', () => {
         console.log('💵 Prix de vente modifié');
         calculateProductMargin(productItem);
-        calculateTotals();
+        safeCalculateTotals();
     });
 
     // Initialiser si un produit est déjà sélectionné
@@ -710,18 +720,18 @@ function calculateProductMargin(productItem) {
         return;
     }
 
-    const prixAchat = parseFloat(prixAchatDisplay.value) || 0;
+    const prixAchatTotal = parseFloat(prixAchatDisplay.value) || 0;
     const prixVente = parseFloat(prixVenteInput.value) || 0;
     const quantite = parseInt(quantityInput.value) || 1;
 
     console.log(`\n=== Calcul de la marge pour ce produit ===`);
-    console.log(`Prix d'achat: ${prixAchat} DH`);
-    console.log(`Prix de vente: ${prixVente} DH`);
+    console.log(`Prix d'achat total (prix admin × quantité): ${prixAchatTotal} DH`);
+    console.log(`Prix de vente au client: ${prixVente} DH`);
     console.log(`Quantité: ${quantite}`);
 
     // Vérifier que les valeurs sont valides
-    if (prixAchat <= 0) {
-        console.log('⚠️ Prix d\'achat invalide ou manquant');
+    if (prixAchatTotal <= 0) {
+        console.log('⚠️ Prix d\'achat total invalide ou manquant');
         margeProduitDisplay.value = '0.00';
         margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-semibold text-center';
         return;
@@ -741,21 +751,18 @@ function calculateProductMargin(productItem) {
         return;
     }
 
-    // Calcul selon la logique exacte de l'utilisateur
-    // Marge par pièce = Prix de vente - Prix d'achat
-    const margeParPiece = prixVente - prixAchat;
+    // NOUVELLE LOGIQUE : Marge = Prix de vente au client - Prix d'achat total
+    // Où Prix d'achat total = Prix admin × Quantité
+    const margeProduit = prixVente - prixAchatTotal;
 
-    // Marge totale sur toutes les pièces de ce produit
-    const margeTotalePieces = margeParPiece * quantite;
-
-    // Afficher la marge par produit (marge totale pour ce produit)
-    margeProduitDisplay.value = margeTotalePieces.toFixed(2);
+    // Afficher la marge pour ce produit
+    margeProduitDisplay.value = margeProduit.toFixed(2);
 
     // Changer la couleur selon la marge
-    if (margeTotalePieces > 0) {
+    if (margeProduit > 0) {
         margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-green-50 text-green-700 font-semibold text-center';
         console.log('✅ Marge positive (vert)');
-    } else if (margeTotalePieces < 0) {
+    } else if (margeProduit < 0) {
         margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-red-50 text-red-700 font-semibold text-center';
         console.log('❌ Marge négative (rouge)');
     } else {
@@ -763,9 +770,50 @@ function calculateProductMargin(productItem) {
         console.log('⚪ Marge nulle (gris)');
     }
 
-    console.log(`Marge par pièce: ${prixVente} - ${prixAchat} = ${margeParPiece.toFixed(2)} DH`);
-    console.log(`Marge totale pièces: ${margeParPiece.toFixed(2)} × ${quantite} = ${margeTotalePieces.toFixed(2)} DH`);
+    console.log(`Nouvelle logique de calcul:`);
+    console.log(`  Prix de vente au client: ${prixVente} DH`);
+    console.log(`  Prix d'achat total (prix admin × quantité): ${prixAchatTotal} DH`);
+    console.log(`  Marge produit: ${prixVente} - ${prixAchatTotal} = ${margeProduit.toFixed(2)} DH`);
     console.log(`Marge affichée: ${margeProduitDisplay.value} DH`);
+}
+
+// Nouvelle fonction pour calculer le prix d'achat selon la quantité
+function calculatePurchasePrice(productItem) {
+    const productSelect = productItem.querySelector('.product-select');
+    const quantityInput = productItem.querySelector('.quantity-input');
+    const prixAchatDisplay = productItem.querySelector('.prix-achat-display');
+
+    if (!productSelect || !quantityInput || !prixAchatDisplay) {
+        console.error('❌ Éléments manquants pour le calcul du prix d\'achat');
+        return;
+    }
+
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    if (!selectedOption || !selectedOption.value) {
+        console.log('⚠️ Aucun produit sélectionné');
+        prixAchatDisplay.value = '0.00';
+        return;
+    }
+
+    const prixAdmin = parseFloat(selectedOption.getAttribute('data-prix-admin')) || 0;
+    const quantite = parseInt(quantityInput.value) || 1;
+
+    console.log(`\n=== Calcul du prix d'achat ===`);
+    console.log(`Prix admin (prix unitaire): ${prixAdmin} DH`);
+    console.log(`Quantité: ${quantite}`);
+    console.log(`Prix d'achat total: ${prixAdmin} × ${quantite} = ${(prixAdmin * quantite).toFixed(2)} DH`);
+
+    // Calculer le prix d'achat total selon la quantité
+    const prixAchatTotal = prixAdmin * quantite;
+    prixAchatDisplay.value = prixAchatTotal.toFixed(2);
+
+    // Mettre à jour le label pour clarifier que c'est le prix total
+    const label = prixAchatDisplay.previousElementSibling;
+    if (label && label.tagName === 'LABEL') {
+        label.textContent = `Prix d'achat total (${prixAdmin} DH × ${quantite})`;
+    }
+
+    console.log(`✅ Prix d'achat mis à jour: ${prixAchatDisplay.value} DH`);
 }
 
 function calculateTotals() {
@@ -776,7 +824,7 @@ function calculateTotals() {
     console.log('=== Calcul des totaux de la commande ===');
     console.log(`Nombre de produits trouvés: ${productItems.length}`);
 
-        productItems.forEach((item, index) => {
+    productItems.forEach((item, index) => {
         // Vérifier que tous les éléments nécessaires existent
         const prixVenteInput = item.querySelector('.prix-vente-input');
         const quantityInput = item.querySelector('.quantity-input');
@@ -808,15 +856,19 @@ function calculateTotals() {
         console.log(`  Quantité: ${quantite}`);
         console.log(`  Marge produit: ${margeProduit} DH`);
 
-        const prixProduit = prixVente * quantite;
+        // 🚨 LOGIQUE MÉTIER CRITIQUE : Le prix total de la commande est le prix de vente au client
+        // ❌ PAS le prix × quantité, mais juste le prix de vente fixe
+        // ✅ C'est la logique métier demandée par l'utilisateur
+        const prixProduit = prixVente; // Prix fixe, pas multiplié par la quantité
         prixTotalCommande += prixProduit;
         margeTotaleProduits += margeProduit;
 
-        console.log(`  Prix total produit: ${prixProduit.toFixed(2)} DH`);
-        console.log(`  Marge totale produits (accumulé): ${margeTotaleProduits.toFixed(2)} DH`);
+        console.log(`  🎯 Prix total produit: ${prixProduit.toFixed(2)} DH (prix de vente fixe)`);
+        console.log(`  📊 Marge totale produits (accumulé): ${margeTotaleProduits.toFixed(2)} DH`);
+        console.log(`  💡 IMPORTANT: Quantité ${quantite} n'affecte PAS le prix total de la commande`);
     });
 
-        const prixLivraison = parseFloat(document.getElementById('prixLivraison')?.value) || 0;
+    const prixLivraison = parseFloat(document.getElementById('prixLivraison')?.value) || 0;
 
     // ✅ IMPORTANT: La livraison est calculée PAR COMMANDE, pas par produit
     // Une seule déduction du prix de livraison pour toute la commande
@@ -827,10 +879,10 @@ function calculateTotals() {
     const margeBeneficeTotale = margeTotaleProduits - prixLivraison;
 
     console.log(`\n=== Résumé des totaux ===`);
-    console.log(`Prix total commande: ${prixTotalCommande.toFixed(2)} DH`);
-    console.log(`Marge totale produits: ${margeTotaleProduits.toFixed(2)} DH`);
-    console.log(`Prix de livraison: ${prixLivraison.toFixed(2)} DH`);
-    console.log(`Marge bénéfice finale: ${margeTotaleProduits.toFixed(2)} - ${prixLivraison.toFixed(2)} = ${margeBeneficeTotale.toFixed(2)} DH`);
+    console.log(`🎯 Prix total commande: ${prixTotalCommande.toFixed(2)} DH (SANS multiplication par quantité)`);
+    console.log(`💰 Marge totale produits: ${margeTotaleProduits.toFixed(2)} DH`);
+    console.log(`📦 Prix de livraison: ${prixLivraison.toFixed(2)} DH`);
+    console.log(`💵 Marge bénéfice finale: ${margeTotaleProduits.toFixed(2)} - ${prixLivraison.toFixed(2)} = ${margeBeneficeTotale.toFixed(2)} DH`);
 
     // Mettre à jour les affichages
     const prixTotalElement = document.getElementById('prixTotalCommande');
@@ -838,14 +890,19 @@ function calculateTotals() {
 
     if (prixTotalElement) {
         prixTotalElement.value = prixTotalCommande.toFixed(2);
-        console.log(`Prix total commande mis à jour: ${prixTotalElement.value} DH`);
+        console.log(`✅ Prix total commande mis à jour: ${prixTotalElement.value} DH`);
+
+        // Vérification finale pour s'assurer que la logique est respectée
+        if (prixTotalCommande > 0) {
+            console.log(`🎯 CONFIRMATION: Prix total commande = ${prixTotalCommande.toFixed(2)} DH (prix de vente fixe)`);
+        }
     } else {
         console.error('❌ Élément prixTotalCommande non trouvé');
     }
 
     if (margeTotaleElement) {
         margeTotaleElement.value = margeBeneficeTotale.toFixed(2);
-        console.log(`Marge bénéfice totale mise à jour: ${margeTotaleElement.value} DH`);
+        console.log(`✅ Marge bénéfice totale mise à jour: ${margeTotaleElement.value} DH`);
 
         // Changer la couleur de la marge totale
         if (margeBeneficeTotale > 0) {
@@ -858,6 +915,45 @@ function calculateTotals() {
     } else {
         console.error('❌ Élément margeBeneficeTotale non trouvé');
     }
+}
+
+// Fonction de protection pour s'assurer que le prix total de la commande respecte la logique métier
+function protectPrixTotalCommande() {
+    const prixTotalElement = document.getElementById('prixTotalCommande');
+    if (!prixTotalElement) return;
+
+    // Vérifier que le prix total n'a pas été modifié incorrectement
+    const currentValue = parseFloat(prixTotalElement.value) || 0;
+
+    // Recalculer le prix total correct selon la logique métier
+    const productItems = document.querySelectorAll('.product-item');
+    let correctPrixTotal = 0;
+
+    productItems.forEach((item) => {
+        const prixVenteInput = item.querySelector('.prix-vente-input');
+        if (prixVenteInput) {
+            const prixVente = parseFloat(prixVenteInput.value) || 0;
+            // 🎯 LOGIQUE MÉTIER : Prix fixe, pas × quantité
+            correctPrixTotal += prixVente;
+        }
+    });
+
+    // Si le prix total a été modifié incorrectement, le corriger
+    if (Math.abs(currentValue - correctPrixTotal) > 0.01) {
+        console.log(`🚨 CORRECTION: Prix total incorrect détecté`);
+        console.log(`   Valeur actuelle: ${currentValue.toFixed(2)} DH`);
+        console.log(`   Valeur correcte: ${correctPrixTotal.toFixed(2)} DH`);
+        console.log(`   Correction appliquée`);
+
+        prixTotalElement.value = correctPrixTotal.toFixed(2);
+    }
+}
+
+// Appeler la protection après chaque mise à jour
+function safeCalculateTotals() {
+    calculateTotals();
+    // Protection supplémentaire après le calcul
+    setTimeout(protectPrixTotalCommande, 100);
 }
 
 function validateForm() {
@@ -1099,11 +1195,19 @@ function populateExistingProducts() {
                         console.log(`✅ Prix de vente défini: ${productData.prix_vente_client}`);
                     }
 
-                    // Recalculer les totaux
-                    calculateTotals();
+                    // Recalculer les totaux avec protection
+                    safeCalculateTotals();
                 }, 500);
             }
         });
+
+        // Calculer le prix d'achat pour tous les produits après le pré-remplissage
+        setTimeout(() => {
+            const productItems = document.querySelectorAll('.product-item');
+            productItems.forEach(item => {
+                calculatePurchasePrice(item);
+            });
+        }, 1500);
 
         console.log('✅ Pré-remplissage terminé');
     @endif
@@ -1170,6 +1274,9 @@ function forceRecalculate() {
         // Recalculer la marge pour ce produit seulement si tous les éléments sont présents
         if (prixAchatDisplay && prixVenteInput && quantityInput && margeProduitDisplay) {
             try {
+                // Calculer d'abord le prix d'achat selon la quantité
+                calculatePurchasePrice(item);
+                // Puis calculer la marge
                 calculateProductMargin(item);
             } catch (error) {
                 console.error(`❌ Erreur lors du calcul de la marge pour le produit #${index + 1}:`, error);
@@ -1179,9 +1286,9 @@ function forceRecalculate() {
         }
     });
 
-    // Recalculer les totaux
+    // Recalculer les totaux avec protection
     try {
-        calculateTotals();
+        safeCalculateTotals();
     } catch (error) {
         console.error('❌ Erreur lors du calcul des totaux:', error);
     }
@@ -1231,16 +1338,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Forcer la mise à jour complète des tailles
             setTimeout(() => {
                 firstProductSelect.dispatchEvent(new Event('change'));
+                // Calculer le prix d'achat après la mise à jour
+                calculatePurchasePrice(firstProductItem);
             }, 100);
         }
     } else {
         console.error('❌ Premier produit non trouvé');
     }
 
-        // Initialiser les calculs
-    setTimeout(() => {
-        calculateTotals();
-        console.log('✅ Calculs initiaux effectués');
+                // Initialiser les calculs
+        setTimeout(() => {
+            safeCalculateTotals();
+            console.log('✅ Calculs initiaux effectus');
 
         // Forcer un recalcul après un délai supplémentaire
         setTimeout(() => {

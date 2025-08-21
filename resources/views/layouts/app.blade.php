@@ -101,6 +101,9 @@
                                     <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-clock text-yellow-400"></i><span>En attente</span>
                                     </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-check text-blue-400"></i><span>Confirmé</span>
+                                    </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-check-circle text-green-400"></i><span>Livré</span>
                                     </a>
@@ -195,6 +198,9 @@
                                     </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-clock text-yellow-400 text-sm"></i><span class="text-xs md:text-sm">En attente</span>
+                                    </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-check text-blue-400 text-sm"></i><span class="text-xs md:text-sm">Confirmé</span>
                                     </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-check-circle text-green-400 text-sm"></i><span class="text-xs md:text-sm">Livré</span>

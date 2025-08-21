@@ -42,42 +42,67 @@
                         @enderror
                     </div>
 
-                    <!-- Couleur -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleur *</label>
-                        <div class="space-y-3">
-                            <!-- Color picker principal -->
-                            <div class="flex items-center space-x-3">
-                                <input type="color" name="couleur" value="{{ old('couleur', $product->couleur) }}" required
-                                       class="w-16 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm">
-                                <input type="text" name="couleur_text" value="{{ old('couleur_text', $product->couleur) }}" placeholder="Nom de la couleur (ex: Rouge, Bleu)"
-                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-
-                            <!-- Palette de couleurs prédéfinies -->
+                    <!-- Couleurs -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleurs *</label>
+                        <div class="space-y-4">
+                            <!-- Couleurs prédéfinies -->
                             <div>
-                                <p class="text-xs text-gray-600 mb-2">Couleurs populaires :</p>
-                                <div class="grid grid-cols-8 gap-2">
+                                <p class="text-xs text-gray-600 mb-3">Couleurs prédéfinies :</p>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     @php
-                                        $popularColors = [
-                                            '#ff0000' => 'Rouge', '#00ff00' => 'Vert', '#0000ff' => 'Bleu', '#ffff00' => 'Jaune',
-                                            '#ff00ff' => 'Magenta', '#00ffff' => 'Cyan', '#000000' => 'Noir', '#ffffff' => 'Blanc',
-                                            '#ffa500' => 'Orange', '#800080' => 'Violet', '#ffc0cb' => 'Rose', '#a52a2a' => 'Marron',
-                                            '#ff4500' => 'Orange-Rouge', '#32cd32' => 'Lime', '#4169e1' => 'Royal Blue', '#ffd700' => 'Or'
-                                        ];
+                                        $predefinedColors = ['Rouge', 'Vert', 'Bleu', 'Jaune', 'Noir', 'Blanc', 'Orange', 'Violet', 'Rose', 'Marron', 'Gris', 'Beige'];
+                                        $currentColors = is_string($product->couleur) ? json_decode($product->couleur, true) ?? [] : (is_array($product->couleur) ? $product->couleur : []);
                                     @endphp
-                                    @foreach($popularColors as $hex => $name)
-                                        <button type="button"
-                                                class="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-blue-500 transition-colors shadow-sm"
-                                                style="background-color: {{ $hex }}"
-                                                onclick="selectColor('{{ $hex }}', '{{ $name }}')"
-                                                title="{{ $name }}">
-                                        </button>
+                                    @foreach($predefinedColors as $colorName)
+                                        <label class="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50">
+                                            <input type="checkbox" name="couleurs[]" value="{{ $colorName }}"
+                                                   @checked(in_array($colorName, old('couleurs', $currentColors)))
+                                                   class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                            <span class="w-4 h-4 rounded-full border border-gray-300"
+                                                  style="background-color: {{ \App\Helpers\ColorHelper::generateColorFromName($colorName) }}"></span>
+                                            <span class="text-sm text-gray-700">{{ $colorName }}</span>
+                                        </label>
                                     @endforeach
                                 </div>
                             </div>
+
+                            <!-- Color picker pour couleurs personnalisées -->
+                            <div class="border-t pt-4">
+                                <p class="text-xs text-gray-600 mb-3">Ajouter une couleur personnalisée :</p>
+                                <div class="flex items-center space-x-3">
+                                    <input type="color" id="customColorPicker"
+                                           class="w-16 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm">
+                                    <input type="text" id="customColorName" placeholder="Nom de la couleur"
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <button type="button" onclick="addCustomColor()"
+                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                        <i class="fas fa-plus mr-2"></i>Ajouter
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Couleurs personnalisées ajoutées -->
+                            <div id="customColorsContainer" class="space-y-2">
+                                @if(is_array($currentColors))
+                                    @foreach($currentColors as $color)
+                                        @if(!in_array($color, $predefinedColors))
+                                            <div class="custom-color-item flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                                                <span class="w-4 h-4 rounded-full border border-gray-300"
+                                                      style="background-color: {{ \App\Helpers\ColorHelper::generateColorFromName($color) }}"></span>
+                                                <span class="text-sm text-gray-700">{{ $color }}</span>
+                                                <button type="button" onclick="removeCustomColor(this)"
+                                                        class="text-red-600 hover:text-red-800 ml-auto">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                <input type="hidden" name="couleurs[]" value="{{ $color }}">
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
+                            </div>
                         </div>
-                        @error('couleur')
+                        @error('couleurs')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -170,8 +195,51 @@
 </div>
 
 <script>
-// Mise à jour automatique du nom de couleur quand la couleur change
-document.querySelector('input[name="couleur"]').addEventListener('change', function() {
+// Gestion des couleurs personnalisées
+let customColorCounter = 0;
+
+// Ajouter une couleur personnalisée
+function addCustomColor() {
+    const colorPicker = document.getElementById('customColorPicker');
+    const colorNameInput = document.getElementById('customColorName');
+    const container = document.getElementById('customColorsContainer');
+
+    if (!colorNameInput.value.trim()) {
+        alert('Veuillez entrer un nom pour la couleur');
+        return;
+    }
+
+    const colorName = colorNameInput.value.trim();
+    const colorHex = colorPicker.value;
+
+    // Créer l'élément de couleur personnalisée
+    const colorItem = document.createElement('div');
+    colorItem.className = 'custom-color-item flex items-center space-x-2 p-2 bg-gray-50 rounded-lg';
+    colorItem.innerHTML = `
+        <span class="w-4 h-4 rounded-full border border-gray-300" style="background-color: ${colorHex}"></span>
+        <span class="text-sm text-gray-700">${colorName}</span>
+        <button type="button" onclick="removeCustomColor(this)" class="text-red-600 hover:text-red-800 ml-auto">
+            <i class="fas fa-times"></i>
+        </button>
+        <input type="hidden" name="couleurs[]" value="${colorName}">
+    `;
+
+    container.appendChild(colorItem);
+
+    // Réinitialiser les inputs
+    colorNameInput.value = '';
+    colorPicker.value = '#000000';
+
+    customColorCounter++;
+}
+
+// Supprimer une couleur personnalisée
+function removeCustomColor(button) {
+    button.closest('.custom-color-item').remove();
+}
+
+// Auto-remplir le nom de couleur quand la couleur change
+document.getElementById('customColorPicker').addEventListener('change', function() {
     const colorNames = {
         '#ff0000': 'Rouge', '#00ff00': 'Vert', '#0000ff': 'Bleu', '#ffff00': 'Jaune',
         '#ff00ff': 'Magenta', '#00ffff': 'Cyan', '#000000': 'Noir', '#ffffff': 'Blanc',
@@ -179,30 +247,40 @@ document.querySelector('input[name="couleur"]').addEventListener('change', funct
         '#ff4500': 'Orange-Rouge', '#32cd32': 'Lime', '#4169e1': 'Royal Blue', '#ffd700': 'Or'
     };
 
-    const colorInput = document.querySelector('input[name="couleur_text"]');
+    const colorNameInput = document.getElementById('customColorName');
     const selectedColor = this.value;
 
     if (colorNames[selectedColor]) {
-        colorInput.value = colorNames[selectedColor];
+        colorNameInput.value = colorNames[selectedColor];
     }
 });
 
-// Fonction pour sélectionner une couleur depuis la palette
-function selectColor(hex, name) {
-    document.querySelector('input[name="couleur"]').value = hex;
-    document.querySelector('input[name="couleur_text"]').value = name;
+// Validation du formulaire
+document.querySelector('form').addEventListener('submit', function(e) {
+    const selectedColors = document.querySelectorAll('input[name="couleurs[]"]:checked');
+    const customColors = document.querySelectorAll('#customColorsContainer input[name="couleurs[]"]');
 
-    // Mise à jour visuelle
-    document.querySelector('input[name="couleur"]').dispatchEvent(new Event('change'));
-}
+    if (selectedColors.length === 0 && customColors.length === 0) {
+        e.preventDefault();
+        alert('Veuillez sélectionner au moins une couleur');
+        return;
+    }
+});
 
-// Pré-remplir le nom de couleur au chargement si une couleur est sélectionnée
+// Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    const colorInput = document.querySelector('input[name="couleur"]');
-    const colorTextInput = document.querySelector('input[name="couleur_text"]');
+    console.log('Formulaire d\'édition des couleurs initialisé');
 
-    if (colorInput.value && !colorTextInput.value) {
-        colorInput.dispatchEvent(new Event('change'));
+    // Vérifier qu'au moins une couleur est sélectionnée
+    const selectedColors = document.querySelectorAll('input[name="couleurs[]"]:checked');
+    const customColors = document.querySelectorAll('#customColorsContainer input[name="couleurs[]"]');
+
+    if (selectedColors.length === 0 && customColors.length === 0) {
+        console.log('Aucune couleur sélectionnée, sélection automatique de la première couleur prédéfinie');
+        const firstCheckbox = document.querySelector('input[name="couleurs[]"]');
+        if (firstCheckbox) {
+            firstCheckbox.checked = true;
+        }
     }
 });
 </script>

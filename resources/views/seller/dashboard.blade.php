@@ -162,56 +162,58 @@
             </div>
 
             @if($recentOrders->count() > 0)
-                <div class="divide-y divide-gray-200">
-                    @foreach($recentOrders as $order)
-                        <div class="p-4 md:p-6 hover:bg-gray-50">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div class="flex items-center space-x-3 md:space-x-4">
-                                    <div class="flex-shrink-0">
-                                        @if($order->status == 'en attente')
-                                            <div class="w-8 h-8 md:w-10 md:h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-clock text-yellow-600 text-sm md:text-base"></i>
-                                            </div>
-                                        @elseif($order->status == 'livré')
-                                            <div class="w-8 h-8 md:w-10 md:h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-check-circle text-green-600 text-sm md:text-base"></i>
-                                            </div>
-                                        @else
-                                            <div class="w-8 h-8 md:w-10 md:h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-times-circle text-red-600 text-sm md:text-base"></i>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ $order->reference }}</p>
-                                        <p class="text-xs md:text-sm text-gray-500">{{ $order->nom_client }}</p>
-                                        <p class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') }}</p>
-                                    </div>
-                                </div>
-                                <div class="text-left sm:text-right">
-                                    <p class="text-sm font-semibold text-gray-900">{{ number_format($order->prix_commande, 0) }} MAD</p>
-                                    @if($order->status == 'livré')
-                                        @if($order->facturation_status == 'payé')
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                                <i class="fas fa-check-circle mr-1"></i>Payé
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                                <i class="fas fa-clock mr-1"></i>En attente
-                                            </span>
-                                        @endif
-                                    @else
-                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full
-                                            @if($order->status == 'en attente') bg-yellow-100 text-yellow-800
-                                            @elseif($order->status == 'livré') bg-green-100 text-green-800
-                                            @else bg-red-100 text-red-800 @endif">
-                                            {{ ucfirst($order->status) }}
+                <!-- Tableau synchronisé avec seller/orders -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Référence
+                                </th>
+                                <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Client
+                                </th>
+                                <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Ville
+                                </th>
+                                <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Statut
+                                </th>
+                                <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Prix Total
+                                </th>
+                                <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Date
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($recentOrders as $order)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ $order->reference }}
+                                    </td>
+                                    <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $order->nom_client }}
+                                    </td>
+                                    <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $order->ville }}
+                                    </td>
+                                    <td class="px-4 md:px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full {{ getStatusColor($order->status) }}">
+                                            {{ getStatusLabel($order->status) }}
                                         </span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
+                                    </td>
+                                    <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ number_format($order->prix_commande, 2) }} MAD
+                                    </td>
+                                    <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $order->created_at->format('d/m/Y H:i') }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             @else
                 <div class="text-center py-8 md:py-12">
@@ -228,4 +230,77 @@
         </div>
     </div>
 </div>
+
+@php
+function getStatusColor($status) {
+    // Normaliser le statut pour la comparaison
+    $normalizedStatus = strtolower(trim($status));
+    $normalizedStatus = str_replace(['é', 'è', 'à', 'É', 'È', 'À'], ['e', 'e', 'a', 'e', 'e', 'a'], $normalizedStatus);
+
+    switch ($normalizedStatus) {
+        case 'en attente':
+        case 'en attente':
+            return 'bg-yellow-100 text-yellow-800';
+        case 'confirme':
+        case 'confirme':
+            return 'bg-blue-100 text-blue-800';
+        case 'en livraison':
+        case 'en livraison':
+            return 'bg-blue-100 text-blue-800';
+        case 'livre':
+        case 'livre':
+            return 'bg-green-100 text-green-800';
+        case 'annule':
+        case 'annule':
+            return 'bg-red-100 text-red-800';
+        case 'retourne':
+        case 'retourne':
+            return 'bg-red-100 text-red-800';
+        case 'pas de reponse':
+        case 'pas de reponse':
+            return 'bg-orange-100 text-orange-800';
+        case 'en cours':
+        case 'en cours':
+            return 'bg-purple-100 text-purple-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
+}
+
+function getStatusLabel($status) {
+    // Normaliser le statut pour la comparaison
+    $normalizedStatus = strtolower(trim($status));
+    $normalizedStatus = str_replace(['é', 'è', 'à', 'É', 'È', 'À'], ['e', 'e', 'a', 'e', 'e', 'a'], $normalizedStatus);
+
+    switch ($normalizedStatus) {
+        case 'en attente':
+        case 'en attente':
+            return 'En attente';
+        case 'confirme':
+        case 'confirme':
+            return 'Confirmé';
+        case 'en livraison':
+        case 'en livraison':
+            return 'En livraison';
+        case 'livre':
+        case 'livre':
+            return 'Livré';
+        case 'annule':
+        case 'annule':
+            return 'Annulé';
+        case 'retourne':
+        case 'retourne':
+            return 'Retourné';
+        case 'pas de reponse':
+        case 'pas de reponse':
+            return 'Pas de réponse';
+        case 'en cours':
+        case 'en cours':
+            return 'En cours';
+        default:
+            return ucfirst($status);
+    }
+}
+@endphp
+
 @endsection

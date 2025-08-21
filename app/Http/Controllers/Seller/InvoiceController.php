@@ -28,31 +28,41 @@ class InvoiceController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        // Calculer les statistiques
+        // Calculer les statistiques selon la nouvelle logique
         $totalRevenue = Order::where('seller_id', $userId)
             ->where('status', 'livré')
             ->sum('prix_commande');
 
-        $totalPaid = Order::where('seller_id', $userId)
+        // Carte "Payé" = Total des montants de bénéfice payés
+        $totalBeneficesPayes = Order::where('seller_id', $userId)
             ->where('status', 'livré')
             ->where('facturation_status', 'payé')
-            ->sum('prix_commande');
+            ->sum('marge_benefice');
 
+        // Carte "Total Bénéfices" = Montant total de bénéfice non payé
+        $totalBeneficesNonPayes = Order::where('seller_id', $userId)
+            ->where('status', 'livré')
+            ->where(function($query) {
+                $query->where('facturation_status', 'non payé')
+                      ->orWhereNull('facturation_status');
+            })
+            ->sum('marge_benefice');
+
+        // Garder totalPending pour compatibilité (montant des commandes non payées)
         $totalPending = Order::where('seller_id', $userId)
             ->where('status', 'livré')
-            ->where('facturation_status', 'non payé')
+            ->where(function($query) {
+                $query->where('facturation_status', 'non payé')
+                      ->orWhereNull('facturation_status');
+            })
             ->sum('prix_commande');
-
-        $totalBenefices = Order::where('seller_id', $userId)
-            ->where('status', 'livré')
-            ->sum('marge_benefice');
 
         return view('seller.invoices.index', compact(
             'orders',
             'totalRevenue',
-            'totalPaid',
+            'totalBeneficesPayes',
             'totalPending',
-            'totalBenefices'
+            'totalBeneficesNonPayes'
         ));
     }
 

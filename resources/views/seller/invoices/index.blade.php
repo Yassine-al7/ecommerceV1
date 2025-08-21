@@ -43,8 +43,8 @@
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Payé</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalPaid, 2) }} MAD</p>
+                        <p class="text-sm font-medium text-gray-600">Bénéfices Payés</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalBeneficesPayes, 2) }} MAD</p>
                     </div>
                 </div>
             </div>
@@ -55,8 +55,8 @@
                         <i class="fas fa-dollar-sign text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Bénéfices</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalBenefices, 2) }} MAD</p>
+                        <p class="text-sm font-medium text-gray-600">Bénéfices à Recevoir</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalBeneficesNonPayes, 2) }} MAD</p>
                     </div>
                 </div>
             </div>

@@ -113,8 +113,13 @@ class OrderController extends Controller
     }
     public function index()
     {
-        $orders = Order::latest()->paginate(20);
-        return view('admin.orders', compact('orders'));
+        $orders = Order::with('seller')->latest()->paginate(20);
+
+        // Calculer les statistiques
+        $allOrders = Order::all(); // Pour les statistiques complètes
+        $stats = \App\Helpers\OrderHelper::calculateOrderStats($allOrders);
+
+        return view('admin.orders', compact('orders', 'stats'));
     }
 
     public function show(Order $order)
@@ -125,7 +130,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:livré,retourné,pas de réponse,en attente,en livraison,refusé confirmé,non confirmé'
+            'status' => 'required|in:en attente,non confirmé,confirme,en livraison,livre,pas de réponse,annulé,retourné'
         ]);
 
         $order->update(['status' => $request->status]);

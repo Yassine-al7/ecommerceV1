@@ -67,7 +67,7 @@ class InvoiceController extends Controller
             SUM(prix_commande) as total_revenue,
             SUM(CASE WHEN facturation_status = "payé" THEN 1 ELSE 0 END) as paid_orders,
             SUM(CASE WHEN facturation_status = "non payé" OR facturation_status IS NULL THEN 1 ELSE 0 END) as unpaid_orders,
-            SUM(marge_benefice) as total_marge_benefice
+            SUM(CASE WHEN facturation_status = "non payé" OR facturation_status IS NULL THEN marge_benefice ELSE 0 END) as total_marge_benefice
         ')->first();
 
         return $stats;
@@ -133,9 +133,9 @@ class InvoiceController extends Controller
 
         $orders = $query->latest()->get();
 
-        // Calculer les totaux - toujours basé sur la marge bénéfice
+        // Calculer les totaux - marge bénéfice seulement pour les factures non payées
         $totalRevenue = $orders->sum('prix_commande');
-        $totalMargeBenefice = $orders->sum('marge_benefice');
+        $totalMargeBenefice = $orders->whereIn('facturation_status', ['non payé', null])->sum('marge_benefice');
 
         $totals = [
             'count' => $orders->count(),

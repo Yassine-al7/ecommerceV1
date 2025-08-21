@@ -13,7 +13,7 @@ class OrderController extends Controller
 
 	public function index()
 	{
-		$allowedStatuses = ['en attente', 'en cours', 'livré', 'annulé'];
+		$allowedStatuses = ['en attente', 'en cours', 'livré', 'annulé', 'confirme', 'en livraison', 'retourné', 'pas de réponse'];
 
 		$ordersQuery = Order::where('seller_id', auth()->id());
 
@@ -22,7 +22,46 @@ class OrderController extends Controller
 		}
 
 		$orders = $ordersQuery->latest()->paginate(15);
-		return view('seller.orders', compact('orders'));
+
+		// Calculer les statistiques complètes
+		$allOrders = Order::where('seller_id', auth()->id())->get();
+
+		// Fonction de normalisation des statuts
+		$normalizeStatus = function($status) {
+			$status = strtolower(trim($status));
+			$status = str_replace(['é', 'è', 'à', 'É', 'È', 'À'], ['e', 'e', 'a', 'e', 'e', 'a'], $status);
+			return $status;
+		};
+
+		$stats = [
+			'total' => $allOrders->count(),
+			'en_attente' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['en attente', 'en attente']);
+			})->count(),
+			'en_cours' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['en cours', 'en cours']);
+			})->count(),
+			'livre' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['livre', 'livre']);
+			})->count(),
+			'annule' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['annule', 'annule']);
+			})->count(),
+			'confirme' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['confirme', 'confirme']);
+			})->count(),
+			'en_livraison' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['en livraison', 'en livraison']);
+			})->count(),
+			'problematique' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['annule', 'annule', 'retourne', 'retourne']);
+			})->count(),
+			'pas_de_reponse' => $allOrders->filter(function($order) use ($normalizeStatus) {
+				return in_array($normalizeStatus($order->status), ['pas de reponse', 'pas de reponse']);
+			})->count(),
+		];
+
+		return view('seller.orders', compact('orders', 'stats'));
 	}
 
 	public function create()
@@ -119,8 +158,10 @@ class OrderController extends Controller
 			// Marge totale sur toutes les pièces de ce produit
 			$margeTotalePieces = $margeParPiece * (int) $productData['quantite_produit'];
 
-			// Prix total pour ce produit
-			$prixProduit = $prixVenteClient * (int) $productData['quantite_produit'];
+			// 🎯 NOUVELLE LOGIQUE MÉTIER : Prix total de la commande = Prix de vente fixe
+			// ❌ PAS le prix × quantité, mais juste le prix de vente au client
+			// ✅ C'est la logique métier demandée par l'utilisateur
+			$prixProduit = $prixVenteClient; // Prix fixe, pas multiplié par la quantité
 
 			$prixTotalCommande += $prixProduit;
 			$margeTotaleProduits += $margeTotalePieces;
@@ -158,7 +199,7 @@ class OrderController extends Controller
 
 		$order = Order::create($orderData);
 
-		return redirect()->route('seller.orders.index')->with('success', "Commande créée avec succès ! Référence: {$order->reference}, Prix total: " . number_format($prixTotalCommande, 2) . " DH, Marge produits: " . number_format($margeTotaleProduits, 2) . " DH, Marge finale: " . number_format($margeBenefice, 2) . " DH");
+		return redirect()->route('seller.orders.index')->with('success', "Commande créée avec succès ! Référence: {$order->reference}, Prix total: " . number_format($prixTotalCommande, 2) . " DH (prix de vente fixe, pas × quantité), Marge produits: " . number_format($margeTotaleProduits, 2) . " DH, Marge finale: " . number_format($margeBenefice, 2) . " DH");
 	}
 
 	public function show($id)
@@ -251,7 +292,7 @@ class OrderController extends Controller
 
 			$margeParPiece = $prixVenteClient - $prixVenteVendeur;
 			$margeTotalePieces = $margeParPiece * (int) $productData['quantite_produit'];
-			$prixProduit = $prixVenteClient * (int) $productData['quantite_produit'];
+			$prixProduit = $prixVenteClient; // Prix fixe, pas multiplié par la quantité
 
 			$prixTotalCommande += $prixProduit;
 			$margeTotaleProduits += $margeTotalePieces;

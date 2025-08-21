@@ -42,8 +42,12 @@ class DashboardController extends Controller
 
         // Statistiques des commandes
         $totalOrders = $query->count();
-        $totalRevenue = $query->sum('prix_commande');
-        $totalProfit = $query->sum('marge_benefice');
+
+        // Chiffre d'affaires = Total des commandes livrées uniquement
+        $totalRevenue = $query->where('status', 'livré')->sum('prix_commande');
+
+        // Marge bénéfice = Total des marges des commandes livrées uniquement
+        $totalProfit = $query->where('status', 'livré')->sum('marge_benefice');
 
         // Statistiques des vendeurs
         $totalSellers = User::where('role', 'seller')->count();
