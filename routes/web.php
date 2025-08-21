@@ -15,7 +15,6 @@ use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/statistics', [App\Http\Controllers\Admin\StatisticsController::class, 'index'])->name('statistics.index');
-    Route::get('/sellers', [App\Http\Controllers\Admin\SellerController::class, 'index'])->name('sellers.index');
     Route::get('/stock', [App\Http\Controllers\Admin\StatisticsController::class, 'stock'])->name('stock.index');
 
     // Admin Management
@@ -25,6 +24,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('products', AdminProductController::class);
     Route::get('/products/{product}/assign', [AdminProductController::class, 'assignForm'])->name('products.assign');
     Route::post('/products/{product}/assign', [AdminProductController::class, 'assignStore'])->name('products.assign.store');
+
+    // Categories CRUD
+    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
+
+    // Users Management
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::patch('/users/{user}/toggle-status', [App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     // Orders CRUD
     Route::resource('orders', AdminOrderController::class);
@@ -72,13 +78,25 @@ Route::get('/csrf-token', function () {
 Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Seller Routes (require verified email)
-Route::middleware(['auth', 'verified'])->prefix('seller')->name('seller.')->group(function () {
+Route::middleware(['auth', 'verified', 'seller'])->prefix('seller')->name('seller.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Seller\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/products', [App\Http\Controllers\Seller\ProductController::class, 'index'])->name('products.index');
     Route::resource('orders', App\Http\Controllers\Seller\OrderController::class)->except(['destroy']);
+    Route::resource('invoices', App\Http\Controllers\Seller\InvoiceController::class)->only(['index', 'show']);
 });
 
 // Home redirect
 Route::middleware('auth')->get('/home', function () {
     return redirect()->route('seller.dashboard');
 })->name('home');
+
+// Route pour récupérer la configuration des prix de livraison
+Route::get('/api/delivery-config', function () {
+    return response()->json([
+        'default_price' => config('delivery.default_price', 0),
+        'prices' => config('delivery.prices', []),
+        'zones' => config('delivery.zones', []),
+        'cities' => config('delivery.cities', []),
+        'rules' => config('delivery.rules', []),
+    ]);
+});

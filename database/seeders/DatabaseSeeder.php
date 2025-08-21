@@ -11,12 +11,16 @@ use Database\Seeders\CategorySeeder;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
         $this->call([
             RoleSeeder::class,
-            CategorySeeder::class,
+            AdminSeeder::class, // Ajout du seeder admin temporaire
             UserSeeder::class,
+            CategorySeeder::class,
             ProductSeeder::class,
             SupplierSeeder::class,
         ]);

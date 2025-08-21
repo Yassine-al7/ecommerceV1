@@ -5,6 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facturation</title>
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/responsive.css') }}" rel="stylesheet">
+    <style>
+        /* Optimisations pour le tableau */
+        .table-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* En-tête fixe du tableau */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #f9fafb;
+        }
+
+        /* Optimisation des cellules */
+        .table-cell {
+            padding: 0.75rem 0.75rem;
+            vertical-align: top;
+        }
+
+        /* Responsive pour petits écrans */
+        @media (max-width: 768px) {
+            .table-container {
+                max-height: 60vh;
+            }
+
+            .table-cell {
+                padding: 0.5rem 0.5rem;
+            }
+        }
+
+        /* Animation de chargement */
+        .loading-opacity {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .loading-opacity.opacity-75 {
+            opacity: 0.75;
+        }
+    </style>
 </head>
 <body>
     @extends('layouts.app')
@@ -16,121 +78,106 @@ use Illuminate\Support\Facades\DB;
     @section('title', 'Gestion des Facturations')
 
     @section('content')
-    <div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gray-50 py-4 md:py-8">
+    <div class="container-responsive">
             <!-- En-tête -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Gestion des Facturations</h1>
-                <p class="text-gray-600">Gérez les paiements des vendeurs et le suivi des factures</p>
+            <div class="mb-6 md:mb-8">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 text-center md:text-left">Gestion des Facturations</h1>
+                <p class="text-gray-600 text-center md:text-left">Gérez les paiements des vendeurs et le suivi des factures</p>
             </div>
 
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
+                <div class="alert alert-success mb-6">
                     <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
                 </div>
             @endif
 
             <!-- Statistiques globales -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="card-grid mb-6 md:mb-8">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                     <div class="flex items-center">
-                        <div class="p-3 bg-blue-100 rounded-lg">
-                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        <div class="p-2 md:p-3 bg-blue-100 rounded-lg">
+                            <i class="fas fa-users text-blue-600 text-lg md:text-xl"></i>
                         </div>
-                        <div class="ml-4">
+                        <div class="ml-3 md:ml-4">
                             <p class="text-sm font-medium text-blue-600">Vendeurs Actifs</p>
-                            <p class="text-2xl font-bold text-blue-900" id="totalVendeurs">{{ $orders->pluck('seller_id')->unique()->count() }}</p>
+                            <p class="text-xl md:text-2xl font-bold text-blue-900" id="totalVendeurs">{{ $orders->pluck('seller_id')->unique()->count() }}</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                     <div class="flex items-center">
-                        <div class="p-3 bg-green-100 rounded-lg">
-                            <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
+                        <div class="p-2 md:p-3 bg-green-100 rounded-lg">
+                            <i class="fas fa-shopping-cart text-green-600 text-lg md:text-xl"></i>
                         </div>
-                        <div class="ml-4">
+                        <div class="ml-3 md:ml-4">
                             <p class="text-sm font-medium text-green-600">Commandes Livrées</p>
-                            <p class="text-2xl font-bold text-green-900" id="totalCommandes">{{ $orders->total() }}</p>
+                            <p class="text-xl md:text-2xl font-bold text-green-900" id="totalCommandes">{{ $orders->total() }}</p>
                         </div>
                     </div>
                 </div>
 
-                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center">
-                    <div class="p-3 bg-yellow-100 rounded-lg">
-                        <i class="fas fa-money-bill-wave text-yellow-600 text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-yellow-600">Total Commandes</p>
-                        <p class="text-2xl font-bold text-yellow-900" id="totalVentes">{{ number_format($orders->sum('prix_commande'), 0) }} MAD</p>
-                        <p class="text-xs text-yellow-600">Chiffre d'affaires global</p>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center">
-                    <div class="p-3 bg-green-100 rounded-lg">
-                        <i class="fas fa-chart-line text-green-600 text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-green-600">Bénéfice Total Vendeurs</p>
-                        @php
-                            $totalCoutVendeurs = 0;
-                            foreach ($orders as $order) {
-                                if (is_array($order->produits)) {
-                                    foreach ($order->produits as $produit) {
-                                        if (is_array($produit) && isset($produit['product_id']) && isset($produit['qty'])) {
-                                            $productUser = DB::table('product_user')
-                                                ->where('product_id', $produit['product_id'])
-                                                ->where('user_id', $order->seller_id)
-                                                ->first();
-                                            if ($productUser) {
-                                                $totalCoutVendeurs += ($productUser->prix_admin ?? 0) * $produit['qty'];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            $totalBeneficeVendeurs = $orders->sum('prix_commande') - $totalCoutVendeurs;
-                            $pourcentageBenefice = $orders->sum('prix_commande') > 0 ? round(($totalBeneficeVendeurs / $orders->sum('prix_commande')) * 100, 1) : 0;
-                        @endphp
-                        <p class="text-2xl font-bold text-green-900" id="totalBenefices">{{ number_format($totalBeneficeVendeurs, 0) }} MAD</p>
-                        <p class="text-xs text-green-600">Marge: {{ $pourcentageBenefice }}%</p>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 md:p-3 bg-yellow-100 rounded-lg">
+                            <i class="fas fa-money-bill-wave text-yellow-600 text-lg md:text-xl"></i>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-sm font-medium text-yellow-600">Total Commandes</p>
+                            <p class="text-xl md:text-2xl font-bold text-yellow-900" id="totalVentes">{{ number_format($orders->sum('prix_commande'), 0) }} MAD</p>
+                            <p class="text-xs text-yellow-600">Chiffre d'affaires global</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 md:p-3 bg-green-100 rounded-lg">
+                            <i class="fas fa-chart-line text-green-600 text-lg md:text-xl"></i>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-sm font-medium text-green-600" id="margeBeneficeTitle">Total Marge Bénéfice</p>
+                            <p class="text-xl md:text-2xl font-bold text-green-900" id="totalBenefices">{{ number_format($orders->sum('marge_benefice'), 0) }} MAD</p>
+                            <p class="text-xs text-green-600" id="pourcentageMarge">
+                                @php
+                                    $totalRevenue = $orders->sum('prix_commande');
+                                    $totalMargeBenefice = $orders->sum('marge_benefice');
+                                    $pourcentageMarge = $totalRevenue > 0 ? round(($totalMargeBenefice / $totalRevenue) * 100, 1) : 0;
+                                @endphp
+                                Marge bénéfice globale: {{ $pourcentageMarge }}%
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Section des actions et filtres -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
                 <!-- Boutons d'action -->
-                <div class="flex flex-wrap items-center justify-between mb-6">
-                    <div class="flex space-x-3">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                    <div class="actions-buttons">
                         <a href="{{ route('admin.invoices.export') }}"
-                           class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                           class="btn bg-green-600 hover:bg-green-700 text-white">
                             <i class="fas fa-download mr-2"></i>Exporter CSV
                         </a>
                         <button onclick="resetFilters()"
-                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                class="btn bg-gray-600 hover:bg-gray-700 text-white">
                             <i class="fas fa-refresh mr-2"></i>Réinitialiser
                         </button>
                     </div>
 
                     <!-- Résumé des filtres actifs -->
-                    <div class="text-sm text-gray-600">
+                    <div class="text-sm text-gray-600 text-center md:text-left">
                         <span id="filterSummary">Tous les vendeurs affichés</span>
                     </div>
                 </div>
 
                 <!-- Filtres -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Vendeur *</label>
-                        <select id="sellerFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="form-group">
+                        <label class="form-label">Vendeur *</label>
+                        <select id="sellerFilter" class="form-input">
                             <option value="">Tous les vendeurs</option>
                             @foreach($orders->pluck('seller_id')->unique() as $sellerId)
                                 @php $seller = App\Models\User::find($sellerId); @endphp
@@ -142,97 +189,128 @@ use Illuminate\Support\Facades\DB;
                         <p class="text-xs text-gray-500 mt-1">Sélectionnez un vendeur pour voir ses ventes spécifiques</p>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Statut de Paiement</label>
-                        <select id="paymentFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="form-group">
+                        <label class="form-label">Statut de Paiement</label>
+                        <select id="paymentFilter" class="form-input">
                             <option value="">Tous les statuts</option>
                             <option value="payé">Payé</option>
                             <option value="non payé">Non payé</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
+                    <div class="form-group">
+                        <label class="form-label">Recherche</label>
                         <input type="text" id="searchFilter" placeholder="Nom du client..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                               class="form-input">
                     </div>
                 </div>
             </div>
 
             <!-- Tableau des factures -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-800">Factures des Vendeurs</h2>
-                    <p class="text-sm text-gray-600 mt-1">
+                <div class="p-4 md:p-6 border-b border-gray-200">
+                    <h2 class="text-lg md:text-xl font-semibold text-gray-800 text-center md:text-left">Factures des Vendeurs</h2>
+                    <p class="text-sm text-gray-600 mt-1 text-center md:text-left">
                         <span id="tableSummary">Total: {{ $orders->total() }} commandes livrées</span>
                     </p>
-        </div>
+                    <!-- Note explicative sur les calculs -->
+                    <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 mr-2 mt-1"></i>
+                            <div class="text-xs text-blue-700">
+                                <p class="font-medium mb-1">Différence entre Marge Bénéfice et Bénéfice Réel Vendeur :</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li><strong>Marge Bénéfice :</strong> Prix de vente client - Prix d'achat vendeur (sans livraison)</li>
+                                    <li><strong>Bénéfice Réel Vendeur :</strong> Prix de vente client - Prix d'achat vendeur - Prix de livraison</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 @if($orders->count() > 0)
-            <div class="overflow-x-auto">
-                    <table class="w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/8">
+                <div class="table-responsive">
+                    <table class="w-full divide-y divide-gray-200 min-w-full">
+                        <thead class="sticky-header">
+                            <tr>
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                                     Vendeur
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/8">
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 hidden-mobile">
+                                    RIB
+                                </th>
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                                     Client
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48 hidden-mobile">
                                     Produits
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                                     Prix Commande
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
-                                    Coût Vendeur
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                                    Marge Bénéfice
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
-                                    Bénéfice Vendeur
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 hidden-mobile">
+                                    Bénéfice Réel Vendeur
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                                     Statut
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                                     Actions
                                 </th>
-                        </tr>
-                    </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="invoicesTableBody">
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="invoicesTableBody">
                         @foreach($orders as $order)
                                     <tr class="hover:bg-gray-50 invoice-row"
                                         data-seller-id="{{ $order->seller_id }}"
                                         data-payment-status="{{ $order->facturation_status ?? 'non payé' }}"
-                                        data-client-name="{{ strtolower($order->nom_client) }}">
-                                                                            <!-- Vendeur -->
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        data-client-name="{{ strtolower($order->nom_client) }}"
+                                        data-prix-commande="{{ $order->prix_commande }}"
+                                        data-marge-benefice="{{ $order->marge_benefice }}">
+                                            <!-- Vendeur -->
+                                    <td class="table-cell whitespace-nowrap">
                                             <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                                        <i class="fas fa-user text-blue-600"></i>
+                                                <div class="flex-shrink-0 h-8 w-8">
+                                                    <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                        <i class="fas fa-user text-blue-600 text-sm"></i>
                                                     </div>
                                                 </div>
-                                                <div class="ml-4">
+                                                <div class="ml-3">
                                                     <div class="text-sm font-medium text-gray-900">
                                                         {{ $order->seller->name ?? 'N/A' }}
                                                     </div>
-                                                    <div class="text-sm text-gray-500">
+                                                    <div class="text-xs text-gray-500 hidden-mobile">
                                                         ID: {{ $order->seller_id ?? 'N/A' }}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
 
-                                                                            <!-- Client -->
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                            <!-- RIB -->
+                                    <td class="table-cell whitespace-nowrap hidden-mobile">
+                                        <div class="text-sm text-gray-900">
+                                            @if($order->seller && $order->seller->rib)
+                                                <span class="font-mono bg-gray-100 px-2 py-1 rounded text-xs">
+                                                    {{ $order->seller->rib }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 text-xs">Non défini</span>
+                                            @endif
+                                        </div>
+                                    </td>
+
+                                            <!-- Client -->
+                                    <td class="table-cell whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ $order->nom_client }}</div>
-                                            <div class="text-sm text-gray-500">{{ $order->ville }}</div>
+                                            <div class="text-xs text-gray-500">{{ $order->ville }}</div>
                                         </td>
 
-                                                                                                                <!-- Produits -->
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">
+                                                                                        <!-- Produits -->
+                                    <td class="table-cell hidden-mobile">
+                                        <div class="text-sm text-gray-900 max-w-xs">
                                             @if(is_array($order->produits))
                                                 @foreach($order->produits as $produit)
                                                     @php
@@ -296,60 +374,47 @@ use Illuminate\Support\Facades\DB;
                                         </div>
                                     </td>
 
-                                                                                                                <!-- Prix Commande (ce que le client paie) -->
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                                                        <!-- Prix Commande (ce que le client paie) -->
+                                    <td class="table-cell whitespace-nowrap">
                                         <div class="text-sm font-semibold text-blue-600">
                                             {{ number_format($order->prix_commande, 0) }} MAD
                                         </div>
                                     </td>
 
-                                                                                                                                                <!-- Coût Vendeur (ce que le vendeur paie pour acheter) -->
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                                                                                                                                                @php
-                                            $coutVendeur = 0;
-                                            $quantiteTotale = 0;
+                                                                                                                                        <!-- Marge Bénéfice -->
+                                    <td class="table-cell whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <div class="font-semibold text-emerald-600">
+                                                {{ number_format($order->marge_benefice, 0) }} MAD
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Marge
+                                            </div>
+                                        </div>
+                                    </td>
 
-                                            // DÉCODER LE JSON EN TABLEAU
-                                            $produits = is_string($order->produits) ? json_decode($order->produits, true) : $order->produits;
+                                    <!-- Bénéfice Vendeur -->
+                                    <td class="table-cell whitespace-nowrap hidden-mobile">
+                                        @php
+                                            // Calculer le bénéfice réel du vendeur
+                                            $beneficeVendeur = 0;
+                                            $coutTotalVendeur = 0;
 
-                                            if (is_array($produits)) {
-                                                foreach ($produits as $produit) {
+                                            if (is_array($order->produits)) {
+                                                foreach ($order->produits as $produit) {
                                                     if (is_array($produit) && isset($produit['product_id']) && isset($produit['qty'])) {
-                                                        // Debug: afficher les valeurs exactes
-                                                        $productId = $produit['product_id'];
-                                                        $sellerId = $order->seller_id;
-                                                        $qty = $produit['qty'];
-
-                                                        // Récupérer le prix admin (ce que le vendeur paie pour acheter) depuis la table pivot
                                                         $productUser = DB::table('product_user')
-                                                            ->where('product_id', $productId)
-                                                            ->where('user_id', $sellerId)
+                                                            ->where('product_id', $produit['product_id'])
+                                                            ->where('user_id', $order->seller_id)
                                                             ->first();
-
-                                                        // Debug: afficher le résultat de la requête
                                                         if ($productUser) {
-                                                            $coutVendeur += ($productUser->prix_admin ?? 0) * $qty;
-                                                            $quantiteTotale += $qty;
+                                                            $coutTotalVendeur += ($productUser->prix_admin ?? 0) * $produit['qty'];
                                                         }
                                                     }
                                                 }
                                             }
-                                        @endphp
-                                        <div class="text-sm">
-                                            <div class="font-semibold text-orange-600">
-                                                {{ number_format($coutVendeur, 0) }} MAD
-                                            </div>
-                                            <div class="text-xs text-gray-500">
-                                                Qty: {{ $quantiteTotale }}
-                                            </div>
 
-                                        </div>
-                                    </td>
-
-                                    <!-- Bénéfice Vendeur (prix client - coût vendeur) -->
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        @php
-                                            $beneficeVendeur = $order->prix_commande - $coutVendeur; // Bénéfice du vendeur
+                                            $beneficeVendeur = $order->prix_commande - $coutTotalVendeur - ($order->prix_livraison ?? 0);
                                             $pourcentageBenefice = $order->prix_commande > 0 ? round(($beneficeVendeur / $order->prix_commande) * 100, 1) : 0;
                                         @endphp
                                         <div class="text-sm">
@@ -357,24 +422,24 @@ use Illuminate\Support\Facades\DB;
                                                 {{ number_format($beneficeVendeur, 0) }} MAD
                                             </div>
                                             <div class="text-xs text-gray-500">
-                                                Marge: {{ $pourcentageBenefice }}%
+                                                Bénéfice: {{ $pourcentageBenefice }}%
                                             </div>
                                         </div>
                                     </td>
 
-                                                                            <!-- Statut Paiement -->
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                            <!-- Statut Paiement -->
+                                    <td class="table-cell whitespace-nowrap">
                                             <span class="px-2 py-1 text-xs font-medium rounded-full
                                                 {{ $order->facturation_status == 'payé' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                                 {{ ucfirst($order->facturation_status ?? 'non payé') }}
                                             </span>
                                         </td>
 
-                                                                            <!-- Actions -->
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                            <!-- Actions -->
+                                    <td class="table-cell whitespace-nowrap text-sm font-medium">
                                             <button onclick="togglePaymentStatus({{ $order->id }})"
-                                                    class="text-blue-600 hover:text-blue-800 mr-3">
-                                                <i class="fas fa-edit"></i> Modifier
+                                                    class="btn btn-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100">
+                                                <i class="fas fa-edit"></i> <span class="hidden sm:inline">Modifier</span>
                                             </button>
 
                                             <!-- Formulaire de modification du statut (caché par défaut) -->
@@ -384,7 +449,7 @@ use Illuminate\Support\Facades\DB;
                                     @csrf
                                     @method('PATCH')
                                                 <select name="facturation_status" onchange="this.form.submit()"
-                                                        class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full">
+                                                        class="form-input text-sm">
                                                     <option value="non payé" @selected($order->facturation_status == 'non payé')>Non payé</option>
                                                     <option value="payé" @selected($order->facturation_status == 'payé')>Payé</option>
                                     </select>
@@ -397,16 +462,18 @@ use Illuminate\Support\Facades\DB;
             </div>
 
                     <!-- Pagination -->
-                    <div class="px-6 py-4 border-t border-gray-200">
-                {{ $orders->links() }}
+                    <div class="p-4 md:p-6 border-t border-gray-200">
+                        <div class="pagination">
+                            {{ $orders->links() }}
+                        </div>
                     </div>
                 @else
                     <!-- État vide -->
-                    <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+                    <div class="bg-white rounded-lg shadow-lg p-8 md:p-12 text-center">
                         <div class="text-gray-400 mb-4">
-                            <i class="fas fa-file-invoice text-6xl"></i>
+                            <i class="fas fa-file-invoice text-4xl md:text-6xl"></i>
                         </div>
-                        <h3 class="text-xl font-medium text-gray-800 mb-2">Aucune facture trouvée</h3>
+                        <h3 class="text-lg md:text-xl font-medium text-gray-800 mb-2">Aucune facture trouvée</h3>
                         <p class="text-gray-600">Il n'y a pas encore de commandes livrées à facturer.</p>
                     </div>
                 @endif
@@ -428,81 +495,187 @@ use Illuminate\Support\Facades\DB;
         // Écouteurs d'événements
         sellerFilter.addEventListener('change', filterInvoices);
         paymentFilter.addEventListener('change', filterInvoices);
-        searchFilter.addEventListener('input', filterInvoices);
+        searchFilter.addEventListener('input', debounce(filterInvoices, 300));
 
         // Filtrage initial
         filterInvoices();
     });
+
+    // Fonction de debounce pour la recherche
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
     function filterInvoices() {
         const selectedSeller = document.getElementById('sellerFilter').value;
         const selectedPayment = document.getElementById('paymentFilter').value;
         const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
 
+        // Debug: afficher les valeurs des filtres
+        console.log('Filtres appliqués:', {
+            seller: selectedSeller,
+            payment: selectedPayment,
+            search: searchTerm
+        });
+
+        // Mettre à jour les statistiques via AJAX
+        updateStatisticsViaAjax(selectedSeller, selectedPayment, searchTerm);
+
+        // Filtrage local pour l'affichage du tableau
+        filterTableLocally(selectedSeller, selectedPayment, searchTerm);
+    }
+
+    function updateStatisticsViaAjax(sellerId, paymentStatus, searchTerm) {
+        // Afficher un indicateur de chargement
+        showLoadingIndicator();
+
+        // Préparer les paramètres de la requête
+        const params = new URLSearchParams();
+        if (sellerId) params.append('seller_id', sellerId);
+        if (paymentStatus) params.append('payment_status', paymentStatus);
+        if (searchTerm) params.append('search', searchTerm);
+
+        // Appeler la route AJAX
+        fetch(`{{ route('admin.invoices.filtered-data') }}?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Mettre à jour les statistiques avec les données du serveur
+            updateStatistics(data.totals.count, data.totals.revenue, data.totals.marge_benefice);
+
+            // Mettre à jour le résumé
+            updateFilterSummary(sellerId, paymentStatus, searchTerm, data.totals.count);
+
+            // Cacher l'indicateur de chargement
+            hideLoadingIndicator();
+        })
+        .catch(error => {
+            console.error('Erreur lors de la mise à jour des statistiques:', error);
+            hideLoadingIndicator();
+
+            // Fallback au filtrage local
+            filterTableLocally(sellerId, paymentStatus, searchTerm);
+        });
+    }
+
+    function filterTableLocally(selectedSeller, selectedPayment, searchTerm) {
         const tableBody = document.getElementById('invoicesTableBody');
         const rows = tableBody.querySelectorAll('.invoice-row');
 
         let visibleCount = 0;
         let totalRevenue = 0;
-        let totalCost = 0;
-        let totalProfit = 0;
+        let totalMargeBenefice = 0;
 
-        rows.forEach(row => {
+        console.log('Début du filtrage local...');
+
+        rows.forEach((row, index) => {
             const sellerId = row.dataset.sellerId;
             const paymentStatus = row.dataset.paymentStatus;
             const clientName = row.dataset.clientName;
 
             // Vérifier les filtres
             const sellerMatch = !selectedSeller || sellerId === selectedSeller;
-            const paymentMatch = !selectedPayment || paymentStatus === selectedPayment || selectedPayment === 'Tous les statuts';
+
+            // Correction de la logique de comparaison des statuts de paiement
+            let paymentMatch = true;
+            if (selectedPayment) {
+                if (selectedPayment === 'non payé') {
+                    paymentMatch = paymentStatus === 'non payé' || paymentStatus === null || paymentStatus === '';
+                } else if (selectedPayment === 'payé') {
+                    paymentMatch = paymentStatus === 'payé';
+                }
+            }
+
             const searchMatch = !searchTerm || clientName.includes(searchTerm);
 
             if (sellerMatch && paymentMatch && searchMatch) {
                 row.style.display = 'table-row';
                 visibleCount++;
 
-                // Calculer les totaux pour les lignes visibles
-                const prixCommande = parseFloat(row.querySelector('td:nth-child(4) .text-blue-600').textContent.replace(' MAD', '').replace(',', ''));
-                const coutVendeur = parseFloat(row.querySelector('td:nth-child(5) .text-orange-600').textContent.replace(' MAD', '').replace(',', ''));
-                const beneficeVendeur = parseFloat(row.querySelector('td:nth-child(6) .text-green-600').textContent.replace(' MAD', '').replace(',', ''));
+                // Utiliser les données stockées dans les attributs data
+                const prixCommande = parseFloat(row.dataset.prixCommande);
+                const margeBenefice = parseFloat(row.dataset.margeBenefice);
 
                 totalRevenue += prixCommande; // Total des commandes
-                totalCost += coutVendeur; // Coût total des vendeurs
-                totalProfit += beneficeVendeur; // Bénéfice total des vendeurs
+                totalMargeBenefice += margeBenefice; // Total de la marge bénéfice (toujours)
+
+                console.log(`Ligne ${index + 1} visible:`, {
+                    client: clientName,
+                    status: paymentStatus,
+                    prix: prixCommande,
+                    marge: margeBenefice,
+                    selectedPayment: selectedPayment
+                });
             } else {
                 row.style.display = 'none';
+                console.log(`Ligne ${index + 1} masquée:`, {
+                    client: clientName,
+                    status: paymentStatus,
+                    sellerMatch,
+                    paymentMatch,
+                    searchMatch
+                });
             }
         });
 
-        // Mettre à jour les statistiques
-        updateStatistics(visibleCount, totalRevenue, totalCost, totalProfit);
+        console.log('Résultats du filtrage local:', {
+            visibleCount,
+            totalRevenue,
+            totalMargeBenefice,
+            selectedPayment: selectedPayment
+        });
 
-        // Mettre à jour le résumé
-        updateFilterSummary(selectedSeller, selectedPayment, searchTerm, visibleCount);
+        // Mettre à jour le résumé du tableau
+        document.getElementById('tableSummary').textContent = `Total: ${visibleCount} commandes livrées`;
+
+        // Mettre à jour les statistiques avec les données filtrées localement
+        updateStatistics(visibleCount, totalRevenue, totalMargeBenefice);
     }
 
-            function updateStatistics(visibleCount, totalRevenue, totalCost, totalProfit) {
+    function updateStatistics(visibleCount, totalRevenue, totalMargeBenefice) {
         // Mettre à jour le nombre de commandes
         document.getElementById('totalCommandes').textContent = visibleCount;
 
         // Mettre à jour le total des commandes (chiffre d'affaires)
         document.getElementById('totalVentes').textContent = numberFormat(totalRevenue) + ' MAD';
 
-        // Mettre à jour le coût total des vendeurs
-        document.getElementById('totalCoutVendeurs').textContent = numberFormat(totalCost) + ' MAD';
+        // Mettre à jour le total de la marge bénéfice
+        document.getElementById('totalBenefices').textContent = numberFormat(totalMargeBenefice) + ' MAD';
 
-        // Mettre à jour le bénéfice admin
-        document.getElementById('totalBenefices').textContent = numberFormat(totalProfit) + ' MAD';
+        // Mettre à jour le titre de la carte - toujours "Total Marge Bénéfice"
+        const margeTitle = document.getElementById('margeBeneficeTitle');
+        const selectedPayment = document.getElementById('paymentFilter').value;
 
-        // Calculer et mettre à jour le pourcentage de marge admin
-        const pourcentageMarge = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100 * 10) / 10 : 0;
-        const beneficesElement = document.getElementById('totalBenefices');
-        const parentDiv = beneficesElement.parentElement;
+        if (margeTitle) {
+            margeTitle.textContent = 'Total Marge Bénéfice';
+        }
+
+        // Calculer et mettre à jour le pourcentage de marge bénéfice
+        const pourcentageMarge = totalRevenue > 0 ? Math.round((totalMargeBenefice / totalRevenue) * 100 * 10) / 10 : 0;
 
         // Mettre à jour l'élément de pourcentage de marge
-        let margeElement = parentDiv.querySelector('.text-xs');
-        if (margeElement) {
-            margeElement.textContent = `Marge: ${pourcentageMarge}%`;
+        const pourcentageElement = document.getElementById('pourcentageMarge');
+        if (pourcentageElement) {
+            if (selectedPayment === 'non payé') {
+                pourcentageElement.textContent = `Marge bénéfice des commandes non payées: ${pourcentageMarge}%`;
+            } else if (selectedPayment === 'payé') {
+                pourcentageElement.textContent = `Marge bénéfice des commandes payées: ${pourcentageMarge}%`;
+            } else {
+                pourcentageElement.textContent = `Marge bénéfice globale: ${pourcentageMarge}%`;
+            }
         }
 
         // Mettre à jour le résumé du tableau
@@ -551,6 +724,22 @@ use Illuminate\Support\Facades\DB;
         } else {
             form.classList.add('hidden');
         }
+    }
+
+    function showLoadingIndicator() {
+        // Ajouter une classe de chargement aux cartes des statistiques
+        const statCards = document.querySelectorAll('.bg-white.rounded-lg.shadow-sm');
+        statCards.forEach(card => {
+            card.classList.add('loading-opacity', 'opacity-75');
+        });
+    }
+
+    function hideLoadingIndicator() {
+        // Retirer la classe de chargement des cartes des statistiques
+        const statCards = document.querySelectorAll('.bg-white.rounded-lg.shadow-sm');
+        statCards.forEach(card => {
+            card.classList.remove('loading-opacity', 'opacity-75');
+        });
     }
     </script>
     @endsection

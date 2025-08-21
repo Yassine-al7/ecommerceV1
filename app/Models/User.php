@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordNotification;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable // implements MustVerifyEmail  // TEMPORAIREMENT DÉSACTIVÉ
 {
     use HasFactory, Notifiable;
 
@@ -18,9 +18,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'numero_telephone',
+        'phone',
+        'address',
         'store_name',
         'rib',
         'email_verified_at',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -33,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 

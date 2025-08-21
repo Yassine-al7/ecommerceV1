@@ -14,10 +14,25 @@
             @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @if(isset($order))
+                <!-- Affichage de la référence existante en lecture seule -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Référence</label>
-                    <input type="text" name="reference" value="{{ old('reference', $order->reference ?? '') }}" class="mt-1 w-full border rounded px-3 py-2">
+                    <input type="text" value="{{ $order->reference }}" 
+                           class="mt-1 w-full border rounded px-3 py-2 bg-gray-50 text-gray-600" readonly>
+                    <p class="text-xs text-gray-500 mt-1">La référence ne peut pas être modifiée</p>
                 </div>
+                @else
+                <!-- Message pour nouvelle commande -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Référence</label>
+                    <div class="mt-1 w-full border rounded px-3 py-2 bg-blue-50 text-blue-700">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Générée automatiquement lors de la création
+                    </div>
+                    <p class="text-xs text-blue-600 mt-1">Format: CMD-YYYYMMDD-XXXX</p>
+                </div>
+                @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Nom client</label>
                     <input type="text" name="nom_client" value="{{ old('nom_client', $order->nom_client ?? '') }}" class="mt-1 w-full border rounded px-3 py-2">

@@ -13,65 +13,67 @@ class DashboardController extends Controller
     public function index()
     {
         $seller = Auth::user();
+        $sellerId = $seller->id;
 
-        // KPIs
+        // === STATISTIQUES PRODUITS ===
         $totalAssignedProducts = DB::table('product_user as pu')
             ->join('produits as p', 'pu.product_id', '=', 'p.id')
-            ->where('pu.user_id', $seller->id)
+            ->where('pu.user_id', $sellerId)
             ->count('pu.product_id');
 
-        $totalAdminProducts = DB::table('produits')->count();
+        // === STATISTIQUES COMMANDES ===
+        $totalSellerOrders = Order::where('seller_id', $sellerId)->count();
+        $ordersEnAttente = Order::where('seller_id', $sellerId)->where('status', 'en attente')->count();
+        $ordersLivrees = Order::where('seller_id', $sellerId)->where('status', 'livré')->count();
+        $ordersCancelled = Order::where('seller_id', $sellerId)->where('status', 'annulé')->count();
 
-        $totalSellerOrders = Order::where('seller_id', $seller->id)->count();
-
-        // Profit vendeur basé sur les commandes livrées
-        $deliveredOrders = Order::where('seller_id', $seller->id)
+        // === STATISTIQUES FINANCIÈRES ===
+        // Chiffre d'affaires (commandes livrées)
+        $totalRevenue = Order::where('seller_id', $sellerId)
             ->where('status', 'livré')
+            ->sum('prix_commande');
+
+
+
+        // Paiements reçus et en attente (basés sur le bénéfice réel du vendeur)
+        $totalPaid = Order::where('seller_id', $sellerId)
+            ->where('status', 'livré')
+            ->where('facturation_status', 'payé')
+            ->sum('marge_benefice');
+
+        $totalPending = Order::where('seller_id', $sellerId)
+            ->where('status', 'livré')
+            ->where(function($q) {
+                $q->where('facturation_status', 'non payé')
+                  ->orWhereNull('facturation_status');
+            })
+            ->sum('marge_benefice');
+
+        // === COMMANDES RÉCENTES ===
+        $recentOrders = Order::where('seller_id', $sellerId)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
             ->get();
 
-        $sellerProfit = 0;
-        foreach ($deliveredOrders as $order) {
-            $decoded = json_decode($order->produits, true);
-            $orderCost = 0;
-            if (is_array($decoded)) {
-                foreach ($decoded as $item) {
-                    if (!isset($item['product_id']) || !isset($item['qty'])) continue;
-                    $pivot = DB::table('product_user')
-                        ->where('user_id', $seller->id)
-                        ->where('product_id', (int)$item['product_id'])
-                        ->first();
-                    $prixAdmin = $pivot ? (float)$pivot->prix_admin : 0;
-                    $orderCost += $prixAdmin * (int)$item['qty'];
-                }
-            }
-            $sellerProfit += max(0, (float)$order->prix_commande - $orderCost);
-        }
-        // Dernières commandes du vendeur
-        $recentOrders = Order::where('seller_id', $seller->id)
-            ->latest()
-            ->take(5)
-            ->get();
-
-        // Dernières assignations de produits au vendeur
-        $recentAssignments = DB::table('product_user as pu')
-            ->join('produits as p', 'pu.product_id', '=', 'p.id')
-            ->where('pu.user_id', $seller->id)
-            ->orderBy('pu.created_at', 'desc')
-            ->take(5)
-            ->get([
-                'p.name as product_name',
-                'p.tailles as product_sizes',
-                'pu.created_at as assigned_at'
-            ]);
+        // === COMMANDES PAR STATUT (pour le graphique) ===
+        $ordersByStatus = [
+            'en_attente' => $ordersEnAttente,
+            'livre' => $ordersLivrees,
+            'annule' => $ordersCancelled
+        ];
 
         return view('seller.dashboard', compact(
             'seller',
-            'recentOrders',
-            'recentAssignments',
             'totalAssignedProducts',
-            'totalAdminProducts',
             'totalSellerOrders',
-            'sellerProfit'
+            'ordersEnAttente',
+            'ordersLivrees',
+            'ordersCancelled',
+            'totalRevenue',
+            'totalPaid',
+            'totalPending',
+            'recentOrders',
+            'ordersByStatus'
         ));
     }
 }

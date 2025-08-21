@@ -28,8 +28,18 @@ class LoginController extends Controller
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Vérification du rôle et redirection appropriée
+            // Vérification du statut du compte
             $user = Auth::user();
+
+            // Vérifier si le compte est désactivé
+            if (!$user->is_active) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Votre compte a été désactivé par l\'administrateur. Contactez le support pour plus d\'informations.',
+                ])->onlyInput('email');
+            }
+
+            // Vérification du rôle et redirection appropriée
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             } elseif ($user->role === 'seller') {

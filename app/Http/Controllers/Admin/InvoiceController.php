@@ -65,10 +65,9 @@ class InvoiceController extends Controller
             COUNT(*) as total_orders,
             COUNT(DISTINCT seller_id) as total_sellers,
             SUM(prix_commande) as total_revenue,
-            SUM(prix_produit) as total_cost,
-            SUM(prix_commande - prix_produit) as total_profit,
-            COUNT(CASE WHEN facturation_status = "payé" THEN 1 END) as paid_orders,
-            COUNT(CASE WHEN facturation_status = "non payé" OR facturation_status IS NULL THEN 1 END) as unpaid_orders
+            SUM(CASE WHEN facturation_status = "payé" THEN 1 ELSE 0 END) as paid_orders,
+            SUM(CASE WHEN facturation_status = "non payé" OR facturation_status IS NULL THEN 1 ELSE 0 END) as unpaid_orders,
+            SUM(marge_benefice) as total_marge_benefice
         ')->first();
 
         return $stats;
@@ -85,14 +84,13 @@ class InvoiceController extends Controller
             ->selectRaw('
                 users.id,
                 users.name,
+                users.rib,
                 COUNT(*) as total_orders,
                 SUM(prix_commande) as total_revenue,
-                SUM(prix_produit) as total_cost,
-                SUM(prix_commande - prix_produit) as total_profit,
                 COUNT(CASE WHEN facturation_status = "payé" THEN 1 END) as paid_orders,
                 COUNT(CASE WHEN facturation_status = "non payé" OR facturation_status IS NULL THEN 1 END) as unpaid_orders
             ')
-            ->groupBy('users.id', 'users.name')
+            ->groupBy('users.id', 'users.name', 'users.rib')
             ->orderBy('total_revenue', 'desc')
             ->get();
 
@@ -135,12 +133,14 @@ class InvoiceController extends Controller
 
         $orders = $query->latest()->get();
 
-        // Calculer les totaux
+        // Calculer les totaux - toujours basé sur la marge bénéfice
+        $totalRevenue = $orders->sum('prix_commande');
+        $totalMargeBenefice = $orders->sum('marge_benefice');
+
         $totals = [
             'count' => $orders->count(),
-            'revenue' => $orders->sum('prix_commande'),
-            'cost' => $orders->sum('prix_produit'),
-            'profit' => $orders->sum('prix_commande') - $orders->sum('prix_produit')
+            'revenue' => $totalRevenue,
+            'marge_benefice' => $totalMargeBenefice
         ];
 
         return response()->json([

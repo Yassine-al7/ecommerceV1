@@ -19,10 +19,8 @@ class Order extends Model
         'adresse_client',
         'numero_telephone_client',
         'produits',
-        'taille_produit',
-        'quantite_produit',
-        'prix_produit',
         'prix_commande',
+        'marge_benefice',
         'status',
         'facturation_status',
         'commentaire',
@@ -30,8 +28,8 @@ class Order extends Model
 
     protected $casts = [
         'produits' => 'array',
-        'prix_produit' => 'decimal:2',
         'prix_commande' => 'decimal:2',
+        'marge_benefice' => 'decimal:2',
     ];
 
     public function seller()
@@ -43,4 +41,9 @@ class Order extends Model
     {
         return $this->belongsToMany(Product::class, 'produits');
     }
+
+    /**
+     * Relation avec la facturation (utilise le champ facturation_status)
+     */
+
 }

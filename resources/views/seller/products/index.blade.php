@@ -11,56 +11,7 @@
             <p class="text-gray-600">Consultez tous les produits qui vous ont été assignés par l'administrateur</p>
         </div>
 
-        <!-- Statistiques rapides -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="p-3 bg-blue-100 rounded-lg">
-                        <i class="fas fa-box text-blue-600 text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-blue-600">Total Produits</p>
-                        <p class="text-2xl font-bold text-blue-900">{{ $products->count() }}</p>
-                    </div>
-        </div>
-    </div>
 
-            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="p-3 bg-green-100 rounded-lg">
-                        <i class="fas fa-eye text-green-600 text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-green-600">Visibles</p>
-                        <p class="text-2xl font-bold text-green-900">{{ $products->where('visible', 1)->count() }}</p>
-                    </div>
-                </div>
-        </div>
-
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="p-3 bg-yellow-100 rounded-lg">
-                        <i class="fas fa-eye-slash text-yellow-600 text-xl"></i>
-        </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-yellow-600">Masqués</p>
-                        <p class="text-2xl font-bold text-yellow-900">{{ $products->where('visible', 0)->count() }}</p>
-        </div>
-        </div>
-    </div>
-
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
-                <div class="flex items-center">
-                    <div class="p-3 bg-purple-100 rounded-lg">
-                        <i class="fas fa-tags text-purple-600 text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-purple-600">Valeur Totale</p>
-                        <p class="text-2xl font-bold text-purple-900">{{ number_format($products->sum('prix_vente'), 0) }} MAD</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
     @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
@@ -68,40 +19,84 @@
         </div>
     @endif
 
+        <!-- Cartes de Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-boxes text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Produits</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ $products->count() }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-coins text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Valeur Totale</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format($products->sum('prix_vente'), 2) }} MAD</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-tags text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Catégories</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ $products->pluck('category.name')->unique()->filter()->count() }}</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
         <!-- Filtres -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form method="GET" action="{{ route('seller.products.index') }}" id="filterForm" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie</label>
-                    <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select name="category" id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Toutes les catégories</option>
-                        @foreach($products->pluck('category.name')->unique()->filter() as $categoryName)
-                            <option value="{{ $categoryName }}">{{ $categoryName }}</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->name }}" {{ request('category') == $category->name ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Visibilité</label>
-                    <select id="visibilityFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Tous</option>
-                        <option value="visible">Visibles</option>
-                        <option value="hidden">Masqués</option>
-                    </select>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
-                    <input type="text" id="searchFilter" placeholder="Nom du produit..."
+                    <input type="text" name="search" id="searchFilter" placeholder="Nom du produit..." value="{{ request('search') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
-        </div>
+
+            <!-- Boutons d'action des filtres -->
+            <div class="flex justify-between items-center mt-4">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-filter mr-2"></i>Appliquer les filtres
+                </button>
+                <a href="{{ route('seller.products.index') }}" class="text-gray-600 hover:text-gray-800 font-medium">
+                    <i class="fas fa-times mr-2"></i>Réinitialiser
+                </a>
+            </div>
+        </form>
 
         <!-- Grille des produits -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productsGrid">
                         @forelse($products as $product)
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden product-card"
-                     data-category="{{ $product->category_name ?? 'Sans catégorie' }}"
-                     data-visibility="{{ $product->visible ? 'visible' : 'hidden' }}"
+                     data-category="{{ $product->category->name ?? 'Sans catégorie' }}"
                      data-name="{{ strtolower($product->name) }}">
 
                                         <!-- Image du produit -->
@@ -134,9 +129,9 @@
                             </span>
                                         </div>
 
-                        @if($product->category_name)
+                        @if($product->category)
                             <p class="text-sm text-gray-600 mb-2">
-                                <i class="fas fa-tag mr-1"></i>{{ $product->category_name }}
+                                <i class="fas fa-tag mr-1"></i>{{ $product->category->name }}
                             </p>
                         @endif
 
@@ -220,38 +215,41 @@
 </div>
 
 <script>
+// Filtrage automatique sans rechargement de page
 document.addEventListener('DOMContentLoaded', function() {
     const categoryFilter = document.getElementById('categoryFilter');
-    const visibilityFilter = document.getElementById('visibilityFilter');
     const searchFilter = document.getElementById('searchFilter');
-    const productsGrid = document.getElementById('productsGrid');
-    const productCards = document.querySelectorAll('.product-card');
+    const filterForm = document.getElementById('filterForm');
 
-    function filterProducts() {
-        const selectedCategory = categoryFilter.value;
-        const selectedVisibility = visibilityFilter.value;
-        const searchTerm = searchFilter.value.toLowerCase();
+    // Fonction pour appliquer les filtres automatiquement
+    function applyFilters() {
+        // Construire l'URL avec les paramètres
+        const params = new URLSearchParams();
 
-        productCards.forEach(card => {
-            const category = card.dataset.category;
-            const visibility = card.dataset.visibility;
-            const name = card.dataset.name;
+        if (categoryFilter.value) params.append('category', categoryFilter.value);
+        if (searchFilter.value) params.append('search', searchFilter.value);
 
-            const categoryMatch = !selectedCategory || category === selectedCategory;
-            const visibilityMatch = !selectedVisibility || visibility === selectedVisibility;
-            const searchMatch = !searchTerm || name.includes(searchTerm);
-
-            if (categoryMatch && visibilityMatch && searchMatch) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+        // Rediriger vers la page avec les filtres
+        const url = new URL(window.location);
+        url.search = params.toString();
+        window.location.href = url.toString();
     }
 
-    categoryFilter.addEventListener('change', filterProducts);
-    visibilityFilter.addEventListener('change', filterProducts);
-    searchFilter.addEventListener('input', filterProducts);
+    // Événements pour filtrage automatique
+    categoryFilter.addEventListener('change', applyFilters);
+
+    // Recherche avec délai pour éviter trop de requêtes
+    let searchTimeout;
+    searchFilter.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 500);
+    });
+
+    // Empêcher la soumission du formulaire (on utilise le filtrage automatique)
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        applyFilters();
+    });
 });
 </script>
 

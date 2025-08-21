@@ -26,8 +26,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'couleur' => 'required|string',
-            'couleur_text' => 'nullable|string',
+            'couleurs' => 'required|array|min:1',
             'tailles' => 'required|array|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'quantite_stock' => 'required|integer|min:0',
@@ -36,8 +35,8 @@ class ProductController extends Controller
             'prix_vente' => 'required|numeric|min:0',
         ]);
 
-        // Utiliser le nom de couleur si fourni, sinon la valeur hex
-        $data['couleur'] = $data['couleur_text'] ?: $data['couleur'];
+        // Convertir les couleurs en JSON (pour stockage en base)
+        $data['couleur'] = json_encode($data['couleurs']);
 
         // Convertir les tailles en JSON
         $data['tailles'] = json_encode($data['tailles']);
@@ -65,8 +64,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'couleur' => 'required|string',
-            'couleur_text' => 'nullable|string',
+            'couleurs' => 'required|array|min:1',
             'tailles' => 'required|array|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'quantite_stock' => 'required|integer|min:0',
@@ -75,8 +73,8 @@ class ProductController extends Controller
             'prix_vente' => 'required|numeric|min:0',
         ]);
 
-        // Utiliser le nom de couleur si fourni, sinon la valeur hex
-        $data['couleur'] = $data['couleur_text'] ?: $data['couleur'];
+        // Convertir les couleurs en JSON (pour stockage en base)
+        $data['couleur'] = json_encode($data['couleurs']);
 
         // Convertir les tailles en JSON
         $data['tailles'] = json_encode($data['tailles']);
@@ -114,28 +112,51 @@ class ProductController extends Controller
     public function assignStore(Request $request, Product $product)
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'selected_sellers' => 'required|array|min:1',
+            'selected_sellers.*' => 'exists:users,id',
             'prix_admin' => 'nullable|numeric',
             'prix_vente' => 'nullable|numeric',
             'visible' => 'nullable|boolean',
+            'action' => 'required|in:assign,remove',
         ]);
+
+        $action = $data['action'];
+        $selectedSellers = $data['selected_sellers'];
 
         // Utiliser les prix du produit si non spécifiés
         $prixAdmin = $data['prix_admin'] ?? $product->prix_admin;
         $prixVente = $data['prix_vente'] ?? $product->prix_vente;
+        $visible = $data['visible'] ?? true;
 
-        // Assigner le produit au vendeur via la table pivot
-        $product->assignedSellers()->syncWithoutDetaching([
-            $data['user_id'] => [
-                'prix_admin' => $prixAdmin,
-                'prix_vente' => $prixVente,
-                'visible' => $data['visible'] ?? true,
-            ],
-        ]);
+        if ($action === 'assign') {
+            // Préparer les données pour l'assignation
+            $assignData = [];
+            foreach ($selectedSellers as $sellerId) {
+                $assignData[$sellerId] = [
+                    'prix_admin' => $prixAdmin,
+                    'prix_vente' => $prixVente,
+                    'visible' => $visible,
+                ];
+            }
 
-        // Note: vendeur_id n'est plus utilisé car nous utilisons la table pivot product_user
-        // pour gérer les relations entre produits et vendeurs
+            // Assigner les vendeurs sélectionnés
+            $product->assignedSellers()->syncWithoutDetaching($assignData);
 
-        return redirect()->route('admin.products.index')->with('success', 'Produit assigné au vendeur.');
+            $message = count($selectedSellers) > 1
+                ? count($selectedSellers) . ' vendeurs assignés avec succès !'
+                : 'Vendeur assigné avec succès !';
+
+            return redirect()->back()->with('success', $message);
+
+        } else { // action === 'remove'
+            // Désassigner les vendeurs sélectionnés
+            $product->assignedSellers()->detach($selectedSellers);
+
+            $message = count($selectedSellers) > 1
+                ? count($selectedSellers) . ' vendeurs désassignés avec succès !'
+                : 'Vendeur désassigné avec succès !';
+
+            return redirect()->back()->with('success', $message);
+        }
     }
 }

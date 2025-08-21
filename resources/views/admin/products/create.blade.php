@@ -41,42 +41,65 @@
                         @enderror
                     </div>
 
-                    <!-- Couleur -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleur *</label>
-                        <div class="space-y-3">
-                            <!-- Color picker principal -->
-                            <div class="flex items-center space-x-3">
-                                <input type="color" name="couleur" value="{{ old('couleur', '#000000') }}" required
-                                       class="w-16 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm">
-                                <input type="text" name="couleur_text" value="{{ old('couleur_text') }}" placeholder="Nom de la couleur (ex: Rouge, Bleu)"
-                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
+                    <!-- Couleurs -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleurs du Produit *</label>
+                        <p class="text-xs text-gray-500 mb-3">Sélectionnez des couleurs disponibles ou ajoutez vos propres couleurs personnalisées.</p>
 
-                            <!-- Palette de couleurs prédéfinies -->
-                            <div>
-                                <p class="text-xs text-gray-600 mb-2">Couleurs populaires :</p>
-                                <div class="grid grid-cols-8 gap-2">
-                                    @php
-                                        $popularColors = [
-                                            '#ff0000' => 'Rouge', '#00ff00' => 'Vert', '#0000ff' => 'Bleu', '#ffff00' => 'Jaune',
-                                            '#ff00ff' => 'Magenta', '#00ffff' => 'Cyan', '#000000' => 'Noir', '#ffffff' => 'Blanc',
-                                            '#ffa500' => 'Orange', '#800080' => 'Violet', '#ffc0cb' => 'Rose', '#a52a2a' => 'Marron',
-                                            '#ff4500' => 'Orange-Rouge', '#32cd32' => 'Lime', '#4169e1' => 'Royal Blue', '#ffd700' => 'Or'
-                                        ];
-                                    @endphp
-                                    @foreach($popularColors as $hex => $name)
-                                        <button type="button"
-                                                class="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-blue-500 transition-colors shadow-sm"
-                                                style="background-color: {{ $hex }}"
-                                                onclick="selectColor('{{ $hex }}', '{{ $name }}')"
-                                                title="{{ $name }}">
-                                        </button>
-                                    @endforeach
-                                </div>
+                        <!-- Couleurs prédéfinies avec checkboxes -->
+                        <div class="mb-4">
+                            <p class="text-sm font-medium text-gray-700 mb-3">Couleurs disponibles :</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                @php
+                                    $predefinedColors = [
+                                        'Rouge' => '#ff0000', 'Vert' => '#00ff00', 'Bleu' => '#0000ff', 'Jaune' => '#ffff00',
+                                        'Orange' => '#ffa500', 'Violet' => '#800080', 'Rose' => '#ffc0cb', 'Marron' => '#a52a2a',
+                                        'Noir' => '#000000', 'Blanc' => '#ffffff', 'Gris' => '#808080', 'Beige' => '#f5f5dc',
+                                        'Turquoise' => '#40e0d0', 'Or' => '#ffd700', 'Argent' => '#c0c0c0', 'Bordeaux' => '#800020'
+                                    ];
+                                @endphp
+                                @foreach($predefinedColors as $name => $hex)
+                                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-gray-200">
+                                        <input type="checkbox" name="couleurs[]" value="{{ $name }}"
+                                               @checked(in_array($name, old('couleurs', [])))
+                                               class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: {{ $hex }}"></div>
+                                        <span class="text-sm text-gray-700">{{ $name }}</span>
+                                    </label>
+                                @endforeach
                             </div>
                         </div>
-                        @error('couleur')
+
+                        <!-- Interface d'ajout de couleur personnalisée -->
+                        <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <p class="text-sm font-medium text-blue-800 mb-3">Ajouter une couleur personnalisée :</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="flex items-center space-x-2">
+                                    <input type="color" id="newColorPicker" class="w-12 h-10 border border-gray-300 rounded cursor-pointer">
+                                    <span class="text-sm text-gray-600">Couleur</span>
+                                </div>
+                                <div class="flex-1">
+                                    <input type="text" id="newColorName" placeholder="Nom de la couleur (ex: Corail, Indigo)"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <button type="button" onclick="addCustomColor()"
+                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                        <i class="fas fa-plus mr-2"></i>Ajouter
+                                    </button>
+                            </div>
+                        </div>
+
+                        <!-- Container des couleurs personnalisées ajoutées -->
+                        <div id="customColorsContainer" class="mb-4">
+                            <!-- Les couleurs personnalisées seront ajoutées ici dynamiquement -->
+                        </div>
+
+                        <!-- Inputs cachés pour les couleurs personnalisées -->
+                        <div id="hiddenCustomColorsInputs">
+                            <!-- Les inputs cachés seront ajoutés ici dynamiquement -->
+                        </div>
+
+                        @error('couleurs')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -100,7 +123,7 @@
                         </div>
                         <div class="flex items-center space-x-2">
                             <input type="text" id="customSizeInput" placeholder="Ex: ESPA 37, 32 Bébé" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <button type="button" onclick="addCustomSize()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Ajouter</button>
+                            <button type="button" onclick="addCustomSize()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Ajouter</button>
                         </div>
                         <div id="customSizesContainer" class="flex flex-wrap gap-2 mt-3"></div>
                         <input type="hidden" id="customSizesHidden" name="tailles[]">
@@ -115,7 +138,7 @@
                         <div class="relative">
                             <span class="absolute left-3 top-2 text-gray-500">MAD</span>
                             <input type="number" name="prix_admin" value="{{ old('prix_admin') }}" step="0.01" min="0" required
-                                   class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                   placeholder="0.00" class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         @error('prix_admin')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -128,7 +151,7 @@
                         <div class="relative">
                             <span class="absolute left-3 top-2 text-gray-500">MAD</span>
                             <input type="number" name="prix_vente" value="{{ old('prix_vente') }}" step="0.01" min="0" required
-                                   class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                   placeholder="0.00" class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         @error('prix_vente')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -168,50 +191,23 @@
 </div>
 
 <script>
-// Mise à jour automatique du nom de couleur quand la couleur change
-document.querySelector('input[name="couleur"]').addEventListener('change', function() {
-    const colorNames = {
-        '#ff0000': 'Rouge', '#00ff00': 'Vert', '#0000ff': 'Bleu', '#ffff00': 'Jaune',
-        '#ff00ff': 'Magenta', '#00ffff': 'Cyan', '#000000': 'Noir', '#ffffff': 'Blanc',
-        '#ffa500': 'Orange', '#800080': 'Violet', '#ffc0cb': 'Rose', '#a52a2a': 'Marron',
-        '#ff4500': 'Orange-Rouge', '#32cd32': 'Lime', '#4169e1': 'Royal Blue', '#ffd700': 'Or'
-    };
+// Système de couleurs SIMPLE : checkboxes seulement
+console.log('Système de couleurs simplifié chargé');
 
-    const colorInput = document.querySelector('input[name="couleur_text"]');
-    const selectedColor = this.value;
-
-    if (colorNames[selectedColor]) {
-        colorInput.value = colorNames[selectedColor];
-    }
-});
-
-// Fonction pour sélectionner une couleur depuis la palette
-function selectColor(hex, name) {
-    document.querySelector('input[name="couleur"]').value = hex;
-    document.querySelector('input[name="couleur_text"]').value = name;
-
-    // Mise à jour visuelle
-    document.querySelector('input[name="couleur"]').dispatchEvent(new Event('change'));
-}
-
-// Pré-remplir le nom de couleur au chargement si une couleur est sélectionnée
-document.addEventListener('DOMContentLoaded', function() {
-    const colorInput = document.querySelector('input[name="couleur"]');
-    const colorTextInput = document.querySelector('input[name="couleur_text"]');
-
-    if (colorInput.value && !colorTextInput.value) {
-        colorInput.dispatchEvent(new Event('change'));
-    }
-});
-
-// Gestion des tailles personnalisées
+// Fonction pour les tailles personnalisées
 function addCustomSize() {
     const input = document.getElementById('customSizeInput');
     const container = document.getElementById('customSizesContainer');
+
+    if (!input || !container) {
+        console.error('Éléments des tailles non trouvés');
+        return;
+    }
+
     let value = (input.value || '').trim();
     if (!value) return;
 
-    // Normalisation simple (éviter les doublons exacts)
+    // Vérifier si la taille existe déjà
     const exists = Array.from(document.querySelectorAll('input[name="tailles[]"]'))
         .some(el => el.value.toLowerCase() === value.toLowerCase());
     if (exists) {
@@ -219,14 +215,126 @@ function addCustomSize() {
         return;
     }
 
-    // Créer un tag + checkbox masquée
-    const id = 'custom-size-' + Date.now();
-    const wrapper = document.createElement('span');
-    wrapper.className = 'inline-flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200';
-    wrapper.innerHTML = `<input type="checkbox" name="tailles[]" id="${id}" value="${value}" checked class="hidden"><span class="mr-2">${value}</span><button type="button" class="text-blue-600 hover:text-blue-800" onclick="this.parentElement.remove()">&times;</button>`;
-    container.appendChild(wrapper);
+    // Créer l'élément visuel
+    const sizeElement = document.createElement('div');
+    sizeElement.className = 'flex items-center space-x-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-2';
+    sizeElement.innerHTML = `
+        <span class="text-sm font-medium text-blue-800">${value}</span>
+        <button type="button" onclick="this.parentElement.remove()"
+                class="text-red-500 hover:text-red-700 px-2 py-1">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    container.appendChild(sizeElement);
+
+    // Ajouter à l'input caché
+    const hiddenInput = document.getElementById('customSizesHidden');
+    if (hiddenInput) {
+        const newInput = document.createElement('input');
+        newInput.type = 'hidden';
+        newInput.name = 'tailles[]';
+        newInput.value = value;
+        hiddenInput.appendChild(newInput);
+    }
+
+    // Réinitialiser l'input
     input.value = '';
 }
+
+// Fonction pour les couleurs personnalisées
+function addCustomColor() {
+    const colorPicker = document.getElementById('newColorPicker');
+    const colorNameInput = document.getElementById('newColorName');
+    const customColorsContainer = document.getElementById('customColorsContainer');
+    const hiddenInputsContainer = document.getElementById('hiddenCustomColorsInputs');
+
+    if (!colorPicker || !colorNameInput || !customColorsContainer || !hiddenInputsContainer) {
+        console.error('Éléments des couleurs personnalisées non trouvés');
+        return;
+    }
+
+    const colorName = colorNameInput.value.trim();
+    const colorHex = colorPicker.value;
+
+    if (!colorName || !colorHex) {
+        alert('Veuillez sélectionner une couleur et entrer un nom.');
+        return;
+    }
+
+    // Vérifier si la couleur existe déjà
+    const exists = Array.from(document.querySelectorAll('input[name="couleurs[]"]'))
+        .some(el => el.value.toLowerCase() === colorName.toLowerCase());
+    if (exists) {
+        alert('Cette couleur personnalisée existe déjà.');
+        return;
+    }
+
+    // Créer l'élément visuel
+    const colorElement = document.createElement('div');
+    colorElement.className = 'flex items-center space-x-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-2';
+    colorElement.innerHTML = `
+        <input type="hidden" name="couleurs[]" value="${colorName}">
+        <div class="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: ${colorHex}"></div>
+        <span class="text-sm font-medium text-blue-800">${colorName}</span>
+        <button type="button" onclick="this.parentElement.remove()"
+                class="text-red-500 hover:text-red-700 px-2 py-1">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    customColorsContainer.appendChild(colorElement);
+
+    // Ajouter à l'input caché
+    const newHiddenInput = document.createElement('input');
+    newHiddenInput.type = 'hidden';
+    newHiddenInput.name = 'couleurs[]';
+    newHiddenInput.value = colorName;
+    hiddenInputsContainer.appendChild(newHiddenInput);
+
+    // Réinitialiser les inputs
+    colorPicker.value = '#000000'; // Reset color picker to black
+    colorNameInput.value = '';
+}
+
+// Initialisation simple
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Formulaire initialisé avec système de couleurs personnalisées');
+
+    // Validation simple du formulaire
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('Tentative de soumission du formulaire');
+
+            // Vérifier qu'il y a au moins une couleur sélectionnée (prédéfinie ou personnalisée)
+            const selectedPredefinedColors = Array.from(document.querySelectorAll('input[name="couleurs[]"]:checked'));
+            const customColors = Array.from(document.querySelectorAll('#customColorsContainer input[name="couleurs[]"]'));
+
+            const totalColors = selectedPredefinedColors.length + customColors.length;
+            console.log('Couleurs prédéfinies sélectionnées:', selectedPredefinedColors.length);
+            console.log('Couleurs personnalisées ajoutées:', customColors.length);
+            console.log('Total des couleurs:', totalColors);
+
+            if (totalColors === 0) {
+                e.preventDefault();
+                alert('Veuillez sélectionner au moins une couleur (prédéfinie ou personnalisée)');
+                console.log('Soumission bloquée - aucune couleur sélectionnée');
+                return;
+            }
+
+            console.log('Validation OK - soumission autorisée');
+        });
+    } else {
+        console.error('Formulaire non trouvé');
+    }
+
+    // Initialiser le color picker avec une couleur par défaut
+    const colorPicker = document.getElementById('newColorPicker');
+    if (colorPicker) {
+        colorPicker.value = '#ff6b6b'; // Couleur par défaut (rouge corail)
+    }
+});
 </script>
 @endsection
 

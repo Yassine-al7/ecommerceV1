@@ -15,9 +15,8 @@ class ProductController extends Controller
     /**
      * Display a listing of the seller's assigned products.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Retour à Eloquent avec relations bien définies
         $userId = auth()->id();
 
         $user = \App\Models\User::find($userId);
@@ -26,29 +25,28 @@ class ProductController extends Controller
             return redirect()->back()->with('error', 'Utilisateur non trouvé');
         }
 
-        // Requête explicite avec alias uniques pour éviter les conflits
-        $products = \DB::table('product_user as pu')
-            ->join('produits as p', 'pu.product_id', '=', 'p.id')
-            ->leftJoin('categories as c', 'p.categorie_id', '=', 'c.id')
-            ->where('pu.user_id', $userId)
-            ->orderBy('p.id', 'asc')
-            ->select([
-                'p.id',
-                'p.name',
-                'p.couleur',
-                'p.tailles',
-                'p.image',
-                'p.quantite_stock',
-                'p.created_at',
-                'p.updated_at',
-                'pu.prix_admin',
-                'pu.prix_vente',
-                'pu.visible',
-                'pu.created_at as pivot_created_at',
-                'pu.updated_at as pivot_updated_at',
-                'c.name as category_name'
-            ])
-            ->get();
+        // Récupérer tous les produits assignés avec leurs catégories
+        $query = $user->assignedProducts()->with('category');
+
+        $products = $query->get();
+
+        // Filtrer côté serveur après récupération
+        if ($request->filled('category')) {
+            $products = $products->filter(function ($product) use ($request) {
+                return $product->category && $product->category->name === $request->category;
+            });
+        }
+
+
+
+        if ($request->filled('search')) {
+            $products = $products->filter(function ($product) use ($request) {
+                return stripos($product->name, $request->search) !== false;
+            });
+        }
+
+        // Récupérer les catégories uniques pour le filtre
+        $categories = \App\Models\Category::orderBy('name')->get();
 
         // Parser les tailles côté serveur pour éviter d'afficher des chaînes brutes dans la vue
         foreach ($products as $p) {
@@ -91,6 +89,6 @@ class ProductController extends Controller
             $p->tailles_parsed = array_values(array_unique($parsed));
         }
 
-        return view('seller.products.index', compact('products'));
+        return view('seller.products.index', compact('products', 'categories'));
     }
 }

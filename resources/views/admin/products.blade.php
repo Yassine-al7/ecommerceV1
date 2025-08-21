@@ -5,97 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Manage Products</title>
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/responsive.css') }}" rel="stylesheet">
 </head>
 <body>
     @extends('layouts.app')
 
     @section('title', 'Gestion des Produits')
 
+    @php
+    use App\Helpers\ColorHelper;
+    @endphp
+
     @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-7xl mx-auto">
+    <div class="min-h-screen bg-gray-50 py-4 md:py-8">
+        <div class="container-responsive">
             <!-- Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Gestion des Produits</h1>
-                <p class="text-gray-600">Gérez votre catalogue de produits et assignez-les aux vendeurs</p>
-        </div>
+            <div class="mb-6 md:mb-8">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 text-center md:text-left">Gestion des Produits</h1>
+                <p class="text-gray-600 text-center md:text-left">Gérez votre catalogue de produits et assignez-les aux vendeurs</p>
+            </div>
 
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
+                <div class="alert alert-success mb-6">
                     <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
                 </div>
             @endif
 
             <!-- Actions -->
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex items-center justify-between">
+            <div class="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                <h2 class="text-xl font-semibold text-gray-800">Liste des Produits</h2>
-                        <p class="text-gray-600 mt-1">Total: {{ $products->count() }} produits</p>
+                        <h2 class="text-lg md:text-xl font-semibold text-gray-800 text-center md:text-left">Liste des Produits</h2>
+                        <p class="text-gray-600 mt-1 text-center md:text-left">Total: {{ $products->count() }} produits</p>
                     </div>
-                    <a href="{{ route('admin.products.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-plus mr-2"></i>Créer un produit
-                    </a>
+                    <div class="actions-buttons">
+                        <a href="{{ route('admin.products.create') }}" class="btn bg-blue-600 hover:bg-blue-700 text-white">
+                            <i class="fas fa-plus mr-2"></i>Créer un produit
+                        </a>
+                    </div>
                 </div>
             </div>
 
             @if($products->count() > 0)
                 <!-- Grille des produits -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            @foreach($products as $product)
-                        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                            <!-- Image du produit -->
-                            <div class="h-48 bg-gray-100 flex items-center justify-center overflow-hidden relative">
-                                                                @php
-                                    // Gérer les différents formats de chemins d'images
-                                    $imagePath = $product->image;
-                                    $imageSrc = null;
+                <div class="products-grid">
+                    @foreach($products as $product)
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                        <!-- Image du produit -->
+                        <div class="h-48 bg-gray-100 flex items-center justify-center overflow-hidden relative">
+                            @php
+                                // Gérer les différents formats de chemins d'images
+                                $imagePath = $product->image;
+                                $imageSrc = null;
 
-                                    if ($imagePath && !empty(trim($imagePath))) {
-                                        // Si le chemin commence déjà par /storage/, l'utiliser tel quel
-                                        if (str_starts_with($imagePath, '/storage/')) {
-                                            $imageSrc = $imagePath;
-                                        }
-                                        // Si c'est juste le nom du fichier, ajouter /storage/products/
-                                        elseif (!str_contains($imagePath, '/')) {
-                                            $imageSrc = '/storage/products/' . $imagePath;
-                                        }
-                                        // Sinon utiliser tel quel
-                                        else {
-                                            $imageSrc = $imagePath;
-                                        }
+                                if ($imagePath && !empty(trim($imagePath))) {
+                                    // Si le chemin commence déjà par /storage/, l'utiliser tel quel
+                                    if (str_starts_with($imagePath, '/storage/')) {
+                                        $imageSrc = $imagePath;
                                     }
-                                @endphp
+                                    // Si c'est juste le nom du fichier, ajouter /storage/products/
+                                    elseif (!str_contains($imagePath, '/')) {
+                                        $imageSrc = '/storage/products/' . $imagePath;
+                                    }
+                                    // Sinon utiliser tel quel
+                                    else {
+                                        $imageSrc = $imagePath;
+                                    }
+                                }
+                            @endphp
 
-                                @if($imageSrc)
-                                    <img src="{{ $imageSrc }}"
-                                         alt="{{ $product->name }}"
-                                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
-                                        <i class="fas fa-image text-4xl mb-2"></i>
-                                        <p class="text-sm">Image manquante</p>
-                                        <p class="text-xs text-red-400 mt-1">Fichier introuvable</p>
-                                    </div>
-                                @else
-                                    <div class="text-gray-400 text-center">
-                                        <i class="fas fa-image text-4xl mb-2"></i>
-                                        <p class="text-sm">Aucune image</p>
-                                    </div>
-                                @endif
-
-                                <!-- Badge de statut -->
-                                <div class="absolute top-2 right-2">
-                                    @if($product->assignedUsers && $product->assignedUsers->count() > 0)
-                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                                            Assigné ({{ $product->assignedUsers->count() }})
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                                            Non assigné
-                                        </span>
-                                    @endif
+                            @if($imageSrc)
+                                <img src="{{ $imageSrc }}"
+                                     alt="{{ $product->name }}"
+                                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
+                                    <i class="fas fa-image text-4xl mb-2"></i>
+                                    <p class="text-sm">Image manquante</p>
+                                    <p class="text-xs text-red-400 mt-1">Fichier introuvable</p>
                                 </div>
+                            @else
+                                <div class="text-gray-400 text-center">
+                                    <i class="fas fa-image text-4xl mb-2"></i>
+                                    <p class="text-sm">Aucune image</p>
+                                </div>
+                            @endif
+
+                            <!-- Badge de statut -->
+                            <div class="absolute top-2 right-2">
+                                @if($product->assignedUsers && $product->assignedUsers->count() > 0)
+                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                        Assigné ({{ $product->assignedUsers->count() }})
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                                        Non assigné
+                                    </span>
+                                @endif
+                            </div>
 
                                 <!-- Debug info (à supprimer en production) -->
                                 @if(config('app.debug'))
@@ -117,33 +124,27 @@
                                     @endif
                                 </div>
 
-                                <!-- Couleur -->
+                                <!-- Couleurs -->
                                 @if($product->couleur)
-                                    <div class="flex items-center mb-3">
-                                        <span class="text-sm text-gray-600 mr-2">Couleur:</span>
+                                    <div class="mb-3">
+                                        <span class="text-sm text-gray-600 mr-2">Couleurs:</span>
                                         @php
-                                            // Déterminer si c'est une couleur hex ou un nom
-                                            $isHexColor = str_starts_with($product->couleur, '#') && strlen($product->couleur) === 7;
-
-                                            // Mapper les noms de couleurs vers des codes hex
-                                            $colorMap = [
-                                                'rouge' => '#ff0000', 'vert' => '#00ff00', 'bleu' => '#0000ff',
-                                                'jaune' => '#ffff00', 'noir' => '#000000', 'blanc' => '#ffffff',
-                                                'orange' => '#ffa500', 'violet' => '#800080', 'rose' => '#ffc0cb',
-                                                'marron' => '#a52a2a', 'gris' => '#808080', 'beige' => '#f5f5dc'
-                                            ];
-
-                                            $backgroundColor = $isHexColor ? $product->couleur :
-                                                (isset($colorMap[strtolower($product->couleur)]) ? $colorMap[strtolower($product->couleur)] : '#cccccc');
+                                            // Décoder les couleurs en utilisant le Helper
+                                            $couleurs = ColorHelper::decodeColors($product->couleur);
                                         @endphp
 
-                                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 shadow-sm flex items-center justify-center"
-                                             style="background-color: {{ $backgroundColor }}">
-                                            @if($isHexColor)
-                                                <div class="w-2 h-2 rounded-full bg-white opacity-80"></div>
-                                            @endif
+                                        <div class="flex flex-wrap gap-2 mt-1">
+                                            @foreach($couleurs as $couleur)
+                                                @php
+                                                    $backgroundColor = ColorHelper::getBackgroundColor($couleur);
+                                                @endphp
+                                                <div class="flex items-center space-x-1">
+                                                    <div class="w-4 h-4 rounded-full border border-gray-300 shadow-sm"
+                                                         style="background-color: {{ $backgroundColor }}"></div>
+                                                    <span class="text-xs text-gray-700">{{ $couleur }}</span>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                        <span class="ml-2 text-sm font-medium text-gray-800">{{ ucfirst($product->couleur) }}</span>
                                     </div>
                                 @endif
 
@@ -183,25 +184,26 @@
                                 @endif
 
                                 <!-- Actions -->
-                                <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-                                    <div class="flex space-x-2">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-3 border-t border-gray-100 gap-2">
+                                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                                         <a href="{{ route('admin.products.assign', $product) }}"
-                                           class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                           class="btn btn-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100">
                                             <i class="fas fa-link mr-1"></i>Assigner
                                         </a>
                                         <a href="{{ route('admin.products.edit', $product) }}"
-                                           class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                           class="btn btn-sm text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100">
                                             <i class="fas fa-edit mr-1"></i>Modifier
                                         </a>
-                                    </div>
                                         <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                        <button class="text-red-600 hover:text-red-800 text-sm font-medium"
-                                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')">
-                                            <i class="fas fa-trash mr-1"></i>Supprimer
-                                        </button>
+                                            <button type="submit"
+                                                    class="btn btn-sm text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100"
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')">
+                                                <i class="fas fa-trash mr-1"></i>Supprimer
+                                            </button>
                                         </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -209,16 +211,18 @@
                 </div>
             @else
                 <!-- État vide -->
-                <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+                <div class="bg-white rounded-lg shadow-lg p-8 md:p-12 text-center">
                     <div class="text-gray-400 mb-4">
-                        <i class="fas fa-box-open text-6xl"></i>
+                        <i class="fas fa-box-open text-4xl md:text-6xl"></i>
                     </div>
-                    <h3 class="text-xl font-medium text-gray-800 mb-2">Aucun produit trouvé</h3>
+                    <h3 class="text-lg md:text-xl font-medium text-gray-800 mb-2">Aucun produit trouvé</h3>
                     <p class="text-gray-600 mb-6">Commencez par créer votre premier produit pour enrichir votre catalogue.</p>
-                    <a href="{{ route('admin.products.create') }}"
-                       class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors inline-flex items-center">
-                        <i class="fas fa-plus mr-2"></i>Créer votre premier produit
-                    </a>
+                    <div class="actions-buttons justify-center">
+                        <a href="{{ route('admin.products.create') }}"
+                           class="btn bg-blue-600 hover:bg-blue-700 text-white">
+                            <i class="fas fa-plus mr-2"></i>Créer votre premier produit
+                        </a>
+                    </div>
                 </div>
             @endif
         </div>
