@@ -11,6 +11,55 @@
             <p class="text-sm md:text-base text-gray-600">Bienvenue {{ auth()->user()->name }} - Vue d'ensemble de votre activité</p>
         </div>
 
+        <!-- Messages Admin -->
+        @if($adminMessages->count() > 0)
+            <div class="mb-6 md:mb-8">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 md:p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="p-2 md:p-3 rounded-full bg-blue-100 text-blue-600">
+                            <i class="fas fa-bullhorn text-lg md:text-xl"></i>
+                        </div>
+                        <h2 class="ml-3 text-lg md:text-xl font-semibold text-blue-800">Messages de l'Administration</h2>
+                    </div>
+
+                    <div class="space-y-3">
+                        @foreach($adminMessages as $message)
+                            <div class="bg-white rounded-lg border-l-4 {{ $message->getPriorityClass() }} p-3 md:p-4 shadow-sm">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-2">
+                                            <i class="{{ $message->getIcon() }} mr-2 text-{{ $message->type === 'celebration' ? 'purple' : ($message->type === 'success' ? 'green' : ($message->type === 'warning' ? 'yellow' : ($message->type === 'error' ? 'red' : 'blue'))) }}-600"></i>
+                                            <h3 class="font-semibold text-gray-800">{{ $message->title }}</h3>
+                                            @if($message->isUrgent())
+                                                <span class="ml-2 px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">URGENT</span>
+                                            @endif
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2">{{ $message->message }}</p>
+                                        <div class="flex items-center text-xs text-gray-500">
+                                            <span class="mr-3">
+                                                <i class="fas fa-tag mr-1"></i>
+                                                {{ ucfirst($message->type) }}
+                                            </span>
+                                            <span class="mr-3">
+                                                <i class="fas fa-flag mr-1"></i>
+                                                {{ ucfirst($message->priority) }}
+                                            </span>
+                                            @if($message->expires_at)
+                                                <span>
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Expire le {{ $message->expires_at->format('d/m/Y H:i') }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Statistiques Principales -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
             <!-- Produits Assignés -->

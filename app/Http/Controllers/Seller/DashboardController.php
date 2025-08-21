@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
+use App\Models\AdminMessage;
 
 class DashboardController extends Controller
 {
@@ -62,6 +63,14 @@ class DashboardController extends Controller
             'annule' => $ordersCancelled
         ];
 
+        // === MESSAGES ADMIN ===
+        $adminMessages = AdminMessage::active()
+            ->forRole('seller')
+            ->orderBy('priority', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
         return view('seller.dashboard', compact(
             'seller',
             'totalAssignedProducts',
@@ -73,7 +82,8 @@ class DashboardController extends Controller
             'totalPaid',
             'totalPending',
             'recentOrders',
-            'ordersByStatus'
+            'ordersByStatus',
+            'adminMessages'
         ));
     }
 }

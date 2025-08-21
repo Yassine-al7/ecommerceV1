@@ -151,20 +151,19 @@ class OrderController extends Controller
 				return back()->withErrors(['prix_vente_client' => 'Le prix de vente doit être supérieur au prix d\'achat pour avoir une marge bénéfice'])->withInput();
 			}
 
-			// Calcul de la marge selon la logique de l'utilisateur
-			// Marge par pièce = Prix de vente - Prix d'achat
-			$margeParPiece = $prixVenteClient - $prixVenteVendeur;
+			// 🎯 LOGIQUE MÉTIER CORRIGÉE : Calcul de la marge selon la demande de l'utilisateur
+			// Prix de vente client = Prix fixe (pas × quantité)
+			// Prix d'achat vendeur = Prix d'achat × quantité
+			// Marge brute = Prix de vente - Prix d'achat total
 
-			// Marge totale sur toutes les pièces de ce produit
-			$margeTotalePieces = $margeParPiece * (int) $productData['quantite_produit'];
+			$prixAchatTotal = $prixVenteVendeur * (int) $productData['quantite_produit'];
+			$margeBrute = $prixVenteClient - $prixAchatTotal;
 
-			// 🎯 NOUVELLE LOGIQUE MÉTIER : Prix total de la commande = Prix de vente fixe
-			// ❌ PAS le prix × quantité, mais juste le prix de vente au client
-			// ✅ C'est la logique métier demandée par l'utilisateur
-			$prixProduit = $prixVenteClient; // Prix fixe, pas multiplié par la quantité
+			// Prix total de la commande = Prix de vente fixe (pas × quantité)
+			$prixProduit = $prixVenteClient;
 
 			$prixTotalCommande += $prixProduit;
-			$margeTotaleProduits += $margeTotalePieces;
+			$margeTotaleProduits += $margeBrute;
 
 			// Ajouter le produit à la liste avec tous les détails
 			                $produits[] = [
@@ -173,8 +172,8 @@ class OrderController extends Controller
                     'taille' => $tailleSelectionnee, // Utiliser la taille nettoyée
                     'prix_vente_client' => $prixVenteClient,
                     'prix_achat_vendeur' => $prixVenteVendeur,
-                    'marge_par_piece' => $margeParPiece,
-                    'marge_produit' => $margeTotalePieces
+                    'prix_achat_total' => $prixAchatTotal,
+                    'marge_brute' => $margeBrute
                 ];
 		}
 

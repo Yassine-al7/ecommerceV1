@@ -1,64 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/responsive.css') }}" rel="stylesheet">
-</head>
-<body>
-    @extends('layouts.app')
+@extends('layouts.app')
 
-    @section('content')
+@section('title', 'Admin Dashboard')
+
+@section('content')
     <div class="min-h-screen bg-gray-50 py-4 md:py-8">
-        <div class="container-responsive">
+        <div class="container mx-auto px-4">
             <!-- Header -->
             <div class="mb-6 md:mb-8">
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 text-center md:text-left">Tableau de bord Admin</h1>
-                <p class="text-gray-600 text-center md:text-left">Vue d'ensemble de l'activité et accès rapide aux sections clés</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Tableau de bord Admin</h1>
+                <p class="text-gray-600">Vue d'ensemble de l'activité et accès rapide aux sections clés</p>
             </div>
 
             <!-- Filtres temporels -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6 md:mb-8">
-                <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-4 text-center md:text-left">Filtres temporels</h3>
+                <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-4">Filtres temporels</h3>
                 <form method="GET" action="{{ route('admin.dashboard') }}" class="space-y-4">
                     <!-- Filtres rapides -->
-                    <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                    <div class="flex flex-wrap gap-2">
                         <button type="submit" name="period" value="all"
-                                class="btn {{ $period === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $period === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Toutes
                         </button>
                         <button type="submit" name="period" value="today"
-                                class="btn {{ $period === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $period === 'today' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Aujourd'hui
                         </button>
                         <button type="submit" name="period" value="week"
-                                class="btn {{ $period === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $period === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Cette semaine
                         </button>
                         <button type="submit" name="period" value="month"
-                                class="btn {{ $period === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $period === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Ce mois
                         </button>
                         <button type="submit" name="period" value="year"
-                                class="btn {{ $period === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $period === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             Cette année
                         </button>
                     </div>
 
                     <!-- Filtres personnalisés -->
                     <div class="border-t border-gray-200 pt-4">
-                        <div class="text-center md:text-left mb-3">
+                        <div class="mb-3">
                             <span class="text-sm text-gray-600">Période personnalisée:</span>
                         </div>
-                        <div class="flex flex-col sm:flex-row items-center gap-3 justify-center md:justify-start">
+                        <div class="flex flex-col sm:flex-row items-center gap-3">
                             <input type="date" name="start_date" value="{{ $startDate }}"
                                    class="form-input text-sm">
                             <span class="text-gray-600 hidden sm:inline">à</span>
                             <input type="date" name="end_date" value="{{ $endDate }}"
                                    class="form-input text-sm">
-                            <button type="submit" class="btn bg-blue-600 text-white hover:bg-blue-700">
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
                                 Filtrer
                             </button>
                         </div>
@@ -67,7 +59,7 @@
             </div>
 
             <!-- Statistiques rapides -->
-            <div class="card-grid mb-6 md:mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-6 text-center">
                     <i class="fas fa-receipt text-2xl md:text-3xl text-blue-600 mb-3"></i>
                     <h3 class="text-xl md:text-2xl font-bold text-blue-900">{{ $totalOrders }}</h3>
@@ -93,34 +85,34 @@
 
             <!-- Graphique des commandes -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6 md:mb-8">
-                <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-4 text-center md:text-left">Évolution des commandes (7 derniers jours)</h3>
+                <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-4">Évolution des commandes (7 derniers jours)</h3>
                 <div class="h-48 md:h-64">
                     <canvas id="ordersChart"></canvas>
                 </div>
             </div>
 
             <!-- Actions rapides -->
-            <div class="card-grid mb-6 md:mb-8">
-                <a href="{{ route('admin.products.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition card-hover">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8">
+                <a href="{{ route('admin.products.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition hover:bg-gray-50">
                     <i class="fas fa-box text-2xl md:text-3xl text-blue-600 mb-3 md:mb-4"></i>
                     <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Produits</h3>
                     <p class="text-gray-500 text-sm md:text-base">Créer, modifier et assigner des produits</p>
                 </a>
-                <a href="{{ route('admin.categories.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition card-hover">
+                <a href="{{ route('admin.categories.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition hover:bg-gray-50">
                     <i class="fas fa-folder text-2xl md:text-3xl text-orange-600 mb-3 md:mb-4"></i>
                     <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Catégories</h3>
                     <p class="text-gray-500 text-sm md:text-base">Gérer les catégories de produits</p>
                 </a>
-                <a href="{{ route('admin.orders.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition card-hover">
+                <a href="{{ route('admin.orders.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition hover:bg-gray-50">
                     <i class="fas fa-list-check text-2xl md:text-3xl text-green-600 mb-3 md:mb-4"></i>
                     <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Commandes</h3>
                     <p class="text-gray-500 text-sm md:text-base">Suivre et gérer les commandes</p>
                 </a>
-                <a href="{{ route('admin.invoices.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition card-hover">
+                <a href="{{ route('admin.invoices.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition hover:bg-gray-50">
                     <i class="fas fa-file-invoice text-2xl md:text-3xl text-purple-600 mb-3 md:mb-4"></i>
                     <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">Facturation</h3>
                     <p class="text-gray-500 text-sm md:text-base">Synthèse des ventes et paiements vendeurs</p>
-                </a>
+                    </a>
             </div>
         </div>
     </div>
@@ -187,7 +179,4 @@
             }
         });
     </script>
-
-    @endsection
-</body>
-</html>
+@endsection

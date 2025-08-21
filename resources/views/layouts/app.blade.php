@@ -23,8 +23,13 @@
             <!-- Sidebar Overlay for Mobile -->
             <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[9998] md:hidden hidden"></div>
 
-            <!-- Sidebar Mobile (en haut) -->
-            <aside id="sidebar" class="md:hidden fixed top-0 left-0 right-0 z-[9999] bg-blue-800 text-white p-4 space-y-4 transform -translate-y-full transition-transform duration-300 ease-in-out shadow-2xl">
+            <!-- Bandeau d'Alerte pour Messages Admin -->
+            <div id="adminMessagesContainer" class="fixed top-0 left-0 right-0 z-50 transform -translate-y-full transition-transform duration-500">
+                <!-- Les messages s'afficheront ici dynamiquement -->
+            </div>
+
+            <!-- Sidebar Mobile (en haut) - UNIQUEMENT sur mobile -->
+            <aside id="sidebar" class="md:hidden fixed top-0 left-0 right-0 z-[9999] bg-blue-800 text-white p-4 space-y-4 transform -translate-y-full transition-transform duration-300 ease-in-out shadow-2xl max-h-screen overflow-y-auto">
                 @auth
                     @if(auth()->user()->isAdmin())
                         <!-- Navigation Admin Mobile -->
@@ -39,7 +44,7 @@
                                 </button>
                             </div>
                         </div>
-                        <nav class="space-y-2">
+                        <nav class="space-y-1">
                             <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-gauge text-lg"></i><span>Dashboard</span>
                             </a>
@@ -82,7 +87,7 @@
                                 </button>
                             </div>
                         </div>
-                        <nav class="space-y-2">
+                        <nav class="space-y-1">
                             <a href="{{ route('seller.dashboard') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-gauge text-lg"></i><span>Dashboard</span>
                             </a>
@@ -130,38 +135,41 @@
                 @endauth
             </aside>
 
-            <!-- Sidebar Desktop (à gauche) -->
-            <aside id="sidebarDesktop" class="hidden md:block fixed inset-y-0 left-0 z-40 w-72 text-white p-6 space-y-6 glass-effect">
+            <!-- Sidebar Desktop (à gauche) - UNIQUEMENT sur desktop -->
+            <aside id="sidebarDesktop" class="hidden md:block fixed inset-y-0 left-0 z-40 w-72 text-white p-6 space-y-6 glass-effect overflow-y-auto">
                 @auth
                     @if(auth()->user()->isAdmin())
-                        <div class="text-xl md:text-2xl font-bold tracking-wide mb-4">Admin Panel</div>
-                        <nav class="space-y-2">
-                            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                        <div class="text-xl md:text-2xl font-bold tracking-wide mb-3">Admin Panel</div>
+                        <nav class="space-y-1">
+                            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-gauge text-lg"></i><span class="text-sm md:text-base">Dashboard</span>
                             </a>
-                            <a href="{{ route('admin.products.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.products.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-box text-lg"></i><span class="text-sm md:text-base">Produits</span>
                             </a>
-                            <a href="{{ route('admin.categories.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.categories.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-tags text-lg"></i><span class="text-sm md:text-base">Catégories</span>
                             </a>
-                            <a href="{{ route('admin.orders.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.orders.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-list-check text-lg"></i><span class="text-sm md:text-base">Commandes</span>
                             </a>
 
-                            <a href="{{ route('admin.statistics.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.statistics.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-chart-bar text-lg"></i><span class="text-sm md:text-base">Statistiques</span>
                             </a>
-                            <a href="{{ route('admin.stock.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.stock.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-boxes text-lg"></i><span class="text-sm md:text-base">Stock</span>
                             </a>
-                            <a href="{{ route('admin.invoices.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.invoices.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-file-invoice text-lg"></i><span class="text-sm md:text-base">Facturation</span>
                             </a>
-                            <a href="{{ route('admin.users.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.messages.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                <i class="fas fa-bullhorn text-lg"></i><span class="text-sm md:text-base">Messages</span>
+                            </a>
+                            <a href="{{ route('admin.users.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-store text-lg"></i><span class="text-sm md:text-base">Vendeurs</span>
                             </a>
-                            <a href="{{ route('admin.admins.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.admins.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-user-shield text-lg"></i><span class="text-sm md:text-base">Administrateurs</span>
                             </a>
                         </nav>
@@ -170,19 +178,19 @@
                         <div class="mt-6 pt-6 border-t border-gray-700">
                             <form method="POST" action="{{ route('logout') }}" class="w-full">
                                 @csrf
-                                <button type="submit" class="flex items-center space-x-3 hover:underline w-full text-left text-gray-300 hover:text-white">
-                                    <i class="fas fa-sign-out-alt"></i><span>Déconnexion</span>
+                                <button type="submit" class="flex items-center space-x-3 w-full text-left p-3 rounded-lg hover:bg-white/10 transition-colors text-gray-300 hover:text-white">
+                                    <i class="fas fa-sign-out-alt text-lg"></i><span class="text-sm md:text-base font-medium">Déconnexion</span>
                                 </button>
                             </form>
                         </div>
                     @else
-                        <div class="text-xl md:text-2xl font-bold tracking-wide mb-4">Seller Panel</div>
-                        <nav class="space-y-2">
-                            <a href="{{ route('seller.dashboard') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                        <div class="text-xl md:text-2xl font-bold tracking-wide mb-3">Seller Panel</div>
+                        <nav class="space-y-1">
+                            <a href="{{ route('seller.dashboard') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-gauge text-lg"></i><span class="text-sm md:text-base">Dashboard</span>
                             </a>
 
-                            <a href="{{ route('seller.products.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('seller.products.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-box text-lg"></i><span class="text-sm md:text-base">Mes Produits</span>
                             </a>
 
@@ -190,29 +198,29 @@
                             <div class="pt-2">
                                 <h4 class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Commandes</h4>
                                 <div class="space-y-1 ml-2">
-                                    <a href="{{ route('seller.orders.create') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.create') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-plus text-blue-400 text-sm"></i><span class="text-xs md:text-sm">Nouvelle commande</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-list text-gray-400 text-sm"></i><span class="text-xs md:text-sm">Toutes les commandes</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-clock text-yellow-400 text-sm"></i><span class="text-xs md:text-sm">En attente</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-check text-blue-400 text-sm"></i><span class="text-xs md:text-sm">Confirmé</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-check-circle text-green-400 text-sm"></i><span class="text-xs md:text-sm">Livré</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-times-circle text-red-400 text-sm"></i><span class="text-xs md:text-sm">Annulé</span>
                                     </a>
                                 </div>
                             </div>
 
                             <!-- Facturation -->
-                            <a href="{{ route('seller.invoices.index') }}" class="flex items-center space-x-2 md:space-x-3 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('seller.invoices.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                 <i class="fas fa-file-invoice text-purple-400 text-lg"></i><span class="text-sm md:text-base">Facturation</span>
                             </a>
                         </nav>
@@ -221,8 +229,8 @@
                         <div class="mt-6 pt-6 border-t border-gray-700">
                             <form method="POST" action="{{ route('logout') }}" class="w-full">
                                 @csrf
-                                <button type="submit" class="flex items-center space-x-3 hover:underline w-full text-left text-gray-300 hover:text-white">
-                                    <i class="fas fa-sign-out-alt"></i><span>Déconnexion</span>
+                                <button type="submit" class="flex items-center space-x-3 w-full text-left p-3 rounded-lg hover:bg-white/10 transition-colors text-gray-300 hover:text-white">
+                                    <i class="fas fa-sign-out-alt text-lg"></i><span class="font-medium">Déconnexion</span>
                                 </button>
                             </form>
                         </div>
@@ -260,6 +268,147 @@
         </div>
     @endif
 
+    <!-- Scripts -->
+    <script src="{{ asset('js/app.js') }}"></script>
+
+    <!-- Gestion des Messages Admin -->
+    <script>
+    // Gestion des messages admin
+    class AdminMessageManager {
+        constructor() {
+            this.container = document.getElementById('adminMessagesContainer');
+            this.messages = [];
+            this.currentMessageIndex = 0;
+            this.isShowing = false;
+            this.init();
+        }
+
+        async init() {
+            await this.loadMessages();
+            this.startMessageRotation();
+        }
+
+        async loadMessages() {
+            try {
+                const response = await fetch('/admin/messages/active');
+                this.messages = await response.json();
+                console.log('Messages chargés:', this.messages);
+            } catch (error) {
+                console.error('Erreur lors du chargement des messages:', error);
+            }
+        }
+
+        startMessageRotation() {
+            if (this.messages.length === 0) return;
+
+            // Afficher le premier message
+            this.showNextMessage();
+
+            // Rotation automatique toutes les 8 secondes
+            setInterval(() => {
+                this.showNextMessage();
+            }, 8000);
+        }
+
+        showNextMessage() {
+            if (this.messages.length === 0) return;
+
+            const message = this.messages[this.currentMessageIndex];
+            this.displayMessage(message);
+
+            // Passer au message suivant
+            this.currentMessageIndex = (this.currentMessageIndex + 1) % this.messages.length;
+        }
+
+        displayMessage(message) {
+            if (this.isShowing) {
+                this.hideCurrentMessage();
+                setTimeout(() => this.displayMessage(message), 500);
+                return;
+            }
+
+            this.isShowing = true;
+            this.container.innerHTML = this.createMessageHTML(message);
+
+            // Afficher le message avec animation
+            requestAnimationFrame(() => {
+                this.container.classList.remove('-translate-y-full');
+                this.container.classList.add('translate-y-0');
+            });
+
+            // Masquer automatiquement après 7 secondes
+            setTimeout(() => {
+                this.hideCurrentMessage();
+            }, 7000);
+        }
+
+        hideCurrentMessage() {
+            this.isShowing = false;
+            this.container.classList.remove('translate-y-0');
+            this.container.classList.add('-translate-y-full');
+        }
+
+        createMessageHTML(message) {
+            const typeClasses = {
+                'info': 'bg-blue-50 border-blue-200 text-blue-800',
+                'success': 'bg-green-50 border-green-200 text-green-800',
+                'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                'error': 'bg-red-50 border-red-200 text-red-800',
+                'celebration': 'bg-purple-50 border-purple-200 text-purple-800'
+            };
+
+            const priorityClasses = {
+                'low': 'border-l-4 border-l-gray-400',
+                'medium': 'border-l-4 border-l-blue-400',
+                'high': 'border-l-4 border-l-orange-400',
+                'urgent': 'border-l-4 border-l-red-400'
+            };
+
+            const typeClass = typeClasses[message.type] || 'bg-gray-50 border-gray-200 text-gray-800';
+            const priorityClass = priorityClasses[message.priority] || 'border-l-4 border-l-gray-400';
+            const icon = this.getIcon(message.type);
+
+            return `
+                <div class="border-b ${typeClass} ${priorityClass} shadow-lg">
+                    <div class="max-w-7xl mx-auto px-4 py-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="${icon} text-lg"></i>
+                                <div>
+                                    <h4 class="font-semibold text-sm">${message.title}</h4>
+                                    <p class="text-xs opacity-90">${message.message}</p>
+                                </div>
+                            </div>
+                            <button onclick="adminMessageManager.hideCurrentMessage()"
+                                    class="text-gray-500 hover:text-gray-700 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        getIcon(type) {
+            const icons = {
+                'info': 'fas fa-info-circle',
+                'success': 'fas fa-check-circle',
+                'warning': 'fas fa-exclamation-triangle',
+                'error': 'fas fa-times-circle',
+                'celebration': 'fas fa-trophy'
+            };
+            return icons[type] || 'fas fa-bell';
+        }
+    }
+
+    // Initialiser le gestionnaire de messages
+    let adminMessageManager;
+    document.addEventListener('DOMContentLoaded', function() {
+        adminMessageManager = new AdminMessageManager();
+    });
+    </script>
+
+    <!-- Scripts existants -->
     <script>
         // Auto-hide toast notifications
         setTimeout(() => {
@@ -392,5 +541,7 @@
             });
         });
     </script>
+
+    @stack('scripts')
 </body>
 </html>

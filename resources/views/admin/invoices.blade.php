@@ -251,9 +251,7 @@ use Illuminate\Support\Facades\DB;
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                                     Marge Bénéfice
                                 </th>
-                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 hidden-mobile">
-                                    Bénéfice Réel Vendeur
-                                </th>
+
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                                     Statut
                                 </th>
@@ -385,47 +383,15 @@ use Illuminate\Support\Facades\DB;
                                     <td class="table-cell whitespace-nowrap">
                                         <div class="text-sm">
                                             <div class="font-semibold text-emerald-600">
-                                                {{ number_format($order->marge_benefice, 0) }} MAD
+                                                {{ number_format($order->marge_benefice, 0) }} DH
                                             </div>
                                             <div class="text-xs text-gray-500">
-                                                Marge
+                                                Marge bénéfice
                                             </div>
                                         </div>
                                     </td>
 
-                                    <!-- Bénéfice Vendeur -->
-                                    <td class="table-cell whitespace-nowrap hidden-mobile">
-                                        @php
-                                            // Calculer le bénéfice réel du vendeur
-                                            $beneficeVendeur = 0;
-                                            $coutTotalVendeur = 0;
 
-                                            if (is_array($order->produits)) {
-                                                foreach ($order->produits as $produit) {
-                                                    if (is_array($produit) && isset($produit['product_id']) && isset($produit['qty'])) {
-                                                        $productUser = DB::table('product_user')
-                                                            ->where('product_id', $produit['product_id'])
-                                                            ->where('user_id', $order->seller_id)
-                                                            ->first();
-                                                        if ($productUser) {
-                                                            $coutTotalVendeur += ($productUser->prix_admin ?? 0) * $produit['qty'];
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            $beneficeVendeur = $order->prix_commande - $coutTotalVendeur - ($order->prix_livraison ?? 0);
-                                            $pourcentageBenefice = $order->prix_commande > 0 ? round(($beneficeVendeur / $order->prix_commande) * 100, 1) : 0;
-                                        @endphp
-                                        <div class="text-sm">
-                                            <div class="font-semibold text-green-600">
-                                                {{ number_format($beneficeVendeur, 0) }} MAD
-                                            </div>
-                                            <div class="text-xs text-gray-500">
-                                                Bénéfice: {{ $pourcentageBenefice }}%
-                                            </div>
-                                        </div>
-                                    </td>
 
                                             <!-- Statut Paiement -->
                                     <td class="table-cell whitespace-nowrap">

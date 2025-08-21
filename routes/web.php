@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
+use App\Http\Controllers\Admin\AdminMessageController;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
@@ -43,6 +44,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/invoices/mark-all-paid', [App\Http\Controllers\Admin\InvoiceController::class, 'markAllAsPaid'])->name('invoices.mark-all-paid');
     Route::get('/invoices/export', [App\Http\Controllers\Admin\InvoiceController::class, 'export'])->name('invoices.export');
     Route::get('/invoices/filtered-data', [App\Http\Controllers\Admin\InvoiceController::class, 'getFilteredData'])->name('invoices.filtered-data');
+
+    // Routes pour la gestion des messages admin
+    Route::resource('messages', AdminMessageController::class);
+    Route::patch('messages/{message}/toggle-status', [AdminMessageController::class, 'toggleStatus'])->name('messages.toggle-status');
+    Route::get('messages/active', [AdminMessageController::class, 'getActiveMessages'])->name('messages.active');
 });
 
 
