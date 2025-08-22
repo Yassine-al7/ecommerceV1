@@ -139,19 +139,5 @@ class AdminMessageController extends Controller
             ->with('success', "Message {$status} avec succès !");
     }
 
-    /**
-     * API pour récupérer les messages actifs (pour les vendeurs)
-     */
-    public function getActiveMessages(Request $request)
-    {
-        $role = $request->user()->role ?? 'user';
 
-        $messages = AdminMessage::active()
-            ->forRole($role)
-            ->orderBy('priority', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json($messages);
-    }
 }

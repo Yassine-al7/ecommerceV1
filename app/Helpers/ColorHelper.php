@@ -46,7 +46,12 @@ class ColorHelper
     public static function getBackgroundColor($couleur)
     {
         $colorMap = self::getPredefinedColors();
-        $couleurLower = strtolower(trim($couleur));
+
+        // S'assurer que $couleur est une chaîne avant d'appliquer trim()
+        if (is_array($couleur)) {
+            $couleur = is_array($couleur) && isset($couleur[0]) ? $couleur[0] : '';
+        }
+        $couleurLower = strtolower(trim((string)$couleur));
 
         // Déterminer la couleur de fond
         if (isset($colorMap[$couleurLower])) {

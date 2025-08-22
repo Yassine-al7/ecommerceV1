@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\Product;
+use App\Services\ColorStockNotificationService;
 
 class DashboardController extends Controller
 {
@@ -58,6 +60,9 @@ class DashboardController extends Controller
         // Données pour le graphique (7 derniers jours)
         $chartData = $this->getChartData($period);
 
+        // Vérification automatique des stocks faibles
+        $stockAlerts = $this->getStockAlerts();
+
         return view('admin.dashboard', compact(
             'totalOrders',
             'totalSellers',
@@ -67,7 +72,8 @@ class DashboardController extends Controller
             'chartData',
             'period',
             'startDate',
-            'endDate'
+            'endDate',
+            'stockAlerts'
         ));
     }
 
@@ -93,6 +99,64 @@ class DashboardController extends Controller
     {
         $products = \App\Models\Product::all();
         return view('admin.stock', compact('products'));
+    }
+
+    /**
+     * Vérifier les stocks faibles et créer des alertes
+     */
+    private function getStockAlerts()
+    {
+        $alerts = [];
+        
+        // Vérifier les produits avec stock faible (≤5)
+        $lowStockProducts = Product::where('quantite_stock', '<=', 5)
+            ->where('quantite_stock', '>', 0)
+            ->with('category')
+            ->get();
+            
+        // Vérifier les produits en rupture (stock = 0)
+        $outOfStockProducts = Product::where('quantite_stock', '<=', 0)
+            ->with('category')
+            ->get();
+            
+        // Vérifier les stocks par couleur si disponible
+        $colorStockAlerts = [];
+        foreach (Product::whereNotNull('stock_couleurs')->get() as $product) {
+            if ($product->stock_couleurs) {
+                $stockColors = is_array($product->stock_couleurs) ? $product->stock_couleurs : json_decode($product->stock_couleurs, true);
+                
+                if (is_array($stockColors)) {
+                    foreach ($stockColors as $color => $quantity) {
+                        if ($quantity <= 5 && $quantity > 0) {
+                            $colorStockAlerts[] = [
+                                'product' => $product,
+                                'color' => $color,
+                                'quantity' => $quantity,
+                                'type' => 'low_stock'
+                            ];
+                        } elseif ($quantity <= 0) {
+                            $colorStockAlerts[] = [
+                                'product' => $product,
+                                'color' => $color,
+                                'quantity' => $quantity,
+                                'type' => 'out_of_stock'
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (count($lowStockProducts) > 0 || count($outOfStockProducts) > 0 || count($colorStockAlerts) > 0) {
+            $alerts = [
+                'low_stock' => $lowStockProducts,
+                'out_of_stock' => $outOfStockProducts,
+                'color_alerts' => $colorStockAlerts,
+                'total_alerts' => count($lowStockProducts) + count($outOfStockProducts) + count($colorStockAlerts)
+            ];
+        }
+        
+        return $alerts;
     }
 
     /**

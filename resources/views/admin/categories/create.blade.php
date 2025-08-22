@@ -57,23 +57,7 @@
                     @enderror
                 </div>
 
-                <!-- Couleur de la catégorie -->
-                <div>
-                    <label for="color" class="block text-sm font-medium text-gray-700 mb-2">
-                        Couleur <span class="text-gray-500">(optionnel)</span>
-                    </label>
-                    <div class="flex items-center space-x-3">
-                        <input type="color"
-                               id="color"
-                               name="color"
-                               value="{{ old('color', '#3B82F6') }}"
-                               class="w-12 h-10 border border-gray-300 rounded cursor-pointer">
-                        <span class="text-sm text-gray-600">Choisissez une couleur pour identifier la catégorie</span>
-                    </div>
-                    @error('color')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+
 
                 <!-- Statut -->
                 <div>

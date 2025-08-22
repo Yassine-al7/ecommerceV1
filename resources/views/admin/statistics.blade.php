@@ -1,125 +1,253 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistics - Admin Panel</title>
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-</head>
-<body>
-    @extends('layouts.app')
+@extends('layouts.app')
 
-    @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-7xl mx-auto">
-            <h1 class="text-3xl font-bold text-gray-800 mb-8">Tableau de Bord - Statistiques</h1>
+@section('title', 'Statistiques - Admin Panel')
 
-            <!-- Statistiques des commandes par statut -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                @foreach(['en attente', 'en cours', 'livré', 'annulé'] as $status)
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-full
-                                @if($status == 'en attente') bg-yellow-100 text-yellow-600
-                                @elseif($status == 'en cours') bg-blue-100 text-blue-600
-                                @elseif($status == 'livré') bg-green-100 text-green-600
-                                @else bg-red-100 text-red-600
-                                @endif">
-                                <i class="fas
-                                    @if($status == 'en attente') fa-clock
-                                    @elseif($status == 'en cours') fa-truck
-                                    @elseif($status == 'livré') fa-check-circle
-                                    @else fa-times-circle
-                                    @endif text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Commandes {{ ucfirst($status) }}</p>
-                                <p class="text-2xl font-semibold text-gray-900">
-                                    {{ $orderStats[$status] ?? 0 }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
+@section('content')
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Statistiques - Graphiques</h1>
+
+        <!-- Chiffre d'affaires total des commandes livrées -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Chiffre d'Affaires Total</h3>
+            <div class="text-4xl font-bold text-green-600 mb-2">
+                {{ number_format($topSellers->sum('total_revenue'), 2) }} MAD
             </div>
+            <p class="text-sm text-gray-600">Total des commandes livrées</p>
+        </div>
 
-            <!-- Chiffre d'affaires et produits -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Chiffre d'affaires -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Chiffre d'Affaires</h3>
-                    <div class="text-3xl font-bold text-green-600 mb-2">
-                        {{ number_format($totalRevenue, 2) }} MAD
-                    </div>
-                    <p class="text-sm text-gray-600">Total des commandes livrées</p>
-                </div>
-
-                <!-- Total des produits -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Produits</h3>
-                    <div class="text-3xl font-bold text-blue-600 mb-2">
-                        {{ $totalProducts }}
-                    </div>
-                    <p class="text-sm text-gray-600">Total des produits en stock</p>
-                </div>
+        <!-- Graphique des top 5 produits vendus -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 Produits Les Plus Vendus</h3>
+            <div class="h-80">
+                <canvas id="productsChart"></canvas>
             </div>
+        </div>
 
-            <!-- Top produits vendus -->
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Top Produits Vendus</h3>
-                <div class="space-y-3">
-                    @forelse($topProducts as $product)
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center">
-                                <span class="text-lg font-semibold text-gray-400 mr-3">#{{ $loop->iteration }}</span>
-                                <div>
-                                    <p class="font-medium text-gray-900">{{ $product->name }}</p>
-                                    <p class="text-sm text-gray-600">{{ $product->category->name ?? 'Sans catégorie' }}</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-semibold text-gray-900">{{ $product->total_sales ?? 0 }}</p>
-                                <p class="text-sm text-gray-600">ventes</p>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-gray-500 text-center py-4">Aucun produit vendu pour le moment</p>
-                    @endforelse
-                </div>
+        <!-- Graphique des top 6 vendeurs -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 6 Vendeurs Par Ventes</h3>
+            <div class="h-80">
+                <canvas id="sellersChart"></canvas>
             </div>
+        </div>
 
-            <!-- Activités récentes -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Activités Récentes</h3>
-                <div class="space-y-3">
-                    @forelse($recentOrders as $order)
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full
-                                    @if($order->status == 'en attente') bg-yellow-500
-                                    @elseif($order->status == 'en cours') bg-blue-500
-                                    @elseif($order->status == 'livré') bg-green-500
-                                    @else bg-red-500
-                                    @endif mr-3"></div>
-                                <div>
-                                    <p class="font-medium text-gray-900">Commande #{{ $order->reference }}</p>
-                                    <p class="text-sm text-gray-600">
-                                        {{ $order->nom_client }} - {{ $order->seller->name ?? 'N/A' }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-semibold text-gray-900">{{ number_format($order->prix_commande, 2) }} MAD</p>
-                                <p class="text-sm text-gray-600">{{ ucfirst($order->status) }}</p>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-gray-500 text-center py-4">Aucune commande récente</p>
-                    @endforelse
-                </div>
+        <!-- Graphique en ligne des ventes par mois -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                📈 Évolution des Ventes Réelles (6 derniers mois)
+                <span class="text-sm font-normal text-gray-600 ml-2">
+                    🔵 Commandes | 💰 Chiffre d'affaires
+                </span>
+            </h3>
+            <div class="h-80">
+                <canvas id="salesChart"></canvas>
             </div>
         </div>
     </div>
-    @endsection
-</body>
-</html>
+</div>
+
+<!-- Script Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration des couleurs pour les graphiques
+    const colors = {
+        primary: '#3b82f6',
+        secondary: '#10b981',
+        accent: '#f59e0b',
+        danger: '#ef4444',
+        purple: '#8b5cf6',
+        pink: '#ec4899'
+    };
+
+    // Graphique des top 5 produits vendus
+    const productsCtx = document.getElementById('productsChart').getContext('2d');
+    new Chart(productsCtx, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($topProducts->pluck('name')) !!},
+            datasets: [{
+                label: 'Nombre de ventes',
+                data: {!! json_encode($topProducts->pluck('total_sales')) !!},
+                backgroundColor: [
+                    colors.primary,
+                    colors.secondary,
+                    colors.accent,
+                    colors.purple,
+                    colors.pink
+                ],
+                borderColor: [
+                    colors.primary,
+                    colors.secondary,
+                    colors.accent,
+                    colors.purple,
+                    colors.pink
+                ],
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Graphique des top 6 vendeurs
+    const sellersCtx = document.getElementById('sellersChart').getContext('2d');
+    new Chart(sellersCtx, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($topSellers->pluck('name')) !!},
+            datasets: [{
+                label: 'Chiffre d\'affaires (MAD)',
+                data: {!! json_encode($topSellers->pluck('total_revenue')) !!},
+                backgroundColor: [
+                    colors.primary,
+                    colors.secondary,
+                    colors.accent,
+                    colors.danger,
+                    colors.purple,
+                    colors.pink
+                ],
+                borderColor: [
+                    colors.primary,
+                    colors.secondary,
+                    colors.accent,
+                    colors.danger,
+                    colors.purple,
+                    colors.pink
+                ],
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString() + ' MAD';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Graphique en ligne des ventes par mois (données réelles)
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($monthlySales->pluck('month_name')) !!},
+            datasets: [{
+                label: 'Nombre de commandes livrées',
+                data: {!! json_encode($monthlySales->pluck('total_orders')) !!},
+                borderColor: colors.primary,
+                backgroundColor: colors.primary + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: colors.primary,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }, {
+                label: '💰 Chiffre d\'affaires (MAD)',
+                data: {!! json_encode($monthlySales->pluck('total_revenue')) !!},
+                borderColor: colors.secondary,
+                backgroundColor: colors.secondary + '20',
+                borderWidth: 4,
+                fill: false,
+                tension: 0.4,
+                pointBackgroundColor: colors.secondary,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 3,
+                pointRadius: 8,
+                pointHoverRadius: 10,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20,
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+                            scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Nombre de commandes'
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                return Math.round(value); // Forcer les nombres entiers
+                            }
+                        }
+                    },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Chiffre d\'affaires (MAD)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString() + ' MAD';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+@endsection

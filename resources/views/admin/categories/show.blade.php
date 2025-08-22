@@ -44,17 +44,7 @@
                         </p>
                     </div>
 
-                    <!-- Couleur -->
-                    @if($category->color)
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Couleur</label>
-                        <div class="mt-1 flex items-center space-x-3">
-                            <div class="w-8 h-8 rounded border border-gray-300"
-                                 style="background-color: {{ $category->color }}"></div>
-                            <span class="text-gray-900 font-mono">{{ $category->color }}</span>
-                        </div>
-                    </div>
-                    @endif
+
 
                     <!-- Statut -->
                     <div>

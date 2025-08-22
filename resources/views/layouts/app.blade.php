@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Laravel App')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -23,10 +24,7 @@
             <!-- Sidebar Overlay for Mobile -->
             <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[9998] md:hidden hidden"></div>
 
-            <!-- Bandeau d'Alerte pour Messages Admin -->
-            <div id="adminMessagesContainer" class="fixed top-0 left-0 right-0 z-50 transform -translate-y-full transition-transform duration-500">
-                <!-- Les messages s'afficheront ici dynamiquement -->
-            </div>
+
 
             <!-- Sidebar Mobile (en haut) - UNIQUEMENT sur mobile -->
             <aside id="sidebar" class="md:hidden fixed top-0 left-0 right-0 z-[9999] bg-blue-800 text-white p-4 space-y-4 transform -translate-y-full transition-transform duration-300 ease-in-out shadow-2xl max-h-screen overflow-y-auto">

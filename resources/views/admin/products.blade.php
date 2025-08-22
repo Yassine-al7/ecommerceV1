@@ -136,12 +136,20 @@
                                         <div class="flex flex-wrap gap-2 mt-1">
                                             @foreach($couleurs as $couleur)
                                                 @php
-                                                    $backgroundColor = ColorHelper::getBackgroundColor($couleur);
+                                                    // Gérer le nouveau format des couleurs (objets avec name et hex)
+                                                    if (is_array($couleur) && isset($couleur['name'])) {
+                                                        $couleurName = $couleur['name'];
+                                                        $couleurHex = $couleur['hex'] ?? null;
+                                                    } else {
+                                                        $couleurName = is_string($couleur) ? $couleur : '';
+                                                        $couleurHex = null;
+                                                    }
+                                                    $backgroundColor = $couleurHex ?: ColorHelper::getBackgroundColor($couleurName);
                                                 @endphp
                                                 <div class="flex items-center space-x-1">
                                                     <div class="w-4 h-4 rounded-full border border-gray-300 shadow-sm"
                                                          style="background-color: {{ $backgroundColor }}"></div>
-                                                    <span class="text-xs text-gray-700">{{ $couleur }}</span>
+                                                    <span class="text-xs text-gray-700">{{ $couleurName }}</span>
                                                 </div>
                                             @endforeach
                                         </div>

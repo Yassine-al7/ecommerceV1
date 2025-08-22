@@ -11,6 +11,9 @@
                 <p class="text-gray-600">Vue d'ensemble de l'activité et accès rapide aux sections clés</p>
             </div>
 
+            <!-- Alertes de Stock -->
+            @include('components.stock-dashboard-alerts')
+
             <!-- Filtres temporels -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6 md:mb-8">
                 <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-4">Filtres temporels</h3>

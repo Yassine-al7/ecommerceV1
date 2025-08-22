@@ -15,7 +15,52 @@
         <div class="bg-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-6">
                 <h1 class="text-2xl font-bold text-gray-800">Gestion du Stock</h1>
+                <div class="flex space-x-3">
+                    <button onclick="checkAllStocks()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        Vérifier Tous les Stocks
+                    </button>
+                    <button onclick="exportStockReport()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-download mr-2"></i>
+                        Exporter Rapport
+                    </button>
+                </div>
             </div>
+
+            <!-- Résumé des Alertes de Stock -->
+            @php
+                $lowStockCount = $products->where('quantite_stock', '<=', 5)->where('quantite_stock', '>', 0)->count();
+                $outOfStockCount = $products->where('quantite_stock', '<=', 0)->count();
+                $totalAlerts = $lowStockCount + $outOfStockCount;
+            @endphp
+
+            @if($totalAlerts > 0)
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-400 text-xl mr-3"></i>
+                            <div>
+                                <h3 class="text-lg font-medium text-red-800">
+                                    ⚠️ {{ $totalAlerts }} Produit(s) Nécessite(nt) Votre Attention
+                                </h3>
+                                <p class="text-red-600 mt-1">
+                                    @if($outOfStockCount > 0)
+                                        <span class="font-medium">{{ $outOfStockCount }} en rupture</span>
+                                    @endif
+                                    @if($lowStockCount > 0)
+                                        @if($outOfStockCount > 0) et @endif
+                                        <span class="font-medium">{{ $lowStockCount }} avec stock faible</span>
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-red-600">Dernière vérification</p>
+                            <p class="text-sm font-medium text-red-800">{{ now()->format('d/m/Y H:i') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <div class="overflow-x-auto">
                 <table class="min-w-full bg-white border border-gray-200">
@@ -55,7 +100,24 @@
                                         @endif
                                         <div>
                                             <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
-                                            <div class="text-sm text-gray-500">{{ $product->couleur }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                @if($product->couleur)
+                                                    @php
+                                                        $couleurs = is_array($product->couleur) ? $product->couleur : json_decode($product->couleur, true) ?? [];
+                                                        $couleurNames = [];
+                                                        foreach ($couleurs as $couleur) {
+                                                            if (is_array($couleur) && isset($couleur['name'])) {
+                                                                $couleurNames[] = $couleur['name'];
+                                                            } else {
+                                                                $couleurNames[] = is_string($couleur) ? $couleur : '';
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    {{ implode(', ', array_filter($couleurNames)) }}
+                                                @else
+                                                    Aucune couleur
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -150,6 +212,70 @@
         </div>
     </div>
 </div>
+
+<script>
+function checkAllStocks() {
+    // Afficher un indicateur de chargement
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Vérification...';
+    button.disabled = true;
+
+    // Simuler une vérification (vous pouvez ajouter une vraie logique ici)
+    setTimeout(() => {
+        // Recharger la page pour afficher les nouvelles alertes
+        location.reload();
+    }, 2000);
+}
+
+function exportStockReport() {
+    // Créer un rapport simple
+    const table = document.querySelector('table');
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+    let csv = 'Produit,Catégorie,Stock,Prix Admin,Prix Vente,Statut\n';
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 6) {
+            const productName = cells[0].textContent.trim();
+            const category = cells[1].textContent.trim();
+            const stock = cells[2].textContent.trim();
+            const priceAdmin = cells[3].textContent.trim();
+            const priceVente = cells[4].textContent.trim();
+            const status = cells[5].textContent.trim();
+
+            csv += `"${productName}","${category}","${stock}","${priceAdmin}","${priceVente}","${status}"\n`;
+        }
+    });
+
+    // Télécharger le fichier CSV
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `rapport_stock_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Vérification automatique au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    // Si il y a des alertes, les mettre en évidence
+    const alertRows = document.querySelectorAll('tr');
+    alertRows.forEach(row => {
+        const stockCell = row.querySelector('td:nth-child(3)');
+        if (stockCell) {
+            const stockText = stockCell.textContent;
+            if (stockText.includes('Faible') || stockText.includes('Rupture')) {
+                row.classList.add('bg-red-50');
+            }
+        }
+    });
+});
+</script>
 @endsection
 </body>
 </html>

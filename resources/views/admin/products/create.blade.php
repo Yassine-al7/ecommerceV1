@@ -28,7 +28,7 @@
                     <!-- Catégorie -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie *</label>
-                        <select name="categorie_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <select name="categorie_id" id="categorie_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Sélectionner une catégorie</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" @selected(old('categorie_id') == $category->id)>
@@ -59,23 +59,36 @@
                                     ];
                                 @endphp
                                 @foreach($predefinedColors as $name => $hex)
-                                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-gray-200">
-                                        <input type="checkbox" name="couleurs[]" value="{{ $name }}"
-                                               @checked(in_array($name, old('couleurs', [])))
-                                               class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: {{ $hex }}"></div>
-                                        <span class="text-sm text-gray-700">{{ $name }}</span>
-                                    </label>
+                                    <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 border border-gray-200">
+                                        <label class="flex items-center space-x-3 cursor-pointer flex-1">
+                                            <input type="checkbox" name="couleurs[]" value="{{ $name }}"
+                                                   @checked(in_array($name, old('couleurs', [])))
+                                                   data-hex="{{ $hex }}"
+                                                   class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                                   onchange="updateColorHex(this)">
+                                            <div class="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: {{ $hex }}"></div>
+                                            <span class="text-sm text-gray-700">{{ $name }}</span>
+                                        </label>
+                                        <div class="flex items-center space-x-2">
+                                            <label class="text-xs text-gray-600">Stock:</label>
+                                            <input type="number" name="stock_couleur_{{ $loop->index }}"
+                                                   placeholder="0" min="0"
+                                                   class="w-16 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                                                   value="{{ old('stock_couleur_' . $loop->index, 0) }}">
+                                        </div>
+                                    </div>
                                 @endforeach
                             </div>
                         </div>
 
-                        <!-- Interface d'ajout de couleur personnalisée -->
+                                                <!-- Interface d'ajout de couleur personnalisée -->
                         <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <p class="text-sm font-medium text-blue-800 mb-3">Ajouter une couleur personnalisée :</p>
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <div class="flex items-center space-x-2">
-                                    <input type="color" id="newColorPicker" class="w-12 h-10 border border-gray-300 rounded cursor-pointer">
+                                    <input type="color" id="newColorPicker" value="#ff6b6b" class="w-12 h-10 border border-gray-300 rounded cursor-pointer">
+                                    <!-- Prévisualisation de la couleur sélectionnée -->
+                                    <div id="colorPreview" class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: #ff6b6b;"></div>
                                     <span class="text-sm text-gray-600">Couleur</span>
                                 </div>
                                 <div class="flex-1">
@@ -85,7 +98,7 @@
                                 <button type="button" onclick="addCustomColor()"
                                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                                         <i class="fas fa-plus mr-2"></i>Ajouter
-                                    </button>
+                                </button>
                             </div>
                         </div>
 
@@ -105,8 +118,8 @@
                     </div>
 
                     <!-- Tailles -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tailles Disponibles *</label>
+                    <div class="md:col-span-2" id="taillesSection">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tailles Disponibles <span id="taillesRequired" class="text-red-500">*</span></label>
                         <p class="text-xs text-gray-500 mb-2">Cochez des tailles standards ou ajoutez des tailles personnalisées (ex: 37, 32 Bébé, ESPA 37).</p>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             @php
@@ -116,7 +129,7 @@
                                 <label class="flex items-center space-x-2 cursor-pointer">
                                     <input type="checkbox" name="tailles[]" value="{{ $size }}"
                                            @checked(in_array($size, old('tailles', [])))
-                                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 taille-checkbox">
                                     <span class="text-sm text-gray-700">{{ $size }}</span>
                                 </label>
                             @endforeach
@@ -194,6 +207,9 @@
 // Système de couleurs SIMPLE : checkboxes seulement
 console.log('Système de couleurs simplifié chargé');
 
+// Compteur pour les couleurs personnalisées
+let customColorCounter = 0;
+
 // Fonction pour les tailles personnalisées
 function addCustomSize() {
     const input = document.getElementById('customSizeInput');
@@ -204,7 +220,7 @@ function addCustomSize() {
         return;
     }
 
-    let value = (input.value || '').trim();
+    let value = input.value ? String(input.value).trim() : '';
     if (!value) return;
 
     // Vérifier si la taille existe déjà
@@ -242,19 +258,24 @@ function addCustomSize() {
     input.value = '';
 }
 
+// Fonction pour supprimer une couleur personnalisée
+function removeCustomColor(button) {
+    button.parentElement.remove();
+}
+
 // Fonction pour les couleurs personnalisées
 function addCustomColor() {
     const colorPicker = document.getElementById('newColorPicker');
     const colorNameInput = document.getElementById('newColorName');
     const customColorsContainer = document.getElementById('customColorsContainer');
-    const hiddenInputsContainer = document.getElementById('hiddenCustomColorsInputs');
+    const colorPreview = document.getElementById('colorPreview');
 
-    if (!colorPicker || !colorNameInput || !customColorsContainer || !hiddenInputsContainer) {
+    if (!colorPicker || !colorNameInput || !customColorsContainer || !colorPreview) {
         console.error('Éléments des couleurs personnalisées non trouvés');
         return;
     }
 
-    const colorName = colorNameInput.value.trim();
+    const colorName = colorNameInput.value ? String(colorNameInput.value).trim() : '';
     const colorHex = colorPicker.value;
 
     if (!colorName || !colorHex) {
@@ -270,36 +291,84 @@ function addCustomColor() {
         return;
     }
 
-    // Créer l'élément visuel
+    // Créer l'élément visuel avec l'input caché intégré
     const colorElement = document.createElement('div');
     colorElement.className = 'flex items-center space-x-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-2';
     colorElement.innerHTML = `
         <input type="hidden" name="couleurs[]" value="${colorName}">
+        <input type="hidden" name="couleurs_hex[]" value="${colorHex}">
         <div class="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: ${colorHex}"></div>
         <span class="text-sm font-medium text-blue-800">${colorName}</span>
-        <button type="button" onclick="this.parentElement.remove()"
-                class="text-red-500 hover:text-red-700 px-2 py-1">
-            <i class="fas fa-times"></i>
-        </button>
+        <div class="flex items-center space-x-2 ml-auto">
+            <label class="text-xs text-gray-600">Stock:</label>
+            <input type="number" name="stock_couleur_custom_${customColorCounter}"
+                   placeholder="0" min="0"
+                   class="w-16 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                   value="0">
+            <button type="button" onclick="removeCustomColor(this)"
+                    class="text-red-500 hover:text-red-700 px-2 py-1">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     `;
 
     customColorsContainer.appendChild(colorElement);
 
-    // Ajouter à l'input caché
-    const newHiddenInput = document.createElement('input');
-    newHiddenInput.type = 'hidden';
-    newHiddenInput.name = 'couleurs[]';
-    newHiddenInput.value = colorName;
-    hiddenInputsContainer.appendChild(newHiddenInput);
+    // Incrémenter le compteur pour la prochaine couleur personnalisée
+    customColorCounter++;
 
     // Réinitialiser les inputs
-    colorPicker.value = '#000000'; // Reset color picker to black
+    colorPicker.value = '#ff6b6b'; // Reset color picker to default color
     colorNameInput.value = '';
+    colorPreview.style.backgroundColor = '#ff6b6b'; // Reset preview
+}
+
+// Fonction pour gérer les couleurs hex des couleurs prédéfinies
+function updateColorHex(checkbox) {
+    const hexValue = checkbox.getAttribute('data-hex');
+    const existingHexInput = document.querySelector(`input[type="hidden"][name="couleurs_hex[]"][value="${hexValue}"]`);
+
+    if (checkbox.checked && !existingHexInput) {
+        // Ajouter l'input hex si la couleur est cochée
+        const hexInput = document.createElement('input');
+        hexInput.type = 'hidden';
+        hexInput.name = 'couleurs_hex[]';
+        hexInput.value = hexValue;
+        hexInput.setAttribute('data-color', checkbox.value);
+        checkbox.parentElement.appendChild(hexInput);
+    } else if (!checkbox.checked && existingHexInput) {
+        // Supprimer l'input hex si la couleur est décochée
+        existingHexInput.remove();
+    }
+}
+
+// Fonction pour mettre à jour la prévisualisation en temps réel
+function updateColorPreview() {
+    const colorPicker = document.getElementById('newColorPicker');
+    const colorPreview = document.getElementById('colorPreview');
+
+    if (!colorPicker || !colorPreview) return;
+
+    const selectedColor = colorPicker.value;
+    colorPreview.style.backgroundColor = selectedColor;
+    console.log('Couleur sélectionnée:', selectedColor);
 }
 
 // Initialisation simple
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Formulaire initialisé avec système de couleurs personnalisées');
+
+    // Initialiser la prévisualisation avec la couleur par défaut
+    const colorPicker = document.getElementById('newColorPicker');
+    const colorPreview = document.getElementById('colorPreview');
+
+    if (colorPicker && colorPreview) {
+        colorPreview.style.backgroundColor = colorPicker.value;
+
+        // Ajouter les événements pour le color picker
+        colorPicker.addEventListener('change', updateColorPreview);
+        colorPicker.addEventListener('input', updateColorPreview);
+    }
 
     // Validation simple du formulaire
     const form = document.querySelector('form');
@@ -329,10 +398,69 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Formulaire non trouvé');
     }
 
-    // Initialiser le color picker avec une couleur par défaut
-    const colorPicker = document.getElementById('newColorPicker');
-    if (colorPicker) {
-        colorPicker.value = '#ff6b6b'; // Couleur par défaut (rouge corail)
+    // Gestion conditionnelle des tailles selon la catégorie
+    const categorieSelect = document.getElementById('categorie_id');
+    const taillesSection = document.getElementById('taillesSection');
+    const taillesRequired = document.getElementById('taillesRequired');
+    const tailleCheckboxes = document.querySelectorAll('.taille-checkbox');
+    const customSizeInput = document.getElementById('customSizeInput');
+    const addSizeButton = document.querySelector('button[onclick="addCustomSize()"]');
+
+    console.log('Elements trouvés (create):');
+    console.log('categorieSelect:', categorieSelect);
+    console.log('taillesSection:', taillesSection);
+    console.log('tailleCheckboxes:', tailleCheckboxes.length);
+
+        function toggleTaillesSection() {
+        if (categorieSelect && categorieSelect.value) {
+            const selectedOption = categorieSelect.options[categorieSelect.selectedIndex];
+            const categoryText = selectedOption.text.toLowerCase();
+            const isAccessoire = categoryText.includes('accessoire');
+
+            console.log('Catégorie sélectionnée:', selectedOption.text);
+            console.log('Texte en minuscules:', categoryText);
+            console.log('Est accessoire:', isAccessoire);
+
+            if (isAccessoire) {
+                // Masquer la section des tailles pour les accessoires
+                taillesSection.style.display = 'none';
+                taillesRequired.style.display = 'none';
+
+                // Décocher toutes les tailles et retirer l'attribut name pour éviter l'envoi
+                tailleCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    checkbox.removeAttribute('name');
+                    checkbox.disabled = true;
+                });
+
+                // Vider les tailles personnalisées
+                document.getElementById('customSizesContainer').innerHTML = '';
+                document.getElementById('customSizeInput').value = '';
+
+                // Désactiver les inputs
+                customSizeInput.disabled = true;
+                addSizeButton.disabled = true;
+            } else {
+                // Afficher la section des tailles pour les autres catégories
+                taillesSection.style.display = 'block';
+                taillesRequired.style.display = 'inline';
+
+                // Réactiver les inputs et remettre l'attribut name
+                tailleCheckboxes.forEach(checkbox => {
+                    checkbox.setAttribute('name', 'tailles[]');
+                    checkbox.disabled = false;
+                });
+                customSizeInput.disabled = false;
+                addSizeButton.disabled = false;
+            }
+        }
+    }
+
+    // Écouter les changements de catégorie
+    if (categorieSelect) {
+        categorieSelect.addEventListener('change', toggleTaillesSection);
+        // Appliquer au chargement initial
+        toggleTaillesSection();
     }
 });
 </script>

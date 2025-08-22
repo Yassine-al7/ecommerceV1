@@ -127,11 +127,11 @@ class OrderController extends Controller
 			}
 
 			                // Nettoyer la taille sélectionnée (supprimer les caractères de formatage éventuels)
-                $tailleSelectionnee = preg_replace('/[\[\]\'"]/', '', trim($productData['taille_produit']));
+                $tailleSelectionnee = preg_replace('/[\[\]\'"]/', '', trim((string)$productData['taille_produit']));
 
                 // Nettoyer aussi les tailles disponibles
                 $taillesClean = array_map(function($taille) {
-                    return preg_replace('/[\[\]\'"]/', '', trim($taille));
+                    return preg_replace('/[\[\]\'"]/', '', trim((string)$taille));
                 }, $tailles);
 
                 \Log::info("Taille sélectionnée nettoyée: '{$tailleSelectionnee}' pour le produit {$product->name}");
@@ -270,11 +270,11 @@ class OrderController extends Controller
 			}
 
 			// Nettoyer la taille sélectionnée
-			$tailleSelectionnee = preg_replace('/[\[\]\'"]/', '', trim($productData['taille_produit']));
+			$tailleSelectionnee = preg_replace('/[\[\]\'"]/', '', trim((string)$productData['taille_produit']));
 
 			// Nettoyer aussi les tailles disponibles
 			$taillesClean = array_map(function($taille) {
-				return preg_replace('/[\[\]\'"]/', '', trim($taille));
+				return preg_replace('/[\[\]\'"]/', '', trim((string)$taille));
 			}, $tailles);
 
 			// Vérifier que la taille sélectionnée est disponible

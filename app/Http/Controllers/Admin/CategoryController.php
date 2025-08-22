@@ -40,7 +40,6 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
             'description' => 'nullable|string|max:1000',
-            'color' => 'nullable|string|max:7',
             'is_active' => 'required|boolean'
         ]);
 
@@ -83,7 +82,6 @@ class CategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
             'description' => 'nullable|string|max:1000',
-            'color' => 'nullable|string|max:7',
             'is_active' => 'required|boolean'
         ]);
 

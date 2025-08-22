@@ -154,30 +154,30 @@
                             <div class="flex items-center mb-2">
                                 <span class="text-sm text-gray-600 mr-2">Couleur:</span>
                                 @php
-                                    // Déterminer si c'est une couleur hex ou un nom
-                                    $isHexColor = str_starts_with($product->couleur, '#') && strlen($product->couleur) === 7;
-                                    $displayColor = $isHexColor ? $product->couleur : $product->couleur;
+                                    // Gérer le nouveau format des couleurs (objets avec name et hex)
+                                    $couleurs = is_array($product->couleur) ? $product->couleur : json_decode($product->couleur, true) ?? [];
+                                    $couleurNames = [];
+                                    $backgroundColor = '#cccccc';
 
-                                    // Mapper les noms de couleurs vers des codes hex
-                                    $colorMap = [
-                                        'rouge' => '#ff0000', 'vert' => '#00ff00', 'bleu' => '#0000ff',
-                                        'jaune' => '#ffff00', 'noir' => '#000000', 'blanc' => '#ffffff',
-                                        'orange' => '#ffa500', 'violet' => '#800080', 'rose' => '#ffc0cb',
-                                        'marron' => '#a52a2a', 'gris' => '#808080', 'beige' => '#f5f5dc'
-                                    ];
+                                    if (!empty($couleurs)) {
+                                        foreach ($couleurs as $couleur) {
+                                            if (is_array($couleur) && isset($couleur['name'])) {
+                                                $couleurNames[] = $couleur['name'];
+                                                $backgroundColor = $couleur['hex'] ?? $backgroundColor;
+                                            } else {
+                                                $couleurNames[] = is_string($couleur) ? $couleur : '';
+                                            }
+                                        }
+                                    }
 
-                                    $backgroundColor = $isHexColor ? $product->couleur :
-                                        (isset($colorMap[strtolower($product->couleur)]) ? $colorMap[strtolower($product->couleur)] : '#cccccc');
+                                    $displayText = implode(', ', array_filter($couleurNames));
                                 @endphp
 
                                 <div class="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm flex items-center justify-center"
                                      style="background-color: {{ $backgroundColor }}">
-                                    @if($isHexColor)
-                                        <!-- Si c'est une couleur hex, afficher un petit indicateur -->
-                                        <div class="w-2 h-2 rounded-full bg-white opacity-80"></div>
-                                @endif
+                                    <div class="w-2 h-2 rounded-full bg-white opacity-80"></div>
                                 </div>
-                                <span class="ml-3 text-sm font-medium text-gray-800">{{ ucfirst($product->couleur) }}</span>
+                                <span class="ml-3 text-sm font-medium text-gray-800">{{ ucfirst($displayText) }}</span>
                             </div>
                         @endif
 

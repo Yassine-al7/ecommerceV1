@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\AdminMessageController;
+use App\Http\Controllers\Admin\ColorStockController;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
@@ -48,7 +49,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Routes pour la gestion des messages admin
     Route::resource('messages', AdminMessageController::class);
     Route::patch('messages/{message}/toggle-status', [AdminMessageController::class, 'toggleStatus'])->name('messages.toggle-status');
-    Route::get('messages/active', [AdminMessageController::class, 'getActiveMessages'])->name('messages.active');
+
+
+    // Routes pour la gestion du stock par couleur
+    Route::get('/color-stock', [ColorStockController::class, 'index'])->name('color-stock.index');
+    Route::get('/color-stock/{product}', [ColorStockController::class, 'show'])->name('color-stock.show');
+    Route::post('/color-stock/{product}/update', [ColorStockController::class, 'updateColorStock'])->name('color-stock.update');
+    Route::get('/color-stock/statistics', [ColorStockController::class, 'getStatistics'])->name('color-stock.statistics');
+    Route::get('/color-stock/search', [ColorStockController::class, 'searchByColor'])->name('color-stock.search');
+    Route::get('/color-stock/export', [ColorStockController::class, 'export'])->name('color-stock.export');
 });
 
 
