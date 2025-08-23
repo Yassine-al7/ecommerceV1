@@ -79,8 +79,8 @@
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
                         <span><i class="fas fa-box mr-2 text-green-600"></i>Produits de la commande</span>
-                        <button type="button" id="addProductBtn" class="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                            <i class="fas fa-plus mr-3 text-lg"></i>+ Ajouter le premier produit
+                        <button type="button" onclick="refreshStockDisplay()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105" title="Rafraîchir l'affichage du stock">
+                            <i class="fas fa-sync-alt mr-2"></i>Rafraîchir Stock
                         </button>
                     </h3>
 
@@ -1408,7 +1408,27 @@ function confirmOrder() {
     }
 
     // Confirmation finale
-    return confirm('Êtes-vous sûr de vouloir créer cette commande ?');
+    if (confirm('Êtes-vous sûr de vouloir créer cette commande ?')) {
+        console.log('✅ Commande confirmée, soumission du formulaire...');
+
+        // Soumettre le formulaire
+        const form = document.querySelector('form');
+        if (form) {
+            // Ajouter un événement pour rafraîchir le stock après la soumission
+            form.addEventListener('submit', function() {
+                console.log('🔄 Formulaire soumis, rafraîchissement du stock en cours...');
+
+                // Attendre un peu que la commande soit traitée, puis rafraîchir l'affichage
+                setTimeout(() => {
+                    refreshStockDisplay();
+                }, 2000); // 2 secondes de délai
+            });
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // Fonction de debug spécifique pour l'élément marge
@@ -1731,6 +1751,102 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('=== Initialisation terminée ===');
 });
+
+// Fonction pour rafraîchir l'affichage du stock après une commande
+function refreshStockDisplay() {
+    console.log('🔄 Rafraîchissement de l\'affichage du stock...');
+
+    // Recharger les données des produits depuis le serveur
+    const productSelects = document.querySelectorAll('.product-select');
+
+    productSelects.forEach(async (productSelect, index) => {
+        if (productSelect.value) {
+            const productId = productSelect.value;
+            console.log(`🔄 Rafraîchissement du stock pour le produit #${index + 1} (ID: ${productId})`);
+
+            try {
+                // Faire une requête AJAX pour récupérer les données mises à jour
+                const response = await fetch(`/api/products/${productId}/stock`);
+                if (response.ok) {
+                    const productData = await response.json();
+                    console.log('✅ Données de stock mises à jour:', productData);
+
+                    // Mettre à jour l'affichage des couleurs avec le nouveau stock
+                    updateColorOptions(productSelect, productData);
+                } else {
+                    console.warn('⚠️ Impossible de récupérer les données de stock mises à jour');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du rafraîchissement du stock:', error);
+            }
+        }
+    });
+}
+
+// Fonction pour mettre à jour les options de couleur avec le nouveau stock
+function updateColorOptions(productSelect, productData) {
+    const productItem = productSelect.closest('.product-item');
+    const colorSelect = productItem.querySelector('.color-select');
+
+    if (!colorSelect) return;
+
+    // Vider les options existantes
+    colorSelect.innerHTML = '<option value="">Sélectionnez une couleur</option>';
+
+    // Récupérer le stock mis à jour
+    const stockCouleurs = productData.stock_couleurs || [];
+    const couleurs = [];
+
+    if (Array.isArray(stockCouleurs) && stockCouleurs.length > 0) {
+        couleurs = stockCouleurs.map(sc => ({
+            name: sc.name,
+            quantity: sc.quantity || 0
+        }));
+    }
+
+    // Afficher les couleurs avec le nouveau stock
+    if (couleurs.length > 0) {
+        let couleursDisponibles = 0;
+
+        couleurs.forEach(couleur => {
+            const option = document.createElement('option');
+            option.value = couleur.name;
+
+            const stockQuantity = parseInt(couleur.quantity) || 0;
+
+            if (stockQuantity <= 0) {
+                // Couleur en rupture de stock
+                option.textContent = `${couleur.name} (en stock : 0)`;
+                option.setAttribute('data-stock', stockQuantity);
+                option.disabled = true;
+                option.style.color = '#999';
+                option.style.fontStyle = 'italic';
+                console.log(`⚠️ Couleur en rupture mise à jour: ${couleur.name} (stock: ${stockQuantity})`);
+            } else {
+                // Couleur disponible
+                couleursDisponibles++;
+                option.textContent = `${couleur.name} (en stock : ${stockQuantity})`;
+                option.setAttribute('data-stock', stockQuantity);
+                console.log(`🎨 Couleur disponible mise à jour: ${couleur.name} (stock: ${stockQuantity})`);
+            }
+
+            colorSelect.appendChild(option);
+        });
+
+        console.log(`✅ Stock rafraîchi: ${couleurs.length} couleurs (${couleursDisponibles} disponibles)`);
+
+        // Si aucune couleur disponible, afficher un message d'avertissement
+        if (couleursDisponibles === 0) {
+            const warningOption = document.createElement('option');
+            warningOption.value = '';
+            warningOption.textContent = '⚠️ Toutes les couleurs sont en rupture de stock';
+            warningOption.disabled = true;
+            warningOption.style.color = '#ff6b6b';
+            warningOption.style.fontWeight = 'bold';
+            colorSelect.insertBefore(warningOption, colorSelect.firstChild);
+        }
+    }
+}
 </script>
 
 <style>

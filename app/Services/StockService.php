@@ -8,141 +8,189 @@ use Illuminate\Support\Facades\Log;
 class StockService
 {
     /**
-     * Diminue le stock d'un produit
+     * Diminue le stock d'un produit pour une commande
+     *
+     * @param int $productId
+     * @param string $couleur
+     * @param int $quantite
+     * @return bool
      */
-    public static function decreaseStock(Product $product, int $quantity, string $color = null)
+    public static function decreaseStock(int $productId, string $couleur, int $quantite): bool
     {
         try {
+            $product = Product::find($productId);
+            if (!$product) {
+                Log::error("Produit non trouvé pour la diminution de stock: ID {$productId}");
+                return false;
+            }
+
             // Vérifier que le stock est suffisant
-            if ($product->quantite_stock < $quantity) {
-                throw new \Exception("Stock insuffisant pour {$product->name}. Stock disponible: {$product->quantite_stock}");
+            if ($product->quantite_stock < $quantite) {
+                Log::warning("Stock insuffisant pour {$product->name} (ID: {$productId}) - Demande: {$quantite}, Disponible: {$product->quantite_stock}");
+                // Note: On permet la commande même en rupture de stock
             }
 
-            // Diminuer le stock total
-            $product->decrement('quantite_stock', $quantity);
+            // Diminuer le stock total du produit
+            $product->quantite_stock = max(0, $product->quantite_stock - $quantite);
 
-            // Si une couleur est spécifiée, diminuer le stock de cette couleur
-            if ($color) {
-                $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
-                foreach ($stockCouleurs as &$stockColor) {
-                    if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $color) {
-                        $stockColor['quantity'] = max(0, ($stockColor['quantity'] ?? 0) - $quantity);
-                        break;
-                    }
-                }
-                $product->update(['stock_couleurs' => json_encode($stockCouleurs)]);
-            }
-
-            Log::info("Stock diminué pour {$product->name} (ID: {$product->id}) - Quantité: {$quantity} - Couleur: {$color} - Nouveau stock: {$product->quantite_stock}");
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error("Erreur lors de la diminution du stock: " . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Augmente le stock d'un produit
-     */
-    public static function increaseStock(Product $product, int $quantity, string $color = null)
-    {
-        try {
-            // Augmenter le stock total
-            $product->increment('quantite_stock', $quantity);
-
-            // Si une couleur est spécifiée, augmenter le stock de cette couleur
-            if ($color) {
-                $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
-                foreach ($stockCouleurs as &$stockColor) {
-                    if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $color) {
-                        $stockColor['quantity'] = ($stockColor['quantity'] ?? 0) + $quantity;
-                        break;
-                    }
-                }
-                $product->update(['stock_couleurs' => json_encode($stockCouleurs)]);
-            }
-
-            Log::info("Stock augmenté pour {$product->name} (ID: {$product->id}) - Quantité: {$quantity} - Couleur: {$color} - Nouveau stock: {$product->quantite_stock}");
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error("Erreur lors de l'augmentation du stock: " . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    /**
-     * Vérifie si le stock est suffisant
-     */
-    public static function checkStockAvailability(Product $product, int $quantity, string $color = null): bool
-    {
-        // Vérifier le stock total
-        if ($product->quantite_stock < $quantity) {
-            return false;
-        }
-
-        // Si une couleur est spécifiée, vérifier le stock de cette couleur
-        if ($color) {
+            // Diminuer le stock de la couleur spécifique
             $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
-            foreach ($stockCouleurs as $stockColor) {
-                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $color) {
-                    return ($stockColor['quantity'] ?? 0) >= $quantity;
-                }
-            }
-            return false; // Couleur non trouvée
-        }
-
-        return true;
-    }
-
-    /**
-     * Récupère le stock disponible pour une couleur spécifique
-     */
-    public static function getColorStock(Product $product, string $color): int
-    {
-        $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
-        foreach ($stockCouleurs as $stockColor) {
-            if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $color) {
-                return (int) ($stockColor['quantity'] ?? 0);
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * Met à jour le stock d'une couleur spécifique
-     */
-    public static function updateColorStock(Product $product, string $color, int $quantity): bool
-    {
-        try {
-            $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
-            $colorFound = false;
+            $stockUpdated = false;
 
             foreach ($stockCouleurs as &$stockColor) {
-                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $color) {
-                    $stockColor['quantity'] = max(0, $quantity);
-                    $colorFound = true;
+                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleur) {
+                    $stockColor['quantity'] = max(0, ($stockColor['quantity'] ?? 0) - $quantite);
+                    $stockUpdated = true;
                     break;
                 }
             }
 
-            // Si la couleur n'existe pas, l'ajouter
-            if (!$colorFound) {
-                $stockCouleurs[] = [
-                    'name' => $color,
-                    'quantity' => max(0, $quantity)
-                ];
-            }
+            // Sauvegarder les modifications
+            $product->stock_couleurs = json_encode($stockCouleurs);
+            $product->save();
 
-            $product->update(['stock_couleurs' => json_encode($stockCouleurs)]);
-
-            Log::info("Stock de couleur mis à jour pour {$product->name} (ID: {$product->id}) - Couleur: {$color} - Nouveau stock: {$quantity}");
+            Log::info("Stock diminué pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock total: {$product->quantite_stock}");
 
             return true;
         } catch (\Exception $e) {
-            Log::error("Erreur lors de la mise à jour du stock de couleur: " . $e->getMessage());
-            throw $e;
+            Log::error("Erreur lors de la diminution du stock: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Augmente le stock d'un produit (pour annulation de commande)
+     *
+     * @param int $productId
+     * @param string $couleur
+     * @param int $quantite
+     * @return bool
+     */
+    public static function increaseStock(int $productId, string $couleur, int $quantite): bool
+    {
+        try {
+            $product = Product::find($productId);
+            if (!$product) {
+                Log::error("Produit non trouvé pour l'augmentation de stock: ID {$productId}");
+                return false;
+            }
+
+            // Augmenter le stock total du produit
+            $product->quantite_stock += $quantite;
+
+            // Augmenter le stock de la couleur spécifique
+            $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
+            $stockUpdated = false;
+
+            foreach ($stockCouleurs as &$stockColor) {
+                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleur) {
+                    $stockColor['quantity'] = ($stockColor['quantity'] ?? 0) + $quantite;
+                    $stockUpdated = true;
+                    break;
+                }
+            }
+
+            // Sauvegarder les modifications
+            $product->stock_couleurs = json_encode($stockCouleurs);
+            $product->save();
+
+            Log::info("Stock augmenté pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock total: {$product->quantite_stock}");
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de l'augmentation du stock: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ajuste le stock d'un produit (pour modification de commande)
+     *
+     * @param int $productId
+     * @param string $couleur
+     * @param int $oldQuantite
+     * @param int $newQuantite
+     * @return bool
+     */
+    public static function adjustStock(int $productId, string $couleur, int $oldQuantite, int $newQuantite): bool
+    {
+        try {
+            $product = Product::find($productId);
+            if (!$product) {
+                Log::error("Produit non trouvé pour l'ajustement de stock: ID {$productId}");
+                return false;
+            }
+
+            $difference = $newQuantite - $oldQuantite;
+
+            if ($difference > 0) {
+                // Nouvelle quantité plus grande, diminuer le stock
+                return self::decreaseStock($productId, $couleur, $difference);
+            } elseif ($difference < 0) {
+                // Nouvelle quantité plus petite, augmenter le stock
+                return self::increaseStock($productId, $couleur, abs($difference));
+            }
+
+            // Aucun changement
+            return true;
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de l'ajustement du stock: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Vérifie la disponibilité du stock pour une couleur
+     *
+     * @param int $productId
+     * @param string $couleur
+     * @param int $quantite
+     * @return array
+     */
+    public static function checkStockAvailability(int $productId, string $couleur, int $quantite): array
+    {
+        try {
+            $product = Product::find($productId);
+            if (!$product) {
+                return [
+                    'available' => false,
+                    'message' => 'Produit non trouvé',
+                    'stock_total' => 0,
+                    'stock_couleur' => 0
+                ];
+            }
+
+            $stockTotal = $product->quantite_stock;
+            $stockCouleur = 0;
+
+            // Récupérer le stock de la couleur spécifique
+            $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
+            foreach ($stockCouleurs as $stockColor) {
+                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleur) {
+                    $stockCouleur = (int) ($stockColor['quantity'] ?? 0);
+                    break;
+                }
+            }
+
+            $sufficientStock = $stockCouleur >= $quantite;
+            $sufficientTotalStock = $stockTotal >= $quantite;
+
+            return [
+                'available' => $sufficientStock && $sufficientTotalStock,
+                'message' => $sufficientStock ? 'Stock suffisant' : 'Stock insuffisant pour cette couleur',
+                'stock_total' => $stockTotal,
+                'stock_couleur' => $stockCouleur,
+                'requested' => $quantite,
+                'deficit' => max(0, $quantite - $stockCouleur)
+            ];
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de la vérification du stock: " . $e->getMessage());
+            return [
+                'available' => false,
+                'message' => 'Erreur lors de la vérification du stock',
+                'stock_total' => 0,
+                'stock_couleur' => 0
+            ];
         }
     }
 }

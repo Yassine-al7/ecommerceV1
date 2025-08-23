@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Traits\GeneratesOrderReferences;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -51,10 +52,21 @@ class OrderController extends Controller
         $order = Order::create($data);
 
         // Diminuer automatiquement le stock du produit
-        $product->decrement('quantite_stock', $data['quantite_produit']);
+        $success = StockService::decreaseStock(
+            $data['product_id'],
+            'Couleur unique', // Couleur par défaut pour les commandes admin
+            $data['quantite_produit']
+        );
+
+        if (!$success) {
+            Log::error("Échec de la mise à jour du stock pour le produit ID: {$data['product_id']}");
+        }
 
         // Log de la diminution du stock
-        \Log::info("Stock diminué pour le produit {$product->name} (ID: {$product->id}) - Quantité: {$data['quantite_produit']} - Nouveau stock: " . ($product->quantite_stock - $data['quantite_produit']));
+        $product = \App\Models\Product::find($data['product_id']);
+        if ($product) {
+            Log::info("Stock diminué pour le produit {$product->name} (ID: {$product->id}) - Quantité: {$data['quantite_produit']} - Nouveau stock: {$product->quantite_stock}");
+        }
 
         return redirect()->route('admin.orders.index')->with('success', "Commande créée avec succès! Référence: {$order->reference}");
     }
@@ -139,14 +151,20 @@ class OrderController extends Controller
             $product = \App\Models\Product::find($productData['product_id']);
             $newQuantity = (int) $productData['quantite_produit'];
             $oldQuantity = $oldQuantities[$productData['product_id']] ?? 0;
-            $quantityDifference = $newQuantity - $oldQuantity;
 
-            if ($quantityDifference != 0) {
-                // Si la quantité a augmenté, diminuer le stock
-                // Si la quantité a diminué, augmenter le stock
-                $product->decrement('quantite_stock', $quantityDifference);
+            if ($newQuantity !== $oldQuantity) {
+                $success = StockService::adjustStock(
+                    $productData['product_id'],
+                    'Couleur unique', // Couleur par défaut pour les commandes admin
+                    $oldQuantity,
+                    $newQuantity
+                );
 
-                \Log::info("Stock ajusté pour {$product->name} (ID: {$product->id}) - Différence: {$quantityDifference} - Nouveau stock: {$product->quantite_stock}");
+                if (!$success) {
+                    Log::error("Échec de l'ajustement du stock pour le produit ID: {$productData['product_id']}");
+                } else {
+                    Log::info("Stock ajusté pour {$product->name} (ID: {$product->id}) - Ancienne quantité: {$oldQuantity}, Nouvelle quantité: {$newQuantity}");
+                }
             }
         }
 
@@ -159,12 +177,19 @@ class OrderController extends Controller
         $products = json_decode($order->produits, true) ?: [];
 
         foreach ($products as $productData) {
-            $product = \App\Models\Product::find($productData['product_id']);
-            if ($product) {
-                // Remettre le stock qui avait été diminué
-                $product->increment('quantite_stock', $productData['qty']);
+            $success = StockService::increaseStock(
+                $productData['product_id'],
+                'Couleur unique', // Couleur par défaut pour les commandes admin
+                $productData['qty']
+            );
 
-                \Log::info("Stock remis pour {$product->name} (ID: {$product->id}) - Quantité: {$productData['qty']} - Nouveau stock: {$product->quantite_stock}");
+            if (!$success) {
+                Log::error("Échec de la remise du stock pour le produit ID: {$productData['product_id']}");
+            } else {
+                $product = \App\Models\Product::find($productData['product_id']);
+                if ($product) {
+                    Log::info("Stock remis pour {$product->name} (ID: {$product->id}) - Quantité: {$productData['qty']} - Nouveau stock: {$product->quantite_stock}");
+                }
             }
         }
 

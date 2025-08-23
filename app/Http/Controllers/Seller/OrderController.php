@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Traits\GeneratesOrderReferences;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -333,22 +334,14 @@ class OrderController extends Controller
 
 		// Diminuer automatiquement le stock pour chaque produit
 		foreach ($produits as $productData) {
-			$product = \App\Models\Product::find($productData['product_id']);
-			if ($product) {
-				// Diminuer le stock total du produit
-				$product->decrement('quantite_stock', $productData['qty']);
+			$success = StockService::decreaseStock(
+				$productData['product_id'],
+				$productData['couleur'],
+				$productData['qty']
+			);
 
-				// Diminuer le stock de la couleur spécifique
-				$stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
-				foreach ($stockCouleurs as &$stockColor) {
-					if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $productData['couleur']) {
-						$stockColor['quantity'] = max(0, ($stockColor['quantity'] ?? 0) - $productData['qty']);
-						break;
-					}
-				}
-				$product->update(['stock_couleurs' => json_encode($stockCouleurs)]);
-
-				\Log::info("Stock diminué pour {$product->name} (ID: {$product->id}) - Couleur: {$productData['couleur']} - Quantité: {$productData['qty']} - Nouveau stock total: {$product->quantite_stock}");
+			if (!$success) {
+				Log::error("Échec de la mise à jour du stock pour le produit ID: {$productData['product_id']}");
 			}
 		}
 

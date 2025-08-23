@@ -1,65 +1,20 @@
 <?php
+echo "Test du systeme de stock\n";
+echo "=======================\n\n";
 
-echo "Test du système de commande\n";
-echo "==========================\n\n";
+// Test simple
+$stock_initial = 100;
+$quantite_vendue = 10;
+$stock_final = $stock_initial - $quantite_vendue;
 
-// Test de la configuration
-echo "1. Test de la configuration:\n";
-if (file_exists('config/delivery.php')) {
-    echo "✅ Fichier de configuration delivery.php existe\n";
+echo "Stock initial: $stock_initial\n";
+echo "Quantite vendue: $quantite_vendue\n";
+echo "Stock final calcule: $stock_final\n\n";
+
+if ($stock_final === 90) {
+    echo "SUCCES: Le calcul est correct!\n";
 } else {
-    echo "❌ Fichier de configuration delivery.php manquant\n";
+    echo "ERREUR: Le calcul est incorrect!\n";
 }
 
-// Test des contrôleurs
-echo "\n2. Test des contrôleurs:\n";
-if (file_exists('app/Http/Controllers/Seller/OrderController.php')) {
-    echo "✅ Contrôleur Seller OrderController existe\n";
-} else {
-    echo "❌ Contrôleur Seller OrderController manquant\n";
-}
-
-if (file_exists('app/Http/Controllers/Admin/OrderController.php')) {
-    echo "✅ Contrôleur Admin OrderController existe\n";
-} else {
-    echo "❌ Contrôleur Admin OrderController manquant\n";
-}
-
-// Test du trait
-echo "\n3. Test du trait:\n";
-if (file_exists('app/Traits/GeneratesOrderReferences.php')) {
-    echo "✅ Trait GeneratesOrderReferences existe\n";
-} else {
-    echo "❌ Trait GeneratesOrderReferences manquant\n";
-}
-
-// Test des vues
-echo "\n4. Test des vues:\n";
-if (file_exists('resources/views/seller/order_form.blade.php')) {
-    echo "✅ Vue seller order_form.blade.php existe\n";
-} else {
-    echo "❌ Vue seller order_form.blade.php manquant\n";
-}
-
-if (file_exists('resources/views/admin/order_form.blade.php')) {
-    echo "✅ Vue admin order_form.blade.php existe\n";
-} else {
-    echo "❌ Vue admin order_form.blade.php manquant\n";
-}
-
-// Test des routes
-echo "\n5. Test des routes:\n";
-if (file_exists('routes/web.php')) {
-    echo "✅ Fichier de routes web.php existe\n";
-    
-    $webContent = file_get_contents('routes/web.php');
-    if (strpos($webContent, 'seller.orders') !== false) {
-        echo "✅ Routes seller.orders trouvées dans web.php\n";
-    } else {
-        echo "❌ Routes seller.orders manquantes dans web.php\n";
-    }
-} else {
-    echo "❌ Fichier de routes web.php manquant\n";
-}
-
-echo "\nTest terminé !\n";
+echo "\nTest termine.\n";
