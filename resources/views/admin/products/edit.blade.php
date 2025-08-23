@@ -48,8 +48,11 @@
                         <div class="space-y-4">
                             <!-- Couleurs prédéfinies -->
                             <div>
-                                <p class="text-xs text-gray-600 mb-3">Couleurs prédéfinies :</p>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <p class="text-xs text-gray-600 mb-3 flex items-center">
+                                    <i class="fas fa-palette mr-2 text-blue-600"></i>
+                                    Couleurs prédéfinies : <span id="selectedColorsCount" class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">0 sélectionnée</span>
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                     @php
                                         $predefinedColors = [
                                             'Rouge' => '#ff0000', 'Vert' => '#00ff00', 'Bleu' => '#0000ff', 'Jaune' => '#ffff00',
@@ -80,36 +83,60 @@
                                         }
                                     @endphp
                                     @foreach($predefinedColors as $colorName => $colorHex)
-                                        <label class="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50">
-                                            <input type="checkbox" name="couleurs_predefinies[]" value="{{ $colorName }}"
-                                                   @checked(in_array($colorName, old('couleurs_predefinies', $currentColors)))
-                                                   class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                            <span class="w-4 h-4 rounded-full border border-gray-300"
-                                                  style="background-color: {{ $colorHex }}"></span>
-                                            <span class="text-sm text-gray-700">{{ $colorName }}</span>
-                                        </label>
+                                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300 color-card" data-color-name="{{ $colorName }}">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <label class="flex items-center space-x-3 cursor-pointer flex-1">
+                                                    <input type="checkbox" name="couleurs_predefinies[]" value="{{ $colorName }}"
+                                                           @checked(in_array($colorName, old('couleurs_predefinies', $currentColors)))
+                                                           data-hex="{{ $colorHex }}"
+                                                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 color-checkbox"
+                                                           onchange="updateColorHex(this)">
+                                                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm color-preview" style="background-color: {{ $colorHex }}"></div>
+                                                    <span class="text-sm font-medium text-gray-700 color-name">{{ $colorName }}</span>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <label class="text-xs font-medium text-gray-600">Stock:</label>
+                                                <input type="number" name="stock_couleur_{{ $loop->index }}"
+                                                       placeholder="0" min="0"
+                                                       class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 stock-input"
+                                                       value="{{ old('stock_couleur_' . $loop->index, 0) }}"
+                                                       onchange="updateSelectedColorsCount()">
+                                            </div>
+                                        </div>
                                     @endforeach
                                 </div>
                             </div>
 
-                            <!-- Color picker pour couleurs personnalisées -->
-                            <div class="border-t pt-4">
-                                <p class="text-xs text-gray-600 mb-3">Ajouter une couleur personnalisée :</p>
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex items-center space-x-2">
-                                        <input type="color" id="customColorPicker" value="#ff0000"
-                                               class="w-16 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm">
-                                        <!-- Prévisualisation de la couleur sélectionnée -->
-                                        <div id="colorPreview" class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: #ff0000;"></div>
+                            <!-- Interface d'ajout de couleur personnalisée -->
+                            <div class="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm">
+                                <p class="text-sm font-semibold text-blue-800 mb-4 flex items-center">
+                                    <i class="fas fa-palette mr-2 text-blue-600"></i>
+                                    Ajouter une couleur personnalisée
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                                    <div class="flex flex-col space-y-2">
+                                        <label class="text-xs font-medium text-blue-700">Sélectionner la couleur</label>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="color" id="customColorPicker" value="#ff6b6b"
+                                                   class="w-14 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm">
+                                            <div id="colorPreview" class="w-10 h-10 rounded-full border-2 border-gray-300 shadow-sm"
+                                                 style="background-color: #ff6b6b;"></div>
+                                        </div>
                                     </div>
-                                    <input type="text" id="customColorName" placeholder="Nom de la couleur"
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <button type="button" onclick="addCustomColor()"
-                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                        <i class="fas fa-plus mr-2"></i>Ajouter
-                                    </button>
+                                    <div class="sm:col-span-2">
+                                        <label class="text-xs font-medium text-blue-700 mb-2 block">Nom de la couleur</label>
+                                        <input type="text" id="customColorName" placeholder="Ex: Corail, Indigo, Marine..."
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm">
+                                    </div>
+                                    <div class="flex items-end">
+                                        <button type="button" onclick="addCustomColor()"
+                                                class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 hover:shadow-md font-medium">
+                                            <i class="fas fa-plus mr-2"></i>Ajouter
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="mt-2">
+                                <div class="mt-4">
                                     <label class="flex items-center space-x-2 text-xs text-gray-600">
                                         <input type="checkbox" id="forceCustomName" class="w-4 h-4 text-blue-600 border-gray-300 rounded">
                                         <span>Forcer l'utilisation du nom personnalisé (ignorer l'auto-remplissage)</span>
@@ -118,19 +145,41 @@
                             </div>
 
                             <!-- Couleurs personnalisées ajoutées -->
-                            <div id="customColorsContainer" class="space-y-2">
+                            <div id="customColorsContainer" class="space-y-3">
                                 @foreach($customColors as $customColor)
-                                    <div class="custom-color-item flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
-                                        <span class="w-4 h-4 rounded-full border border-gray-300"
-                                              style="background-color: {{ $customColor['hex'] ?: \App\Helpers\ColorHelper::generateColorFromName($customColor['name']) }}"></span>
-                                        <span class="text-sm text-gray-700">{{ $customColor['name'] }}</span>
-                                        <button type="button" onclick="removeCustomColor(this)"
-                                                class="text-red-600 hover:text-red-800 ml-auto">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+                                    <div class="custom-color-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="flex items-center space-x-3">
+                                                <span class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm"
+                                                      style="background-color: {{ $customColor['hex'] ?: \App\Helpers\ColorHelper::generateColorFromName($customColor['name']) }}"></span>
+                                                <span class="text-sm font-medium text-gray-700">{{ $customColor['name'] }}</span>
+                                            </div>
+                                            <button type="button" onclick="removeCustomColor(this)"
+                                                    class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-full transition-colors">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <label class="text-xs font-medium text-gray-600">Stock:</label>
+                                            <input type="number" name="stock_couleur_custom_{{ $loop->index }}"
+                                                   placeholder="0" min="0"
+                                                   class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                                                   value="0">
+                                        </div>
                                         <input type="hidden" name="couleurs_personnalisees[]" value="{{ $customColor['name'] }}">
                                     </div>
                                 @endforeach
+                            </div>
+
+                            <!-- Résumé des couleurs sélectionnées -->
+                            <div id="selectedColorsSummary" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg" style="display: none;">
+                                <h4 class="text-sm font-semibold text-green-800 mb-2 flex items-center">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Couleurs sélectionnées :
+                                </h4>
+                                <div id="selectedColorsList" class="flex flex-wrap gap-2">
+                                    <!-- Les couleurs sélectionnées seront affichées ici -->
+                                </div>
                             </div>
 
                             <!-- Champ caché pour toutes les couleurs combinées -->
@@ -193,11 +242,13 @@
                         @enderror
                     </div>
 
-                    <!-- Quantité en Stock -->
+                    <!-- Quantité en Stock Total (Calculée automatiquement) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Quantité en Stock *</label>
-                        <input type="number" name="quantite_stock" value="{{ old('quantite_stock', $product->quantite_stock) }}" min="0" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Quantité en Stock Total</label>
+                        <input type="number" id="stockTotal" value="0" min="0" readonly
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold">
+                        <p class="text-xs text-gray-500 mt-1">💡 Calculé automatiquement : somme des stocks de toutes les couleurs</p>
+                        <input type="hidden" name="quantite_stock" id="stockTotalHidden" value="0">
                         @error('quantite_stock')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -258,13 +309,24 @@ function addCustomColor() {
 
     // Créer l'élément de couleur personnalisée
     const colorItem = document.createElement('div');
-    colorItem.className = 'custom-color-item flex items-center space-x-2 p-2 bg-gray-50 rounded-lg';
+    colorItem.className = 'custom-color-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300 mb-3';
     colorItem.innerHTML = `
-        <span class="w-4 h-4 rounded-full border border-gray-300" style="background-color: ${colorHex}"></span>
-        <span class="text-sm text-gray-700">${colorName}</span>
-        <button type="button" onclick="removeCustomColor(this)" class="text-red-600 hover:text-red-800 ml-auto">
-            <i class="fas fa-times"></i>
-        </button>
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-3">
+                <span class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm" style="background-color: ${colorHex}"></span>
+                <span class="text-sm font-medium text-gray-700">${colorName}</span>
+            </div>
+            <button type="button" onclick="removeCustomColor(this)" class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-full transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="flex items-center space-x-2">
+            <label class="text-xs font-medium text-gray-600">Stock:</label>
+            <input type="number" name="stock_couleur_custom_${customColorCounter}"
+                   placeholder="0" min="0"
+                   class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                   value="0">
+        </div>
         <input type="hidden" name="couleurs_personnalisees[]" value="${colorName}">
     `;
 
@@ -280,7 +342,42 @@ function addCustomColor() {
     // Mettre à jour le champ couleurs combinées
     updateCombinedColors();
 
+    // Ajouter l'écouteur d'événements pour le stock
+    const stockInput = colorItem.querySelector('input[name^="stock_couleur_custom_"]');
+    if (stockInput) {
+        stockInput.addEventListener('input', calculateTotalStock);
+    }
+
+    // Recalculer le stock total
+    calculateTotalStock();
+
     customColorCounter++;
+}
+
+// Fonction pour gérer les couleurs hex des couleurs prédéfinies
+function updateColorHex(checkbox) {
+    const hexValue = checkbox.getAttribute('data-hex');
+    const existingHexInput = document.querySelector(`input[type="hidden"][name="couleurs_hex[]"][value="${hexValue}"]`);
+
+    if (checkbox.checked && !existingHexInput) {
+        // Ajouter l'input hex si la couleur est cochée
+        const hexInput = document.createElement('input');
+        hexInput.type = 'hidden';
+        hexInput.name = 'couleurs_hex[]';
+        hexInput.value = hexValue;
+        hexInput.setAttribute('data-color', checkbox.value);
+        checkbox.parentElement.appendChild(hexInput);
+    } else if (!checkbox.checked && existingHexInput) {
+        // Supprimer l'input hex si la couleur est décochée
+        existingHexInput.remove();
+    }
+
+    // Mettre à jour l'affichage des couleurs sélectionnées
+    updateSelectedColorsCount();
+    updateSelectedColorsSummary();
+
+    // Mettre à jour le champ couleurs combinées
+    updateCombinedColors();
 }
 
 // Supprimer une couleur personnalisée
@@ -288,6 +385,10 @@ function removeCustomColor(button) {
     button.closest('.custom-color-item').remove();
     // Mettre à jour le champ couleurs combinées
     updateCombinedColors();
+
+    // Mettre à jour l'affichage des couleurs sélectionnées
+    updateSelectedColorsCount();
+    updateSelectedColorsSummary();
 }
 
 // Mettre à jour le champ couleurs combinées
@@ -480,7 +581,86 @@ document.addEventListener('DOMContentLoaded', function() {
         // Appliquer au chargement initial
         toggleTaillesSection();
     }
+
+    // Ajouter les écouteurs d'événements pour les inputs de stock des couleurs prédéfinies
+    const predefinedStockInputs = document.querySelectorAll('input[name^="stock_couleur_"]');
+    predefinedStockInputs.forEach(input => {
+        input.addEventListener('input', calculateTotalStock);
+    });
+
+    // Ajouter les écouteurs d'événements pour les checkboxes des couleurs prédéfinies
+    const predefinedColorCheckboxes = document.querySelectorAll('input[name="couleurs_predefinies[]"]');
+    predefinedColorCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', calculateTotalStock);
+    });
+
+    // Initialiser le stock total avec la valeur existante du produit
+    const initialStock = {{ $product->quantite_stock ?? 0 }};
+    const stockTotal = document.getElementById('stockTotal');
+    const stockTotalHidden = document.getElementById('stockTotalHidden');
+
+    if (stockTotal) stockTotal.value = initialStock;
+    if (stockTotalHidden) stockTotalHidden.value = initialStock;
+
+    // Calculer le stock total initial
+    calculateTotalStock();
 });
+
+// Fonction pour calculer le stock total
+function calculateTotalStock() {
+    let total = 0;
+
+    // Calculer le stock des couleurs prédéfinies
+    const predefinedStockInputs = document.querySelectorAll('input[name^="stock_couleur_"]');
+
+    predefinedStockInputs.forEach((input) => {
+        // Trouver la checkbox de couleur en remontant jusqu'au conteneur principal
+        let colorContainer = input.parentElement;
+        let checkbox = null;
+
+        // Remonter jusqu'à trouver le conteneur avec la checkbox
+        while (colorContainer && !checkbox) {
+            checkbox = colorContainer.querySelector('input[name="couleurs_predefinies[]"]');
+            if (!checkbox) {
+                colorContainer = colorContainer.parentElement;
+            }
+        }
+
+        if (checkbox && checkbox.checked) {
+            const stockValue = parseInt(input.value) || 0;
+            total += stockValue;
+        }
+    });
+
+    // Calculer le stock des couleurs personnalisées
+    const customStockInputs = document.querySelectorAll('input[name^="stock_couleur_custom_"]');
+    customStockInputs.forEach((input) => {
+        const stockValue = parseInt(input.value) || 0;
+        total += stockValue;
+    });
+
+    // Mettre à jour l'affichage
+    const stockTotal = document.getElementById('stockTotal');
+    const stockTotalHidden = document.getElementById('stockTotalHidden');
+
+    if (stockTotal) {
+        stockTotal.value = total;
+        // Forcer la mise à jour de l'affichage
+        stockTotal.dispatchEvent(new Event('input', { bubbles: true }));
+        stockTotal.dispatchEvent(new Event('change', { bubbles: true }));
+        // Forcer le rafraîchissement visuel
+        stockTotal.style.backgroundColor = '#ffffff';
+        setTimeout(() => {
+            stockTotal.style.backgroundColor = '#f9fafb';
+        }, 100);
+    }
+
+    if (stockTotalHidden) {
+        stockTotalHidden.value = total;
+    }
+
+    return total;
+}
 
 // Préparation des données avant soumission
 function prepareFormData() {
@@ -514,24 +694,98 @@ function prepareFormData() {
     return hasColors;
 }
 
-// Validation du formulaire
-document.querySelector('form').addEventListener('submit', function(e) {
-    console.log('Soumission du formulaire...');
+    // Validation du formulaire
+    document.querySelector('form').addEventListener('submit', function(e) {
+        console.log('Soumission du formulaire...');
 
-    if (!prepareFormData()) {
-        e.preventDefault();
-        alert('Veuillez sélectionner au moins une couleur');
-        return;
+        if (!prepareFormData()) {
+            e.preventDefault();
+            alert('Veuillez sélectionner au moins une couleur');
+            return;
+        }
+
+        // Vérifier que le champ couleurs a été créé
+        const couleursInput = document.querySelector('input[name="couleurs"]');
+        if (couleursInput) {
+            console.log('Champ couleurs créé avec valeur:', couleursInput.value);
+        } else {
+            console.error('Champ couleurs non trouvé !');
+        }
+    });
+
+    // Fonction pour mettre à jour le compteur de couleurs sélectionnées
+    function updateSelectedColorsCount() {
+        const selectedPredefinedColors = document.querySelectorAll('input[name="couleurs_predefinies[]"]:checked');
+        const customColors = document.querySelectorAll('#customColorsContainer input[name="couleurs_personnalisees[]"]');
+        const totalColors = selectedPredefinedColors.length + customColors.length;
+
+        const countElement = document.getElementById('selectedColorsCount');
+        if (countElement) {
+            countElement.textContent = `${totalColors} sélectionnée${totalColors > 1 ? 's' : ''}`;
+        }
     }
 
-    // Vérifier que le champ couleurs a été créé
-    const couleursInput = document.querySelector('input[name="couleurs"]');
-    if (couleursInput) {
-        console.log('Champ couleurs créé avec valeur:', couleursInput.value);
-    } else {
-        console.error('Champ couleurs non trouvé !');
+    // Fonction pour afficher le résumé des couleurs sélectionnées
+    function updateSelectedColorsSummary() {
+        const selectedPredefinedColors = document.querySelectorAll('input[name="couleurs_predefinies[]"]:checked');
+        const customColors = document.querySelectorAll('#customColorsContainer input[name="couleurs_personnalisees[]"]');
+        const summaryElement = document.getElementById('selectedColorsSummary');
+        const listElement = document.getElementById('selectedColorsList');
+
+        if (selectedPredefinedColors.length === 0 && customColors.length === 0) {
+            summaryElement.style.display = 'none';
+            return;
+        }
+
+        summaryElement.style.display = 'block';
+        listElement.innerHTML = '';
+
+        // Ajouter les couleurs prédéfinies sélectionnées
+        selectedPredefinedColors.forEach(checkbox => {
+            const colorName = checkbox.value;
+            const colorCard = checkbox.closest('.color-card');
+            const colorPreview = colorCard.querySelector('.color-preview');
+            const hexColor = colorPreview.style.backgroundColor;
+            const stockInput = colorCard.querySelector('.stock-input');
+            const stockValue = stockInput ? stockInput.value : '0';
+
+            const colorTag = document.createElement('div');
+            colorTag.className = 'flex items-center space-x-2 px-3 py-2 bg-white border border-green-300 rounded-lg shadow-sm';
+            colorTag.innerHTML = `
+                <div class="w-4 h-4 rounded-full border border-gray-300" style="background-color: ${hexColor}"></div>
+                <span class="text-sm font-medium text-green-800">${colorName}</span>
+                <span class="text-xs text-green-600">(Stock: ${stockValue})</span>
+            `;
+
+            listElement.appendChild(colorTag);
+        });
+
+        // Ajouter les couleurs personnalisées
+        customColors.forEach(input => {
+            const colorName = input.value;
+            const customColorItem = input.closest('.custom-color-item');
+            const colorPreview = customColorItem.querySelector('span[style*="background-color"]');
+            const hexColor = colorPreview.style.backgroundColor;
+            const stockInput = customColorItem.querySelector('input[type="number"]');
+            const stockValue = stockInput ? stockInput.value : '0';
+
+            const colorTag = document.createElement('div');
+            colorTag.className = 'flex items-center space-x-2 px-3 py-2 bg-white border border-blue-300 rounded-lg shadow-sm';
+            colorTag.innerHTML = `
+                <div class="w-4 h-4 rounded-full border border-gray-300" style="background-color: ${hexColor}"></div>
+                <span class="text-sm font-medium text-blue-800">${colorName}</span>
+                <span class="text-xs text-blue-600">(Stock: ${stockValue})</span>
+            `;
+
+            listElement.appendChild(colorTag);
+        });
     }
-});
+
+    // Initialiser l'affichage au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSelectedColorsCount();
+        updateSelectedColorsSummary();
+    });
 </script>
 @endsection
 

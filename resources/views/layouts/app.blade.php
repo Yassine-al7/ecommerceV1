@@ -267,7 +267,7 @@
     @endif
 
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
+    {{-- Script app.js supprimé car non nécessaire --}}
 
     <!-- Gestion des Messages Admin -->
     <script>
@@ -288,11 +288,24 @@
 
         async loadMessages() {
             try {
-                const response = await fetch('/admin/messages/active');
-                this.messages = await response.json();
-                console.log('Messages chargés:', this.messages);
+                // Vérifier si on est sur une page admin avant de charger les messages
+                if (window.location.pathname.includes('/admin/')) {
+                    const response = await fetch('/admin/messages/active');
+                    if (response.ok) {
+                        this.messages = await response.json();
+                        console.log('Messages chargés:', this.messages);
+                    } else {
+                        console.log('Route messages non disponible, messages désactivés');
+                        this.messages = [];
+                    }
+                } else {
+                    // Sur les pages non-admin, pas de messages
+                    console.log('Page non-admin, messages désactivés');
+                    this.messages = [];
+                }
             } catch (error) {
-                console.error('Erreur lors du chargement des messages:', error);
+                console.log('Erreur lors du chargement des messages (ignorée):', error.message);
+                this.messages = [];
             }
         }
 

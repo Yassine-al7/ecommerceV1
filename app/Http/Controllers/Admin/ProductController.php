@@ -41,29 +41,43 @@ class ProductController extends Controller
             'prix_vente' => 'required|numeric|min:0',
         ]);
 
-        // Traiter les couleurs avec leurs valeurs hexadécimales
+        // Traiter les couleurs avec leurs valeurs hexadécimales et stocks
         $couleurs = $request->input('couleurs', []);
         $couleursHex = $request->input('couleurs_hex', []);
+        $stockCouleurs = [];
 
-        // Créer un mapping couleur-hex pour la sauvegarde
+        // Créer un mapping couleur-hex-stock pour la sauvegarde
         $couleursWithHex = [];
         foreach ($couleurs as $index => $couleur) {
             $hex = $couleursHex[$index] ?? null;
+            $stock = $request->input("stock_couleur_{$index}", 0);
+            
             if ($hex) {
                 $couleursWithHex[] = [
                     'name' => $couleur,
                     'hex' => $hex
                 ];
             } else {
-                $couleursWithHex[] = $couleur; // Fallback si pas de hex
+                $couleursWithHex[] = $couleur;
             }
+            
+            // Stocker le stock par couleur
+            $stockCouleurs[] = [
+                'name' => $couleur,
+                'quantity' => (int) $stock
+            ];
         }
 
         // Convertir les couleurs en JSON (pour stockage en base)
         $data['couleur'] = json_encode($couleursWithHex);
+        $data['stock_couleurs'] = json_encode($stockCouleurs);
 
-        // Convertir les tailles en JSON
-        $data['tailles'] = json_encode($data['tailles']);
+        // Convertir les tailles en JSON - pour les accessoires, utiliser un tableau vide
+        if ($isAccessoire) {
+            $data['tailles'] = json_encode([]);
+        } else {
+            $data['tailles'] = json_encode($data['tailles'] ?? []);
+        }
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
 
@@ -127,26 +141,36 @@ class ProductController extends Controller
 
         $data = $request->validate($validationRules);
 
-        // Traiter les couleurs avec leurs valeurs hexadécimales
+        // Traiter les couleurs avec leurs valeurs hexadécimales et stocks
         $couleurs = $request->input('couleurs', []);
         $couleursHex = $request->input('couleurs_hex', []);
+        $stockCouleurs = [];
 
-        // Créer un mapping couleur-hex pour la sauvegarde
+        // Créer un mapping couleur-hex-stock pour la sauvegarde
         $couleursWithHex = [];
         foreach ($couleurs as $index => $couleur) {
             $hex = $couleursHex[$index] ?? null;
+            $stock = $request->input("stock_couleur_{$index}", 0);
+            
             if ($hex) {
                 $couleursWithHex[] = [
                     'name' => $couleur,
                     'hex' => $hex
                 ];
             } else {
-                $couleursWithHex[] = $couleur; // Fallback si pas de hex
+                $couleursWithHex[] = $couleur;
             }
+            
+            // Stocker le stock par couleur
+            $stockCouleurs[] = [
+                'name' => $couleur,
+                'quantity' => (int) $stock
+            ];
         }
 
         // Convertir les couleurs en JSON (pour stockage en base)
         $data['couleur'] = json_encode($couleursWithHex);
+        $data['stock_couleurs'] = json_encode($stockCouleurs);
 
         // Convertir les tailles en JSON (nullable pour les accessoires)
         if (isset($data['tailles']) && !empty($data['tailles'])) {

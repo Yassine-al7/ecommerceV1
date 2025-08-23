@@ -42,7 +42,19 @@ class OrderController extends Controller
         $data['produits'] = json_encode([['product_id' => $data['product_id'], 'qty' => $data['quantite_produit']]]);
         $data['status'] = 'en attente';
 
+        // Vérifier le stock disponible
+        if ($product->quantite_stock < $data['quantite_produit']) {
+            return back()->withErrors(['quantite_produit' => 'Stock insuffisant. Stock disponible: ' . $product->quantite_stock]);
+        }
+
+        // Créer la commande
         $order = Order::create($data);
+
+        // Diminuer automatiquement le stock du produit
+        $product->decrement('quantite_stock', $data['quantite_produit']);
+
+        // Log de la diminution du stock
+        \Log::info("Stock diminué pour le produit {$product->name} (ID: {$product->id}) - Quantité: {$data['quantite_produit']} - Nouveau stock: " . ($product->quantite_stock - $data['quantite_produit']));
 
         return redirect()->route('admin.orders.index')->with('success', "Commande créée avec succès! Référence: {$order->reference}");
     }
@@ -73,19 +85,38 @@ class OrderController extends Controller
             'commentaire' => 'nullable|string',
         ]);
 
-        // Traiter chaque produit
+        // Récupérer les anciennes quantités pour ajuster le stock
+        $oldProducts = json_decode($order->produits, true) ?: [];
+        $oldQuantities = [];
+        foreach ($oldProducts as $oldProduct) {
+            $oldQuantities[$oldProduct['product_id']] = $oldProduct['qty'];
+        }
+
+        // Traiter chaque produit et vérifier le stock
         $produits = [];
         $prixTotalCommande = 0;
 
         foreach ($data['products'] as $productData) {
             $product = \App\Models\Product::find($productData['product_id']);
-            $prixProduit = $product->prix_vente * (int) $productData['quantite_produit'];
+            $newQuantity = (int) $productData['quantite_produit'];
+            $oldQuantity = $oldQuantities[$productData['product_id']] ?? 0;
 
+            // Calculer la différence de quantité
+            $quantityDifference = $newQuantity - $oldQuantity;
+
+            // Vérifier si on peut augmenter le stock (si la nouvelle quantité est plus grande)
+            if ($quantityDifference > 0) {
+                if ($product->quantite_stock < $quantityDifference) {
+                    return back()->withErrors(['quantite_produit' => "Stock insuffisant pour {$product->name}. Stock disponible: {$product->quantite_stock}"]);
+                }
+            }
+
+            $prixProduit = $product->prix_vente * $newQuantity;
             $prixTotalCommande += $prixProduit;
 
             $produits[] = [
                 'product_id' => $productData['product_id'],
-                'qty' => (int) $productData['quantite_produit'],
+                'qty' => $newQuantity,
                 'taille' => $productData['taille_produit'],
                 'prix_vente_client' => $product->prix_vente,
             ];
@@ -103,13 +134,42 @@ class OrderController extends Controller
             'commentaire' => $data['commentaire'] ?? null,
         ]);
 
+        // Ajuster le stock pour chaque produit
+        foreach ($data['products'] as $productData) {
+            $product = \App\Models\Product::find($productData['product_id']);
+            $newQuantity = (int) $productData['quantite_produit'];
+            $oldQuantity = $oldQuantities[$productData['product_id']] ?? 0;
+            $quantityDifference = $newQuantity - $oldQuantity;
+
+            if ($quantityDifference != 0) {
+                // Si la quantité a augmenté, diminuer le stock
+                // Si la quantité a diminué, augmenter le stock
+                $product->decrement('quantite_stock', $quantityDifference);
+
+                \Log::info("Stock ajusté pour {$product->name} (ID: {$product->id}) - Différence: {$quantityDifference} - Nouveau stock: {$product->quantite_stock}");
+            }
+        }
+
         return redirect()->route('admin.orders.index')->with('success', 'Commande mise à jour avec succès!');
     }
 
     public function destroy(Order $order)
     {
+        // Récupérer les produits de la commande pour remettre le stock
+        $products = json_decode($order->produits, true) ?: [];
+
+        foreach ($products as $productData) {
+            $product = \App\Models\Product::find($productData['product_id']);
+            if ($product) {
+                // Remettre le stock qui avait été diminué
+                $product->increment('quantite_stock', $productData['qty']);
+
+                \Log::info("Stock remis pour {$product->name} (ID: {$product->id}) - Quantité: {$productData['qty']} - Nouveau stock: {$product->quantite_stock}");
+            }
+        }
+
         $order->delete();
-        return redirect()->route('admin.orders.index')->with('success', 'Commande supprimée avec succès!');
+        return redirect()->route('admin.orders.index')->with('success', 'Commande supprimée avec succès! Le stock a été remis.');
     }
     public function index()
     {
@@ -136,6 +196,91 @@ class OrderController extends Controller
         $order->update(['status' => $request->status]);
 
         return redirect()->back()->with('success', 'Statut de la commande mis à jour avec succès!');
+    }
+
+    /**
+     * Supprimer plusieurs commandes en lot
+     */
+    public function bulkDelete(Request $request)
+    {
+        // Debug: logger la requête reçue
+        \Log::info('Bulk delete request reçue:', [
+            'all_data' => $request->all(),
+            'order_ids' => $request->order_ids,
+            'method' => $request->method(),
+            'headers' => $request->headers->all()
+        ]);
+
+        try {
+            $request->validate([
+                'order_ids' => 'required|array|min:1',
+                'order_ids.*' => 'required|integer|exists:commandes,id'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Erreur de validation bulk delete:', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation: ' . implode(', ', array_flatten($e->errors())),
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        $orderIds = $request->order_ids;
+        $deletedCount = 0;
+        $errors = [];
+
+        foreach ($orderIds as $orderId) {
+            try {
+                $order = Order::findOrFail($orderId);
+
+                // Récupérer les produits de la commande pour remettre le stock
+                $products = json_decode($order->produits, true) ?: [];
+
+                foreach ($products as $productData) {
+                    $product = \App\Models\Product::find($productData['product_id']);
+                    if ($product) {
+                        // Remettre le stock qui avait été diminué
+                        $product->increment('quantite_stock', $productData['qty']);
+
+                        \Log::info("Stock remis en lot pour {$product->name} (ID: {$product->id}) - Quantité: {$productData['qty']} - Nouveau stock: {$product->quantite_stock}");
+                    }
+                }
+
+                $order->delete();
+                $deletedCount++;
+
+                \Log::info("Commande supprimée en lot - ID: {$orderId}, Référence: {$order->reference}");
+
+            } catch (\Exception $e) {
+                $errors[] = "Erreur lors de la suppression de la commande ID {$orderId}: " . $e->getMessage();
+                \Log::error("Erreur suppression en lot commande ID {$orderId}: " . $e->getMessage());
+            }
+        }
+
+        if ($deletedCount > 0) {
+            $message = "{$deletedCount} commande(s) supprimée(s) avec succès! Le stock a été remis.";
+
+            if (!empty($errors)) {
+                $message .= " Erreurs: " . implode(', ', $errors);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'deleted_count' => $deletedCount,
+                'errors' => $errors
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucune commande n\'a pu être supprimée.',
+                'errors' => $errors
+            ], 400);
+        }
     }
 }
 
