@@ -183,8 +183,9 @@
                                                     <option value="{{ $product->id }}"
                                                             data-prix="{{ $product->prix_vente }}"
                                                             data-stock="{{ $product->quantite_stock }}"
-                                                            data-couleurs="{{ json_encode($product->couleur) }}"
-                                                            data-tailles="{{ json_encode($product->tailles) }}"
+                                                            data-couleurs='{{ e(json_encode($product->couleur)) }}'
+                                                            data-tailles='{{ e(json_encode($product->tailles)) }}'
+                                                            data-stock-couleurs='{{ e(json_encode($product->stock_couleurs)) }}'
                                                             @selected($productData['product_id'] == $product->id)>
                                                         {{ $product->name }} - {{ $product->prix_vente }} MAD
                                                     </option>
@@ -207,7 +208,8 @@
                                             <input type="number" name="products[{{ $index }}][quantite_produit]"
                                                    value="{{ $productData['qty'] ?? 1 }}" min="1"
                                                    class="quantite-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                   onchange="updateProductTotal({{ $index }})" required>
+                                                   onchange="updateProductTotal({{ $index }}); validateQuantity({{ $index }});" required>
+                                            <div class="quantite-error text-red-500 text-xs mt-1" style="display:none;"></div>
                                         </td>
                                         <td class="px-4 py-3">
                                             <input type="number" name="products[{{ $index }}][prix_vente_client]"
@@ -238,9 +240,9 @@
                                                 <option value="{{ $product->id }}"
                                                         data-prix="{{ $product->prix_vente }}"
                                                         data-stock="{{ $product->quantite_stock }}"
-                                                        data-couleurs="{{ json_encode($product->couleur) }}"
-                                                        data-tailles="{{ json_encode($product->tailles) }}"
-                                                        data-stock-couleurs="{{ json_encode($product->stock_couleurs) }}">
+                                                        data-couleurs='{{ e(json_encode($product->couleur)) }}'
+                                                        data-tailles='{{ e(json_encode($product->tailles)) }}'
+                                                        data-stock-couleurs='{{ e(json_encode($product->stock_couleurs)) }}'>
                                                     {{ $product->name }} - {{ $product->prix_vente }} MAD
                                                 </option>
                                             @endforeach
@@ -262,7 +264,8 @@
                                         <input type="number" name="products[0][quantite_produit]"
                                                value="1" min="1"
                                                class="quantite-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                               onchange="updateProductTotal(0)" required>
+                                               onchange="updateProductTotal(0); validateQuantity(0);" required>
+                                        <div class="quantite-error text-red-500 text-xs mt-1" style="display:none;"></div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <input type="number" name="products[0][prix_vente_client]"
@@ -304,46 +307,7 @@
                 </div>
             </div>
 
-            <!-- Résumé et calculs -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-calculator text-purple-500 mr-2"></i>
-                    Résumé de la commande
-                </h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Calculs automatiques -->
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                            <span class="text-gray-600">Sous-total produits:</span>
-                            <span class="font-semibold text-gray-900" id="subtotal">0.00 MAD</span>
-                        </div>
-                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                            <span class="text-gray-600">Frais de livraison:</span>
-                            <span class="font-semibold text-gray-900" id="livraison">0.00 MAD</span>
-                        </div>
-                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                            <span class="text-gray-600">Total commande:</span>
-                            <span class="font-semibold text-xl text-blue-600" id="totalCommande">0.00 MAD</span>
-                        </div>
-                    </div>
-
-                    <!-- Informations supplémentaires -->
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Commentaire</label>
-                            <textarea name="commentaire" rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                      placeholder="Commentaires sur la commande...">{{ old('commentaire', $order->commentaire ?? '') }}</textarea>
-                        </div>
-
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="notifyClient" name="notify_client" value="1" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                            <label for="notifyClient" class="text-sm text-gray-700">Notifier le client par email</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Boutons d'action -->
             <div class="flex justify-end space-x-4">
@@ -377,16 +341,6 @@ function addProductRow() {
                     class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     onchange="updateProductInfo(${productIndex})" required>
                 <option value="">Sélectionner un produit</option>
-                                                            @foreach($products as $product)
-                                                <option value="{{ $product->id }}"
-                                                        data-prix="{{ $product->prix_vente }}"
-                                                        data-stock="{{ $product->quantite_stock }}"
-                                                        data-couleurs="{{ json_encode($product->couleur) }}"
-                                                        data-tailles="{{ json_encode($product->tailles) }}"
-                                                        data-stock-couleurs="{{ json_encode($product->stock_couleurs) }}">
-                                                    {{ $product->name }} - {{ $product->prix_vente }} MAD
-                                                </option>
-                                            @endforeach
             </select>
         </td>
         <td class="px-4 py-3">
@@ -425,6 +379,8 @@ function addProductRow() {
     `;
 
     tbody.appendChild(newRow);
+    // Ensure product options are present for the new row immediately
+    try { cloneProductOptionsTo(newRow.querySelector('.product-select')); } catch(_) {}
     productIndex++;
 }
 
@@ -460,8 +416,64 @@ function updateProductInfo(index) {
     if (selectedOption.value) {
         const prix = parseFloat(selectedOption.getAttribute('data-prix'));
         const stock = parseInt(selectedOption.getAttribute('data-stock'));
-        const couleurs = JSON.parse(selectedOption.getAttribute('data-couleurs'));
-        const tailles = JSON.parse(selectedOption.getAttribute('data-tailles'));
+
+        // Parse sécurisé pour data-couleurs
+        let rawCouleurs = selectedOption.getAttribute('data-couleurs');
+        let couleurs = [];
+        try {
+            if (rawCouleurs) {
+                couleurs = JSON.parse(rawCouleurs);
+            }
+        } catch (e1) {
+            try {
+                // Essayer avec désencodage des entités HTML
+                const fixed = rawCouleurs
+                    .replaceAll('&quot;', '"')
+                    .replaceAll('&#34;', '"')
+                    .replaceAll('&#039;', "'")
+                    .replaceAll('&apos;', "'")
+                    .replaceAll('&amp;', '&');
+                couleurs = JSON.parse(fixed);
+            } catch (e2) {
+                // Si c'est une chaîne JSON doublement encodée
+                try {
+                    const once = JSON.parse(rawCouleurs);
+                    if (typeof once === 'string') {
+                        couleurs = JSON.parse(once);
+                    }
+                } catch (_) {
+                    couleurs = [];
+                }
+            }
+        }
+
+        // Parse sécurisé pour data-tailles
+        let rawTailles = selectedOption.getAttribute('data-tailles');
+        let tailles = [];
+        try {
+            if (rawTailles) {
+                tailles = JSON.parse(rawTailles);
+            }
+        } catch (e1) {
+            try {
+                const fixed = rawTailles
+                    .replaceAll('&quot;', '"')
+                    .replaceAll('&#34;', '"')
+                    .replaceAll('&#039;', "'")
+                    .replaceAll('&apos;', "'")
+                    .replaceAll('&amp;', '&');
+                tailles = JSON.parse(fixed);
+            } catch (e2) {
+                try {
+                    const once = JSON.parse(rawTailles);
+                    if (typeof once === 'string') {
+                        tailles = JSON.parse(once);
+                    }
+                } catch (_) {
+                    tailles = [];
+                }
+            }
+        }
 
         // Mettre à jour le prix
         const prixInput = row.querySelector('.prix-input');
@@ -492,15 +504,50 @@ function updateProductInfo(index) {
         let couleursDisponibles = [];
         let stockCouleurs = null;
 
-        // Essayer de récupérer le stock par couleur depuis l'attribut data
-        if (selectedOption.getAttribute('data-stock-couleurs')) {
+        // Essayer de récupérer le stock par couleur depuis l'attribut data (parsing robuste)
+        const rawStockCouleurs = selectedOption.getAttribute('data-stock-couleurs');
+        console.log('🔍 Attribut data-stock-couleurs brut:', rawStockCouleurs);
+        console.log('🔍 Type de rawStockCouleurs:', typeof rawStockCouleurs);
+
+        if (rawStockCouleurs) {
             try {
-                stockCouleurs = JSON.parse(selectedOption.getAttribute('data-stock-couleurs'));
-                console.log('Stock couleurs parsé:', stockCouleurs);
-            } catch (e) {
-                console.error('Erreur parsing stock_couleurs:', e);
-                stockCouleurs = null;
+                stockCouleurs = JSON.parse(rawStockCouleurs);
+            } catch (e1) {
+                try {
+                    // Désencoder d'abord les entités HTML éventuelles
+                    const fixed = rawStockCouleurs
+                        .replaceAll('&quot;', '"')
+                        .replaceAll('&#34;', '"')
+                        .replaceAll('&#039;', "'")
+                        .replaceAll('&apos;', "'")
+                        .replaceAll('&amp;', '&');
+                    stockCouleurs = JSON.parse(fixed);
+                } catch (e2) {
+                    try {
+                        // Gérer le cas d'une double-encodage JSON
+                        const once = JSON.parse(rawStockCouleurs);
+                        if (typeof once === 'string') {
+                            stockCouleurs = JSON.parse(once);
+                        }
+                    } catch (_) {
+                        stockCouleurs = null;
+                    }
+                }
             }
+            console.log('✅ Stock couleurs parsé:', stockCouleurs);
+            console.log('✅ Est un tableau:', Array.isArray(stockCouleurs));
+        } else {
+            console.log('⚠️ Attribut data-stock-couleurs non trouvé ou vide');
+        }
+
+        // Fallback: si aucune couleur n'est fournie mais stockCouleurs existe, dériver la liste des couleurs
+        if ((!couleurs || couleurs.length === 0) && stockCouleurs && Array.isArray(stockCouleurs)) {
+            try {
+                couleurs = stockCouleurs
+                    .filter(sc => sc && typeof sc.name !== 'undefined')
+                    .map(sc => ({ name: String(sc.name) }));
+                console.log('🔄 Couleurs dérivées depuis stock_couleurs:', couleurs);
+            } catch (_) {}
         }
 
                         // Traiter chaque couleur
@@ -560,55 +607,43 @@ function updateProductInfo(index) {
                 console.log(`⚠️ stockCouleurs n'est pas un tableau valide:`, stockCouleurs);
             }
 
-            // Si la couleur a du stock, l'ajouter à la liste
-            if (couleurTrouvee && stockCouleur > 0) {
-                couleursDisponibles.push({
-                    name: couleurName,
-                    stock: stockCouleur
-                });
-                console.log(`✅ Couleur ajoutée: ${couleurName} avec stock ${stockCouleur}`);
-            } else if (couleurTrouvee && stockCouleur === 0) {
-                console.log(`❌ Couleur ${couleurName} masquée (stock = 0)`);
-            } else {
-                console.log(`⚠️ Couleur ${couleurName} non trouvée dans stock_couleurs`);
-                // En cas d'erreur, afficher la couleur avec le stock total comme fallback
-                couleursDisponibles.push({
-                    name: couleurName,
-                    stock: stock
-                });
-                console.log(`🔄 Fallback: ${couleurName} avec stock total ${stock}`);
-            }
+            // 🆕 NE PLUS AJOUTER ICI - La logique est maintenant dans la section simplifiée ci-dessous
+            console.log(`🔍 Traitement de la couleur: ${couleurName} - Stock trouvé: ${stockCouleur}`);
         });
 
-        // Si aucune couleur n'a de stock défini, afficher toutes avec le stock total
-        if (couleursDisponibles.length === 0) {
-            console.log('⚠️ Aucune couleur avec stock défini, utilisation du stock total comme fallback');
-            couleurs.forEach(couleur => {
-                const couleurName = typeof couleur === 'string' ? couleur : couleur.name;
-                couleursDisponibles.push({
-                    name: couleurName,
-                    stock: stock
-                });
-                console.log(`🔄 Fallback: ${couleurName} avec stock total ${stock}`);
-            });
-        } else {
-            console.log(`✅ ${couleursDisponibles.length} couleurs avec stock spécifique trouvées`);
-        }
-
-        // Ajouter aussi les couleurs sans stock pour les afficher avec "Rupture de stock"
+        // 🆕 LOGIQUE SIMPLIFIÉE : Traiter toutes les couleurs avec leur stock réel
         couleurs.forEach(couleur => {
             const couleurName = typeof couleur === 'string' ? couleur : couleur.name;
 
-            // Vérifier si cette couleur est déjà dans couleursDisponibles
-            const dejaPresente = couleursDisponibles.find(c => c.name === couleurName);
-            if (!dejaPresente) {
-                couleursDisponibles.push({
-                    name: couleurName,
-                    stock: 0
+            // Chercher le stock pour cette couleur
+            let stockCouleur = 0;
+            let couleurTrouvee = false;
+
+            if (stockCouleurs && Array.isArray(stockCouleurs)) {
+                stockCouleurs.forEach((stockData) => {
+                    if (stockData.name === couleurName) {
+                        stockCouleur = parseInt(stockData.quantity) || 0;
+                        couleurTrouvee = true;
+                    }
                 });
-                console.log(`❌ Couleur ajoutée en rupture: ${couleurName}`);
             }
+
+            // Si la couleur n'a pas de stock spécifique, utiliser le stock total
+            if (!couleurTrouvee) {
+                stockCouleur = stock;
+                console.log(`🔄 Fallback: ${couleurName} avec stock total ${stock}`);
+            } else {
+                console.log(`✅ Stock trouvé pour ${couleurName}: ${stockCouleur}`);
+            }
+
+            // Ajouter la couleur à la liste
+            couleursDisponibles.push({
+                name: couleurName,
+                stock: stockCouleur
+            });
         });
+
+        console.log(`📊 ${couleursDisponibles.length} couleurs traitées avec leurs stocks réels`);
 
                         // Afficher les couleurs disponibles avec leur stock
         couleursDisponibles.forEach(couleurData => {
@@ -927,6 +962,38 @@ function updateProductTotal(index) {
 
 }
 
+// Validation de la quantité par rapport au stock de la couleur sélectionnée
+function validateQuantity(index) {
+    const row = document.querySelector(`tr[data-index="${index}"]`);
+    if (!row) return;
+
+    const couleurSelect = row.querySelector('.couleur-select');
+    const quantiteInput = row.querySelector('.quantite-input');
+    const errorDiv = row.querySelector('.quantite-error');
+    if (!couleurSelect || !quantiteInput || !errorDiv) return;
+
+    // Nécessite une couleur sélectionnée
+    if (!couleurSelect.value) {
+        errorDiv.style.display = 'none';
+        quantiteInput.classList.remove('border-red-500','bg-red-50');
+        return;
+    }
+
+    const opt = couleurSelect.options[couleurSelect.selectedIndex];
+    const stockStr = opt ? opt.getAttribute('data-stock') : null;
+    const stock = stockStr && stockStr !== 'N/A' ? parseInt(stockStr) || 0 : 0;
+    const qty = parseInt(quantiteInput.value) || 0;
+
+    if (stock > 0 && qty > stock) {
+        errorDiv.textContent = `Stock disponible pour ${couleurSelect.value}: ${stock}`;
+        errorDiv.style.display = 'block';
+        quantiteInput.classList.add('border-red-500','bg-red-50');
+    } else {
+        errorDiv.style.display = 'none';
+        quantiteInput.classList.remove('border-red-500','bg-red-50');
+    }
+}
+
 // Mettre à jour le total de la commande
 function updateOrderTotal() {
     let subtotal = 0;
@@ -944,11 +1011,15 @@ function updateOrderTotal() {
         }
     }
 
-    const total = subtotal + livraison;
+    const total = subtotal - livraison;
 
-    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' MAD';
-    document.getElementById('livraison').textContent = livraison.toFixed(2) + ' MAD';
-    document.getElementById('totalCommande').textContent = total.toFixed(2) + ' MAD';
+    // Elements may not exist if the resume section is removed
+    const subtotalEl = document.getElementById('subtotal');
+    const livraisonEl = document.getElementById('livraison');
+    const totalEl = document.getElementById('totalCommande');
+    if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2) + ' MAD';
+    if (livraisonEl) livraisonEl.textContent = livraison.toFixed(2) + ' MAD';
+    if (totalEl) totalEl.textContent = total.toFixed(2) + ' MAD';
 }
 
 // Mettre à jour les frais de livraison quand la ville change
@@ -964,11 +1035,193 @@ document.addEventListener('DOMContentLoaded', function() {
         const quantiteInput = row.querySelector('.quantite-input');
 
 
+        // Peupler les couleurs/tailles pour les produits déjà sélectionnés
+        try {
+            updateProductInfo(index);
+        } catch (e) {
+            console.warn('init updateProductInfo failed for row', index, e);
+        }
+
         updateProductTotal(index);
     });
 
     // Mettre à jour le total de la commande
     updateOrderTotal();
+});
+
+// =========================
+// Add-on: Safe new-row init + sum-based stock checks (non-intrusive)
+// =========================
+
+function getRowIndexFromEl(el) {
+    const row = el.closest('tr.product-row');
+    if (!row) return null;
+    const idx = row.getAttribute('data-index');
+    return idx !== null ? parseInt(idx, 10) : null;
+}
+
+// Clone product options from the first product select to a new one
+function cloneProductOptionsTo(selectEl) {
+    const first = document.querySelector('#productsTableBody .product-select');
+    if (!first || !selectEl) return;
+    // Reset and keep a single placeholder
+    let placeholder = null;
+    if (selectEl.options.length > 0) {
+        placeholder = selectEl.options[0].cloneNode(true);
+    }
+    selectEl.innerHTML = '';
+    if (placeholder) {
+        selectEl.appendChild(placeholder);
+    } else {
+        const ph = document.createElement('option');
+        ph.value = '';
+        ph.textContent = 'Sélectionner un produit';
+        selectEl.appendChild(ph);
+    }
+    // Clone all options except placeholder
+    Array.from(first.options).forEach(opt => {
+        if (!opt.value) return; // skip placeholder
+        const copy = opt.cloneNode(true);
+        // Ensure no option is preselected in the new row
+        copy.selected = false;
+        copy.removeAttribute('selected');
+        selectEl.appendChild(copy);
+    });
+    // Ensure placeholder is selected
+    try { selectEl.selectedIndex = 0; } catch(_) {}
+}
+
+// Observe new product rows and initialize their select
+function observeNewRows() {
+    const tbody = document.getElementById('productsTableBody');
+    if (!tbody) return;
+    const observer = new MutationObserver(muts => {
+        muts.forEach(m => {
+            m.addedNodes.forEach(node => {
+                if (!(node instanceof Element)) return;
+                if (!node.classList.contains('product-row')) return;
+                const productSelect = node.querySelector('.product-select');
+                cloneProductOptionsTo(productSelect);
+                const idx = node.getAttribute('data-index');
+                if (idx !== null) {
+                    // Ensure update on select change
+                    productSelect && productSelect.addEventListener('change', () => {
+                        updateProductInfo(parseInt(idx, 10));
+                        refreshColorsRemaining();
+                        validateQuantitySum(parseInt(idx, 10));
+                    });
+                }
+            });
+        });
+    });
+    observer.observe(tbody, { childList: true });
+}
+
+// Calculate total used stock for a given product/color across other rows
+function calculateUsedStockFor(productId, color, excludeIndex) {
+    let total = 0;
+    document.querySelectorAll('#productsTableBody tr.product-row').forEach(row => {
+        const idx = row.getAttribute('data-index');
+        if (idx !== null && parseInt(idx, 10) === excludeIndex) return;
+        const ps = row.querySelector('.product-select');
+        const cs = row.querySelector('.couleur-select');
+        const qtyEl = row.querySelector('.quantite-input');
+        if (!ps || !cs || !qtyEl) return;
+        if (ps.value === String(productId) && cs.value === String(color)) {
+            total += parseInt(qtyEl.value) || 0;
+        }
+    });
+    return total;
+}
+
+// Disable colors that have no remaining stock considering quantities already chosen in other rows
+function refreshColorsRemaining() {
+    document.querySelectorAll('#productsTableBody tr.product-row').forEach(row => {
+        const idx = row.getAttribute('data-index');
+        const productSelect = row.querySelector('.product-select');
+        const couleurSelect = row.querySelector('.couleur-select');
+        if (!productSelect || !couleurSelect) return;
+        const productId = productSelect.value;
+        if (!productId) return;
+        Array.from(couleurSelect.options).forEach(opt => {
+            if (!opt.value) return; // placeholder
+            const baseStockStr = opt.getAttribute('data-stock');
+            const baseStock = baseStockStr && baseStockStr !== 'N/A' ? parseInt(baseStockStr) || 0 : 0;
+            const usedElsewhere = calculateUsedStockFor(productId, opt.value, parseInt(idx, 10));
+            const remaining = baseStock - usedElsewhere;
+            if (remaining <= 0) {
+                opt.disabled = true;
+                opt.textContent = `${opt.value} (Rupture de stock)`;
+            } else {
+                opt.disabled = false;
+                opt.textContent = `${opt.value} (Stock: ${remaining})`;
+            }
+        });
+    });
+}
+
+// Validate that current row's quantity + others for same product/color <= base stock
+function validateQuantitySum(index) {
+    const row = document.querySelector(`#productsTableBody tr.product-row[data-index="${index}"]`);
+    if (!row) return;
+    const productSelect = row.querySelector('.product-select');
+    const couleurSelect = row.querySelector('.couleur-select');
+    const qtyEl = row.querySelector('.quantite-input');
+    const errorDiv = row.querySelector('.quantite-error');
+    if (!productSelect || !couleurSelect || !qtyEl || !errorDiv) return;
+    const productId = productSelect.value;
+    const color = couleurSelect.value;
+    if (!productId || !color) {
+        errorDiv.style.display = 'none';
+        qtyEl.classList.remove('border-red-500','bg-red-50');
+        return;
+    }
+    const opt = couleurSelect.options[couleurSelect.selectedIndex];
+    const baseStockStr = opt ? opt.getAttribute('data-stock') : null;
+    const baseStock = baseStockStr && baseStockStr !== 'N/A' ? parseInt(baseStockStr) || 0 : 0;
+    const currentQty = parseInt(qtyEl.value) || 0;
+    const usedElsewhere = calculateUsedStockFor(productId, color, index);
+    const totalNeeded = usedElsewhere + currentQty;
+    if (baseStock > 0 && totalNeeded > baseStock) {
+        errorDiv.textContent = `Stock restant pour ${color}: ${Math.max(baseStock - usedElsewhere, 0)}`;
+        errorDiv.style.display = 'block';
+        qtyEl.classList.add('border-red-500','bg-red-50');
+    } else {
+        errorDiv.style.display = 'none';
+        qtyEl.classList.remove('border-red-500','bg-red-50');
+    }
+}
+
+// Wire up passive listeners without changing existing HTML
+document.addEventListener('DOMContentLoaded', function() {
+    observeNewRows();
+    // Delegated listeners
+    document.getElementById('productsTableBody')?.addEventListener('input', function(e){
+        if (e.target && e.target.classList && e.target.classList.contains('quantite-input')) {
+            const idx = getRowIndexFromEl(e.target);
+            if (idx !== null) {
+                validateQuantitySum(idx);
+                refreshColorsRemaining();
+            }
+        }
+    });
+    document.getElementById('productsTableBody')?.addEventListener('change', function(e){
+        if (e.target && e.target.classList) {
+            if (e.target.classList.contains('couleur-select') || e.target.classList.contains('product-select')) {
+                const idx = getRowIndexFromEl(e.target);
+                if (idx !== null) {
+                    // Ensure color/size dropdowns populate when product changes
+                    if (e.target.classList.contains('product-select')) {
+                        try { updateProductInfo(idx); } catch(_) {}
+                    }
+                    validateQuantitySum(idx);
+                    refreshColorsRemaining();
+                }
+            }
+        }
+    });
+    // Initial pass to align remaining stocks if rows already exist
+    setTimeout(refreshColorsRemaining, 0);
 });
 </script>
 @endsection

@@ -22,15 +22,15 @@
                     <div>
                         <span class="text-sm font-medium text-blue-700">Catégorie:</span>
                         <p class="text-blue-900">{{ $product->category->name ?? 'N/A' }}</p>
-                    </div>
+            </div>
                     <div>
                         <span class="text-sm font-medium text-blue-700">Stock Total:</span>
                         <p class="text-blue-900 font-semibold text-lg">{{ $product->quantite_stock ?? 0 }} unités</p>
-                    </div>
+        </div>
                     <div>
                         <span class="text-sm font-medium text-blue-700">Type:</span>
                         <p class="text-blue-900">{{ $product->isAccessory() ? 'Accessoire' : 'Produit avec tailles' }}</p>
-                    </div>
+    </div>
                     <div>
                         <span class="text-sm font-medium text-blue-700">Statut:</span>
                         <p class="text-blue-900">
@@ -38,9 +38,9 @@
                                 <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">En stock</span>
                             @else
                                 <span class="px-2 py-1 bg-red-100 text-red-800 text-sm rounded-full">Rupture</span>
-                            @endif
+    @endif
                         </p>
-                    </div>
+            </div>
                 </div>
             </div>
 
@@ -58,10 +58,10 @@
                         <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full border border-blue-200">
                             {{ $taille }}
                         </span>
-                    @endforeach
-                </div>
-            </div>
-            @endif
+                        @endforeach
+        </div>
+    </div>
+    @endif
 
             <!-- Stock par couleur -->
             <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
@@ -73,7 +73,7 @@
                     <div class="text-center py-8 text-gray-500">
                         <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
                         <p>Aucun stock par couleur configuré pour ce produit.</p>
-                    </div>
+        </div>
                 @else
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         @foreach($stockSummary as $colorStock)
@@ -131,8 +131,8 @@
                             </div>
                             @endif
                         </div>
-                        @endforeach
-                    </div>
+                    @endforeach
+                </div>
                 @endif
             </div>
 
@@ -154,8 +154,8 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
-</div>
 
 <!-- Modal pour la mise à jour rapide du stock -->
 <div id="stockUpdateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
@@ -180,7 +180,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
                     <input type="number" id="modalQuantity" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
-            </div>
+        </div>
             <div class="flex justify-end space-x-3 p-4 border-t">
                 <button onclick="closeStockModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
                     Annuler
