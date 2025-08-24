@@ -1033,14 +1033,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const couleurSelect = row.querySelector('.couleur-select');
         const tailleSelect = row.querySelector('.taille-select');
         const quantiteInput = row.querySelector('.quantite-input');
+        const productSelect = row.querySelector('.product-select');
 
 
-        // Peupler les couleurs/tailles pour les produits déjà sélectionnés
-        try {
-            updateProductInfo(index);
-        } catch (e) {
-            console.warn('init updateProductInfo failed for row', index, e);
+        // Attacher l'événement change pour les lignes existantes
+        if (productSelect) {
+            productSelect.addEventListener('change', function() {
+                updateProductInfo(index);
+            });
         }
+
+        // Peupler les couleurs/tailles pour les produits déjà sélectionnés (après que le DOM soit prêt)
+        setTimeout(() => {
+            try {
+                updateProductInfo(index);
+            } catch (e) {
+                console.warn('init updateProductInfo failed for row', index, e);
+            }
+        }, 0);
 
         updateProductTotal(index);
     });

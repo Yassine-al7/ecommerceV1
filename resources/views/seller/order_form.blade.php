@@ -218,6 +218,8 @@
 @endsection
 
 <script>
+// Fallback config depuis Laravel si l'API n'est pas disponible
+const sellerCitiesConfig = @json(config('delivery.cities', []));
 let deliveryConfig = {
     default_price: 0,
     prices: {},
@@ -240,6 +242,44 @@ async function loadDeliveryConfig() {
     } catch (error) {
         console.error('Erreur lors du chargement de la configuration de livraison:', error);
     }
+    // Initialiser l'affichage si une ville est déjà sélectionnée
+    try { updateDeliveryPrice(); } catch (_) {}
+}
+
+// Normaliser les chaînes pour comparer (insensible à la casse/accents/espaces)
+function normalizeCityKey(str) {
+    return (str || '')
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // enlever accents
+        .replace(/\s+/g, '_');
+}
+
+// Trouver la config ville par clé ou par nom (API ou fallback Laravel)
+function getCityConfigByValue(cityValue) {
+    const apiCities = (deliveryConfig && deliveryConfig.cities) ? deliveryConfig.cities : {};
+    const laravelCities = sellerCitiesConfig || {};
+
+    // 1) Clé exacte API
+    if (apiCities[cityValue]) return apiCities[cityValue];
+    // 2) Clé normalisée API
+    let match = Object.keys(apiCities).find(k => normalizeCityKey(k) === normalizeCityKey(cityValue));
+    if (match) return apiCities[match];
+    // 3) Nom égal API
+    match = Object.keys(apiCities).find(k => normalizeCityKey(apiCities[k]?.name) === normalizeCityKey(cityValue));
+    if (match) return apiCities[match];
+
+    // 4) Clé exacte Laravel
+    if (laravelCities[cityValue]) return laravelCities[cityValue];
+    // 5) Clé normalisée Laravel
+    match = Object.keys(laravelCities).find(k => normalizeCityKey(k) === normalizeCityKey(cityValue));
+    if (match) return laravelCities[match];
+    // 6) Nom égal Laravel
+    match = Object.keys(laravelCities).find(k => normalizeCityKey(laravelCities[k]?.name) === normalizeCityKey(cityValue));
+    if (match) return laravelCities[match];
+
+    return null;
 }
 
 function updateDeliveryPrice() {
@@ -247,11 +287,36 @@ function updateDeliveryPrice() {
     const prixLivraison = document.getElementById('prixLivraison');
     const deliveryInfo = document.getElementById('deliveryInfo');
 
-    if (villeSelect.value && deliveryConfig.cities[villeSelect.value]) {
-        const cityConfig = deliveryConfig.cities[villeSelect.value];
-        const prix = cityConfig.price;
-        const temps = cityConfig.delivery_time;
-        const zone = cityConfig.zone;
+    const cityKey = villeSelect.value;
+    const cityConfig = getCityConfigByValue(cityKey);
+
+    // 1) Source de vérité prioritaire: le prix affiché dans l'option (évite les écarts 15 vs 30)
+    let prixFromOption = null;
+    const selectedOption = villeSelect.options[villeSelect.selectedIndex];
+    if (selectedOption) {
+        // Essayer d'abord data-price si présent
+        const dp = selectedOption.getAttribute('data-price');
+        if (dp) {
+            const p = parseFloat((dp + '').replace(',', '.'));
+            if (!isNaN(p)) prixFromOption = p;
+        }
+        // Sinon parser le texte: "Ville - 15 DH (.. )"
+        if (prixFromOption === null) {
+            const txt = selectedOption.textContent || '';
+            const m = txt.match(/(\d+[\.,]?\d*)\s*DH/i);
+            if (m) {
+                const p = parseFloat(m[1].replace(',', '.'));
+                if (!isNaN(p)) prixFromOption = p;
+            }
+        }
+    }
+
+    if (cityKey && (cityConfig || prixFromOption !== null)) {
+        const prix = (prixFromOption !== null)
+            ? prixFromOption
+            : (cityConfig?.price ?? 0);
+        const temps = cityConfig.delivery_time || (cityConfig.name ? cityConfig.name : '');
+        const zone = cityConfig.zone || (cityConfig.type || '');
 
         prixLivraison.value = prix.toFixed(2);
         deliveryInfo.textContent = `${temps} - Zone: ${zone}`;
