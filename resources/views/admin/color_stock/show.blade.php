@@ -1,275 +1,280 @@
 @extends('layouts.app')
 
-@section('title', 'Stock par Couleur - ' . $product->name)
-
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <!-- En-tête -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $product->name }}</h1>
-                <p class="text-gray-600">Gestion du stock par couleur</p>
-                <div class="flex items-center mt-2">
-                    <span class="text-sm text-gray-500 mr-4">Catégorie: {{ $product->category->name ?? 'N/A' }}</span>
-                    <span class="text-sm text-gray-500">Statut global:
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            @if($globalStatus === 'out_of_stock') bg-red-100 text-red-800
-                            @elseif($globalStatus === 'low') bg-yellow-100 text-yellow-800
-                            @elseif($globalStatus === 'medium') bg-orange-100 text-orange-800
-                            @else bg-green-100 text-green-800
-                            @endif">
-                            @switch($globalStatus)
-                                @case('out_of_stock')
-                                    🔴 Rupture
-                                    @break
-                                @case('low')
-                                    🟠 Faible
-                                    @break
-                                @case('medium')
-                                    🟡 Moyen
-                                    @break
-                                @default
-                                    🟢 Bon
-                            @endswitch
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Détail du Stock - {{ $product->name }}</h1>
+                <div class="flex space-x-3">
+                    <a href="{{ route('admin.color_stock.edit', $product) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-edit mr-2"></i>Modifier
+                    </a>
+                    <a href="{{ route('admin.color_stock.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations du produit -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Catégorie:</span>
+                        <p class="text-blue-900">{{ $product->category->name ?? 'N/A' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Stock Total:</span>
+                        <p class="text-blue-900 font-semibold text-lg">{{ $product->quantite_stock ?? 0 }} unités</p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Type:</span>
+                        <p class="text-blue-900">{{ $product->isAccessory() ? 'Accessoire' : 'Produit avec tailles' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Statut:</span>
+                        <p class="text-blue-900">
+                            @if($product->quantite_stock > 0)
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">En stock</span>
+                            @else
+                                <span class="px-2 py-1 bg-red-100 text-red-800 text-sm rounded-full">Rupture</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tailles disponibles (si pas un accessoire) -->
+            @if(!$product->isAccessory() && !empty($product->tailles))
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-ruler mr-2 text-blue-600"></i>Tailles disponibles
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    @php
+                        $tailles = is_array($product->tailles) ? $product->tailles : json_decode($product->tailles, true) ?: [];
+                    @endphp
+                    @foreach($tailles as $taille)
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full border border-blue-200">
+                            {{ $taille }}
                         </span>
-                    </span>
-                </div>
-            </div>
-            <div class="flex space-x-3">
-                <a href="{{ route('admin.color-stock.index') }}"
-                   class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-arrow-left mr-2"></i>Retour
-                </a>
-                <a href="{{ route('admin.products.edit', $product) }}"
-                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    <i class="fas fa-edit mr-2"></i>Modifier le Produit
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Image du produit -->
-    @if($product->image)
-    <div class="mb-8">
-        <img src="{{ $product->image }}" alt="{{ $product->name }}"
-             class="w-32 h-32 object-cover rounded-lg shadow">
-    </div>
-    @endif
-
-    <!-- Alertes -->
-    @if(count($outOfStockColors) > 0)
-    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <i class="fas fa-exclamation-triangle text-red-400"></i>
-            </div>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">
-                    Couleurs en rupture de stock
-                </h3>
-                <div class="mt-2 text-sm text-red-700">
-                    <p>Les couleurs suivantes ne sont plus disponibles :</p>
-                    <ul class="list-disc list-inside mt-1">
-                        @foreach($outOfStockColors as $color)
-                        <li>{{ $color['name'] }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    @if(count($lowStockColors) > 0)
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
-            </div>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-yellow-800">
-                    Couleurs avec stock faible
-                </h3>
-                <div class="mt-2 text-sm text-yellow-700">
-                    <p>Les couleurs suivantes ont un stock faible :</p>
-                    <ul class="list-disc list-inside mt-1">
-                        @foreach($lowStockColors as $color)
-                        <li>{{ $color['name'] }} ({{ $color['quantity'] }} unités)</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Gestion du stock par couleur -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Gestion du Stock par Couleur</h2>
-            <p class="text-sm text-gray-600 mt-1">Mettez à jour les quantités pour chaque couleur</p>
-        </div>
-
-        <div class="p-6">
-            @if(is_array($colorStock) && count($colorStock) > 0)
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($colorStock as $index => $color)
-                        @if(is_array($color) && isset($color['name']))
-                        <div class="border border-gray-200 rounded-lg p-4
-                            @if(($color['quantity'] ?? 0) <= 0) bg-red-50 border-red-200
-                            @elseif(($color['quantity'] ?? 0) <= 5) bg-yellow-50 border-yellow-200
-                            @else bg-green-50 border-green-200
-                            @endif">
-
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    @if(isset($color['hex']))
-                                        <div class="w-6 h-6 rounded-full mr-3 border border-gray-300"
-                                             style="background-color: {{ $color['hex'] }}"></div>
-                                    @endif
-                                    <h3 class="font-medium text-gray-900">{{ $color['name'] }}</h3>
-                                </div>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    @if(($color['quantity'] ?? 0) <= 0) bg-red-100 text-red-800
-                                    @elseif(($color['quantity'] ?? 0) <= 5) bg-yellow-100 text-yellow-800
-                                    @else bg-green-100 text-green-800
-                                    @endif">
-                                    @if(($color['quantity'] ?? 0) <= 0)
-                                        🔴 Rupture
-                                    @elseif(($color['quantity'] ?? 0) <= 5)
-                                        🟠 Faible
-                                    @else
-                                        🟢 Normal
-                                    @endif
-                                </span>
-                            </div>
-
-                            <div class="space-y-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Quantité en stock
-                                    </label>
-                                    <div class="flex items-center space-x-2">
-                                        <input type="number"
-                                               name="quantity_{{ $index }}"
-                                               value="{{ $color['quantity'] ?? 0 }}"
-                                               min="0"
-                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                               placeholder="0">
-                                        <button onclick="updateColorStock('{{ $color['name'] }}', this.previousElementSibling.value)"
-                                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
-                                            <i class="fas fa-save"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                @if(isset($color['hex']))
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Code couleur
-                                    </label>
-                                    <div class="flex items-center space-x-2">
-                                        <input type="text"
-                                               value="{{ $color['hex'] }}"
-                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
-                                               readonly>
-                                        <button onclick="copyToClipboard('{{ $color['hex'] }}')"
-                                                class="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                @endif
-
-                                <div class="text-sm text-gray-600">
-                                    <p>Dernière mise à jour: {{ now()->format('d/m/Y H:i') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
                     @endforeach
                 </div>
-            @else
-                <div class="text-center py-8">
-                    <i class="fas fa-palette text-gray-400 text-4xl mb-4"></i>
-                    <p class="text-gray-500">Aucune couleur configurée pour ce produit</p>
-                    <p class="text-sm text-gray-400 mt-1">Ajoutez des couleurs dans la modification du produit</p>
-                </div>
+            </div>
             @endif
+
+            <!-- Stock par couleur -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-palette mr-2 text-blue-600"></i>Stock par couleur
+                </h3>
+
+                @if(empty($stockSummary))
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Aucun stock par couleur configuré pour ce produit.</p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        @foreach($stockSummary as $colorStock)
+                        <div class="border border-gray-200 rounded-lg p-4 {{ $colorStock['is_out_of_stock'] ? 'bg-red-50 border-red-200' : ($colorStock['is_low_stock'] ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200') }}">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-lg font-semibold text-gray-800">{{ $colorStock['color'] }}</h4>
+                                <div class="flex items-center space-x-2">
+                                    @if($colorStock['is_out_of_stock'])
+                                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Rupture</span>
+                                    @elseif($colorStock['is_low_stock'])
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Stock faible</span>
+                                    @else
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">En stock</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Quantité:</span>
+                                    <p class="text-lg font-bold {{ $colorStock['is_out_of_stock'] ? 'text-red-600' : 'text-gray-800' }}">
+                                        {{ $colorStock['quantity'] }} unités
+                                    </p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Pourcentage:</span>
+                                    <p class="text-lg font-bold text-gray-800">
+                                        @php
+                                            $percentage = $product->quantite_stock > 0 ? round(($colorStock['quantity'] / $product->quantite_stock) * 100, 1) : 0;
+                                        @endphp
+                                        {{ $percentage }}%
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Barre de progression -->
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                                @php
+                                    $percentage = $product->quantite_stock > 0 ? ($colorStock['quantity'] / $product->quantite_stock) * 100 : 0;
+                                    $barColor = $colorStock['is_out_of_stock'] ? 'bg-red-500' : ($colorStock['is_low_stock'] ? 'bg-yellow-500' : 'bg-green-500');
+                                @endphp
+                                <div class="h-2 rounded-full {{ $barColor }}" style="width: {{ $percentage }}%"></div>
+                            </div>
+
+                            @if(!$product->isAccessory() && !empty($colorStock['available_sizes']))
+                            <div>
+                                <span class="text-sm font-medium text-gray-600">Tailles disponibles:</span>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    @foreach($colorStock['available_sizes'] as $size)
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded border border-blue-200">
+                                            {{ $size }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-bolt mr-2 text-blue-600"></i>Actions rapides
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="quickStockUpdate('increase')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Augmenter le stock
+                    </button>
+                    <button onclick="quickStockUpdate('decrease')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-colors">
+                        <i class="fas fa-minus mr-2"></i>Diminuer le stock
+                    </button>
+                    <button onclick="exportStockData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-download mr-2"></i>Exporter les données
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Historique des modifications -->
-    <div class="bg-white rounded-lg shadow mt-6">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Historique des Modifications</h2>
-        </div>
-        <div class="p-6">
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-history text-4xl mb-4"></i>
-                <p>Historique des modifications de stock</p>
-                <p class="text-sm mt-1">Cette fonctionnalité sera bientôt disponible</p>
+<!-- Modal pour la mise à jour rapide du stock -->
+<div id="stockUpdateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-800" id="modalTitle">Mise à jour du stock</h3>
+                <button onclick="closeStockModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Couleur</label>
+                    <select id="modalColorSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        @foreach($stockSummary as $colorStock)
+                            <option value="{{ $colorStock['color'] }}">{{ $colorStock['color'] }} ({{ $colorStock['quantity'] }} unités)</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
+                    <input type="number" id="modalQuantity" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 p-4 border-t">
+                <button onclick="closeStockModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    Annuler
+                </button>
+                <button onclick="confirmStockUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    Confirmer
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-function updateColorStock(colorName, quantity) {
-    if (quantity === '') {
-        alert('Veuillez entrer une quantité valide');
+let currentAction = '';
+
+function quickStockUpdate(action) {
+    currentAction = action;
+    const modal = document.getElementById('stockUpdateModal');
+    const title = document.getElementById('modalTitle');
+
+    if (action === 'increase') {
+        title.textContent = 'Augmenter le stock';
+    } else {
+        title.textContent = 'Diminuer le stock';
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function closeStockModal() {
+    document.getElementById('stockUpdateModal').classList.add('hidden');
+}
+
+function confirmStockUpdate() {
+    const color = document.getElementById('modalColorSelect').value;
+    const quantity = parseInt(document.getElementById('modalQuantity').value);
+
+    if (!color || !quantity || quantity < 1) {
+        alert('Veuillez sélectionner une couleur et une quantité valide.');
         return;
     }
 
-    const formData = new FormData();
-    formData.append('color_name', colorName);
-    formData.append('quantity', quantity);
-    formData.append('_token', '{{ csrf_token() }}');
+    // Appeler l'API appropriée
+    const url = currentAction === 'increase'
+        ? '{{ route("admin.color_stock.increase") }}'
+        : '{{ route("admin.color_stock.decrease") }}';
 
-    fetch('{{ route("admin.color-stock.update", $product) }}', {
+    fetch(url, {
         method: 'POST',
-        body: formData,
         headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            product_id: {{ $product->id }},
+            color: color,
+            quantity: quantity
+        })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Recharger la page pour afficher les mises à jour
+            alert('Stock mis à jour avec succès!');
             location.reload();
         } else {
-            alert('Erreur lors de la mise à jour: ' + (data.message || 'Erreur inconnue'));
+            alert('Erreur: ' + (data.error || 'Erreur inconnue'));
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
         alert('Erreur lors de la mise à jour du stock');
     });
+
+    closeStockModal();
 }
 
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        // Afficher une notification temporaire
-        const button = event.target.closest('button');
-        const originalText = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-check"></i>';
-        button.classList.add('bg-green-600');
+function exportStockData() {
+    const data = {
+        product_name: '{{ $product->name }}',
+        category: '{{ $product->category->name ?? "N/A" }}',
+        total_stock: {{ $product->quantite_stock ?? 0 }},
+        colors: @json($stockSummary),
+        export_date: new Date().toISOString()
+    };
 
-        setTimeout(() => {
-            button.innerHTML = originalText;
-            button.classList.remove('bg-green-600');
-        }, 1000);
-    }).catch(function(err) {
-        console.error('Erreur lors de la copie:', err);
-        alert('Erreur lors de la copie du code couleur');
-    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'stock_{{ $product->name }}_' + new Date().toISOString().split('T')[0] + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
-
-// Mise à jour automatique des statistiques
-setInterval(() => {
-    // Ici vous pourriez ajouter une mise à jour en temps réel
-}, 30000); // Toutes les 30 secondes
 </script>
 @endsection

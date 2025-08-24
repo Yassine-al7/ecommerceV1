@@ -4,40 +4,26 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\AdminMessage;
-use App\Services\ColorStockNotificationService;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class ColorStockController extends Controller
 {
-    protected $notificationService;
-
-    public function __construct(ColorStockNotificationService $notificationService)
-    {
-        $this->notificationService = $notificationService;
-    }
-
     /**
-     * Afficher la vue de gestion du stock par couleur
+     * Afficher la liste des produits avec leur stock par couleur
      */
     public function index()
     {
         $products = Product::with(['category'])
             ->whereNotNull('stock_couleurs')
             ->get()
-            ->filter(function ($product) {
-                return is_array($product->stock_couleurs) && !empty($product->stock_couleurs);
+            ->map(function ($product) {
+                $product->stock_summary = $product->getStockSummary();
+                return $product;
             });
 
-        // Grouper par statut de stock
-        $productsByStatus = [
-            'out_of_stock' => $products->filter(fn($p) => $p->hasOutOfStockColors()),
-            'low_stock' => $products->filter(fn($p) => $p->hasLowStockColors()),
-            'normal' => $products->filter(fn($p) => !$p->hasOutOfStockColors() && !$p->hasLowStockColors())
-        ];
-
-        return view('admin.color_stock.index', compact('productsByStatus'));
+        return view('admin.color_stock.index', compact('products'));
     }
 
     /**
@@ -45,146 +31,187 @@ class ColorStockController extends Controller
      */
     public function show(Product $product)
     {
-        $colorStock = $product->stock_couleurs ?? [];
-        $outOfStockColors = $product->getOutOfStockColors();
-        $lowStockColors = $product->getLowStockColors();
-        $globalStatus = $product->getGlobalStockStatus();
+        $product->load('category');
+        $stockSummary = $product->getStockSummary();
 
-        return view('admin.color_stock.show', compact(
-            'product',
-            'colorStock',
-            'outOfStockColors',
-            'lowStockColors',
-            'globalStatus'
-        ));
+        return view('admin.color_stock.show', compact('product', 'stockSummary'));
     }
 
     /**
-     * Mettre à jour le stock d'une couleur
+     * Afficher le formulaire de gestion du stock
      */
-    public function updateColorStock(Request $request, Product $product)
+    public function edit(Product $product)
+    {
+        $product->load('category');
+        $stockSummary = $product->getStockSummary();
+        $categories = Category::all();
+
+        return view('admin.color_stock.edit', compact('product', 'stockSummary', 'categories'));
+    }
+
+    /**
+     * Mettre à jour le stock par couleur et taille
+     */
+    public function update(Request $request, Product $product)
     {
         $request->validate([
-            'color_name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:0',
+            'stock_couleurs' => 'required|array',
+            'stock_couleurs.*.name' => 'required|string',
+            'stock_couleurs.*.quantity' => 'required|integer|min:0',
+            'tailles' => 'nullable|array',
+            'tailles.*' => 'string',
         ]);
 
-        $colorName = $request->input('color_name');
-        $quantity = $request->input('quantity');
-        $oldQuantity = $product->getColorStockQuantity($colorName);
-
         try {
-            $product->updateColorStock($colorName, $quantity);
+            // Mettre à jour les tailles si fournies
+            if ($request->has('tailles')) {
+                $product->tailles = $request->tailles;
+            }
 
-            // Notifier immédiatement les vendeurs et admins
-            $this->notificationService->notifyStockChange($product, $colorName, $oldQuantity, $quantity);
+            // Mettre à jour le stock par couleur
+            $stockCouleurs = $request->stock_couleurs;
 
-            return redirect()->back()->with('success', "Stock de la couleur '{$colorName}' mis à jour avec succès! Notifications envoyées.");
+            // Calculer le stock total
+            $totalStock = 0;
+            foreach ($stockCouleurs as $colorStock) {
+                $totalStock += (int) $colorStock['quantity'];
+            }
+
+            // Mettre à jour le produit
+            $product->stock_couleurs = $stockCouleurs;
+            $product->quantite_stock = $totalStock;
+            $product->save();
+
+            Log::info("Stock mis à jour pour le produit {$product->name}", [
+                'stock_couleurs' => $stockCouleurs,
+                'total_stock' => $totalStock
+            ]);
+
+            return redirect()->route('admin.color_stock.show', $product)
+                ->with('success', 'Stock mis à jour avec succès!');
+
         } catch (\Exception $e) {
-            Log::error("Erreur lors de la mise à jour du stock couleur: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Erreur lors de la mise à jour du stock.');
+            Log::error("Erreur lors de la mise à jour du stock: " . $e->getMessage());
+
+            return back()->withInput()
+                ->with('error', 'Erreur lors de la mise à jour du stock: ' . $e->getMessage());
         }
     }
 
-
-
     /**
-     * Obtenir les statistiques du stock par couleur
+     * API pour vérifier la disponibilité d'une couleur et taille
      */
-    public function getStatistics()
+    public function checkAvailability(Request $request)
     {
-        $products = Product::whereNotNull('stock_couleurs')->get();
+        $request->validate([
+            'product_id' => 'required|exists:produits,id',
+            'color' => 'required|string',
+            'size' => 'nullable|string',
+        ]);
 
-        $stats = [
-            'total_products' => $products->count(),
-            'products_with_out_of_stock_colors' => $products->filter(fn($p) => $p->hasOutOfStockColors())->count(),
-            'products_with_low_stock_colors' => $products->filter(fn($p) => $p->hasLowStockColors())->count(),
-            'total_colors' => 0,
-            'out_of_stock_colors' => 0,
-            'low_stock_colors' => 0
-        ];
+        $product = Product::find($request->product_id);
 
-        foreach ($products as $product) {
-            if (is_array($product->stock_couleurs)) {
-                $stats['total_colors'] += count($product->stock_couleurs);
-                $stats['out_of_stock_colors'] += count($product->getOutOfStockColors());
-                $stats['low_stock_colors'] += count($product->getLowStockColors());
-            }
+        if (!$product) {
+            return response()->json(['error' => 'Produit non trouvé'], 404);
         }
 
-        return response()->json($stats);
+        $isAvailable = $product->isColorAndSizeAvailable($request->color, $request->size);
+        $availableSizes = $product->getAvailableSizesForColor($request->color);
+        $stockQuantity = $product->getStockForColor($request->color);
+
+        return response()->json([
+            'available' => $isAvailable,
+            'stock_quantity' => $stockQuantity,
+            'available_sizes' => $availableSizes,
+            'is_accessory' => $product->isAccessory(),
+        ]);
     }
 
     /**
-     * Rechercher les produits par couleur
+     * API pour obtenir les tailles disponibles pour une couleur
      */
-    public function searchByColor(Request $request)
+    public function getSizesForColor(Request $request)
     {
-        $colorName = $request->input('color_name');
+        $request->validate([
+            'product_id' => 'required|exists:produits,id',
+            'color' => 'required|string',
+        ]);
 
-        if (!$colorName) {
-            return redirect()->route('admin.color-stock.index');
+        $product = Product::find($request->product_id);
+
+        if (!$product) {
+            return response()->json(['error' => 'Produit non trouvé'], 404);
         }
 
-        $products = Product::whereNotNull('stock_couleurs')
-            ->get()
-            ->filter(function ($product) use ($colorName) {
-                if (!is_array($product->stock_couleurs)) {
-                    return false;
-                }
+        $availableSizes = $product->getAvailableSizesForColor($request->color);
+        $stockQuantity = $product->getStockForColor($request->color);
 
-                foreach ($product->stock_couleurs as $colorStock) {
-                    if (is_array($colorStock) && isset($colorStock['name'])) {
-                        if (stripos($colorStock['name'], $colorName) !== false) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            });
-
-        return view('admin.color_stock.search', compact('products', 'colorName'));
+        return response()->json([
+            'available_sizes' => $availableSizes,
+            'stock_quantity' => $stockQuantity,
+            'is_accessory' => $product->isAccessory(),
+        ]);
     }
 
     /**
-     * Exporter le rapport de stock par couleur
+     * API pour diminuer le stock d'une couleur
      */
-    public function export()
+    public function decreaseStock(Request $request)
     {
-        $products = Product::with(['category'])
-            ->whereNotNull('stock_couleurs')
-            ->get();
+        $request->validate([
+            'product_id' => 'required|exists:produits,id',
+            'color' => 'required|string',
+            'quantity' => 'required|integer|min:1',
+        ]);
 
-        $csvData = [];
-        $csvData[] = ['Produit', 'Catégorie', 'Couleur', 'Quantité', 'Statut'];
+        $product = Product::find($request->product_id);
 
-        foreach ($products as $product) {
-            if (is_array($product->stock_couleurs)) {
-                foreach ($product->stock_couleurs as $colorStock) {
-                    if (is_array($colorStock) && isset($colorStock['name'])) {
-                        $quantity = $colorStock['quantity'] ?? 0;
-                        $status = $quantity <= 0 ? 'Rupture' : ($quantity <= 5 ? 'Faible' : 'Normal');
-
-                        $csvData[] = [
-                            $product->name,
-                            $product->category->name ?? 'N/A',
-                            $colorStock['name'],
-                            $quantity,
-                            $status
-                        ];
-                    }
-                }
-            }
+        if (!$product) {
+            return response()->json(['error' => 'Produit non trouvé'], 404);
         }
 
-        $filename = 'stock_couleurs_' . date('Y-m-d_H-i-s') . '.csv';
+        $currentStock = $product->getStockForColor($request->color);
 
-        return response()->streamDownload(function () use ($csvData) {
-            $output = fopen('php://output', 'w');
-            foreach ($csvData as $row) {
-                fputcsv($output, $row);
-            }
-            fclose($output);
-        }, $filename);
+        if ($currentStock < $request->quantity) {
+            return response()->json([
+                'error' => 'Stock insuffisant',
+                'requested' => $request->quantity,
+                'available' => $currentStock
+            ], 400);
+        }
+
+        $newStock = $product->decreaseColorStock($request->color, $request->quantity);
+
+        return response()->json([
+            'success' => true,
+            'new_stock' => $newStock,
+            'total_stock' => $product->quantite_stock
+        ]);
+    }
+
+    /**
+     * API pour augmenter le stock d'une couleur
+     */
+    public function increaseStock(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:produits,id',
+            'color' => 'required|string',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::find($request->product_id);
+
+        if (!$product) {
+            return response()->json(['error' => 'Produit non trouvé'], 404);
+        }
+
+        $newStock = $product->increaseColorStock($request->color, $request->quantity);
+
+        return response()->json([
+            'success' => true,
+            'new_stock' => $newStock,
+            'total_stock' => $product->quantite_stock
+        ]);
     }
 }

@@ -34,7 +34,8 @@ class StockService
             $product->quantite_stock = max(0, $product->quantite_stock - $quantite);
 
             // Diminuer le stock de la couleur spécifique
-            $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
+            // Les accesseurs du modèle ont déjà décodé les données en tableaux
+            $stockCouleurs = $product->stock_couleurs;
             $stockUpdated = false;
 
             foreach ($stockCouleurs as &$stockColor) {
@@ -46,7 +47,8 @@ class StockService
             }
 
             // Sauvegarder les modifications
-            $product->stock_couleurs = json_encode($stockCouleurs);
+            // Les mutateurs du modèle encodent automatiquement les tableaux en JSON
+            $product->stock_couleurs = $stockCouleurs;
             $product->save();
 
             Log::info("Stock diminué pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock total: {$product->quantite_stock}");
@@ -79,7 +81,8 @@ class StockService
             $product->quantite_stock += $quantite;
 
             // Augmenter le stock de la couleur spécifique
-            $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
+            // Les accesseurs du modèle ont déjà décodé les données en tableaux
+            $stockCouleurs = $product->stock_couleurs;
             $stockUpdated = false;
 
             foreach ($stockCouleurs as &$stockColor) {
@@ -91,7 +94,8 @@ class StockService
             }
 
             // Sauvegarder les modifications
-            $product->stock_couleurs = json_encode($stockCouleurs);
+            // Les mutateurs du modèle encodent automatiquement les tableaux en JSON
+            $product->stock_couleurs = $stockCouleurs;
             $product->save();
 
             Log::info("Stock augmenté pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock total: {$product->quantite_stock}");
@@ -164,7 +168,8 @@ class StockService
             $stockCouleur = 0;
 
             // Récupérer le stock de la couleur spécifique
-            $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
+            // Les accesseurs du modèle ont déjà décodé les données en tableaux
+            $stockCouleurs = $product->stock_couleurs;
             foreach ($stockCouleurs as $stockColor) {
                 if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleur) {
                     $stockCouleur = (int) ($stockColor['quantity'] ?? 0);

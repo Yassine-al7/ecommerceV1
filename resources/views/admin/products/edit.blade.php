@@ -56,28 +56,42 @@
                                     @php
                                         $predefinedColors = [
                                             'Rouge' => '#ff0000', 'Vert' => '#00ff00', 'Bleu' => '#0000ff', 'Jaune' => '#ffff00',
-                                            'Noir' => '#000000', 'Blanc' => '#ffffff', 'Orange' => '#ffa500', 'Violet' => '#800080',
-                                            'Rose' => '#ffc0cb', 'Marron' => '#a52a2a', 'Gris' => '#808080', 'Beige' => '#f5f5dc'
+                                            'Orange' => '#ffa500', 'Violet' => '#800080', 'Rose' => '#ffc0cb', 'Marron' => '#a52a2a',
+                                            'Noir' => '#000000', 'Blanc' => '#ffffff', 'Gris' => '#808080', 'Beige' => '#f5f5dc',
+                                            'Turquoise' => '#40e0d0', 'Or' => '#ffd700', 'Argent' => '#c0c0c0', 'Bordeaux' => '#800020'
                                         ];
                                         // Récupérer les couleurs depuis le produit
                                         $rawColors = is_string($product->couleur) ? json_decode($product->couleur, true) ?? [] : (is_array($product->couleur) ? $product->couleur : []);
 
-                                        // Extraire les noms de couleurs pour les comparaisons
-                                        $currentColors = [];
+                                        // Récupérer les stocks par couleur pour déterminer quelles couleurs sont actives
+                                        $stockCouleurs = $product->stock_couleurs ?: [];
+                                        $activeColors = [];
                                         $customColors = [];
+                                        $stockByColor = []; // Stock par couleur pour l'affichage
 
-                                        foreach ($rawColors as $color) {
-                                            if (is_array($color) && isset($color['name'])) {
-                                                $colorName = $color['name'];
-                                                $colorHex = $color['hex'] ?? null;
-                                                $currentColors[] = $colorName;
+                                        // Créer une liste des couleurs actives basée sur les stocks
+                                        foreach ($stockCouleurs as $stockColor) {
+                                            if (is_array($stockColor) && isset($stockColor['name'])) {
+                                                $colorName = $stockColor['name'];
+                                                $stockQuantity = $stockColor['quantity'] ?? 0;
+
+                                                // Ajouter aux couleurs actives si elle a un stock défini (même 0)
+                                                $activeColors[] = $colorName;
+
+                                                // Stocker la quantité pour l'affichage
+                                                $stockByColor[$colorName] = $stockQuantity;
+
+                                                // Vérifier si c'est une couleur personnalisée
                                                 if (!in_array($colorName, array_keys($predefinedColors))) {
+                                                    // Chercher la couleur hex dans le champ couleur
+                                                    $colorHex = null;
+                                                    foreach ($rawColors as $rawColor) {
+                                                        if (is_array($rawColor) && isset($rawColor['name']) && $rawColor['name'] === $colorName) {
+                                                            $colorHex = $rawColor['hex'] ?? null;
+                                                            break;
+                                                        }
+                                                    }
                                                     $customColors[] = ['name' => $colorName, 'hex' => $colorHex];
-                                                }
-                                            } elseif (is_string($color)) {
-                                                $currentColors[] = $color;
-                                                if (!in_array($color, array_keys($predefinedColors))) {
-                                                    $customColors[] = ['name' => $color, 'hex' => null];
                                                 }
                                             }
                                         }
@@ -87,7 +101,7 @@
                                             <div class="flex items-center justify-between mb-3">
                                                 <label class="flex items-center space-x-3 cursor-pointer flex-1">
                                                     <input type="checkbox" name="couleurs_predefinies[]" value="{{ $colorName }}"
-                                                           @checked(in_array($colorName, old('couleurs_predefinies', $currentColors)))
+                                                           @checked(in_array($colorName, old('couleurs_predefinies', $activeColors)))
                                                            data-hex="{{ $colorHex }}"
                                                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 color-checkbox"
                                                            onchange="updateColorHex(this)">
@@ -95,14 +109,17 @@
                                                     <span class="text-sm font-medium text-gray-700 color-name">{{ $colorName }}</span>
                                                 </label>
                                             </div>
-                                            <div class="flex items-center space-x-2">
-                                                <label class="text-xs font-medium text-gray-600">Stock:</label>
-                                                <input type="number" name="stock_couleur_{{ $loop->index }}"
-                                                       placeholder="0" min="0"
-                                                       class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 stock-input"
-                                                       value="{{ old('stock_couleur_' . $loop->index, 0) }}"
-                                                       onchange="updateSelectedColorsCount()">
-                                            </div>
+                                                                                    <div class="flex items-center space-x-2">
+                                            <label class="text-xs font-medium text-gray-600">Stock:</label>
+                                            <input type="number" name="stock_couleur_{{ $loop->index }}"
+                                                   placeholder="0" min="0"
+                                                   class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 stock-input"
+                                                   value="{{ old('stock_couleur_' . $loop->index, $stockByColor[$colorName] ?? 0) }}"
+                                                   data-original-value="{{ old('stock_couleur_' . $loop->index, $stockByColor[$colorName] ?? 0) }}"
+                                                   data-color-name="{{ $colorName }}"
+                                                   onchange="updateSelectedColorsCount(); detectStockChange(this)"
+                                                   oninput="detectStockChange(this)">
+                                        </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -164,12 +181,18 @@
                                             <input type="number" name="stock_couleur_custom_{{ $loop->index }}"
                                                    placeholder="0" min="0"
                                                    class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
-                                                   value="0">
+                                                   value="{{ old('stock_couleur_custom_' . $loop->index, $stockByColor[$customColor['name']] ?? 0) }}"
+                                                   data-original-value="{{ old('stock_couleur_custom_' . $loop->index, $stockByColor[$customColor['name']] ?? 0) }}"
+                                                   data-color-name="{{ $customColor['name'] }}"
+                                                   onchange="detectStockChange(this)"
+                                                   oninput="detectStockChange(this)">
                                         </div>
                                         <input type="hidden" name="couleurs_personnalisees[]" value="{{ $customColor['name'] }}">
                                     </div>
                                 @endforeach
                             </div>
+
+
 
                             <!-- Résumé des couleurs sélectionnées -->
                             <div id="selectedColorsSummary" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg" style="display: none;">
@@ -325,7 +348,11 @@ function addCustomColor() {
             <input type="number" name="stock_couleur_custom_${customColorCounter}"
                    placeholder="0" min="0"
                    class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
-                   value="0">
+                   value="0"
+                   data-original-value="0"
+                   data-color-name="${colorName}"
+                   onchange="detectStockChange(this)"
+                   oninput="detectStockChange(this)">
         </div>
         <input type="hidden" name="couleurs_personnalisees[]" value="${colorName}">
     `;
@@ -457,6 +484,87 @@ function updateCombinedColors() {
         console.log('Nombre d\'inputs créés:', container.children.length);
     }
 }
+
+// 🆕 Fonction pour détecter les changements de stock en temps réel
+function detectStockChange(input) {
+    const originalValue = parseInt(input.getAttribute('data-original-value') || '0');
+    const currentValue = parseInt(input.value) || 0;
+    const colorName = input.getAttribute('data-color-name');
+
+    // Vérifier si la valeur a changé
+    if (currentValue !== originalValue) {
+        // Ajouter une classe visuelle pour indiquer le changement
+        input.classList.add('border-yellow-400', 'bg-yellow-50');
+        input.classList.remove('border-gray-300', 'bg-gray-50');
+
+        // Afficher un indicateur de modification
+        const changeIndicator = input.parentElement.querySelector('.change-indicator') || createChangeIndicator(input.parentElement);
+        changeIndicator.style.display = 'block';
+        changeIndicator.textContent = `${originalValue} → ${currentValue}`;
+
+        console.log(`🔄 Stock modifié pour ${colorName}: ${originalValue} → ${currentValue}`);
+    } else {
+        // Retirer les classes de modification si la valeur est revenue à l'original
+        input.classList.remove('border-yellow-400', 'bg-yellow-50');
+        input.classList.add('border-gray-300', 'bg-gray-50');
+
+        // Masquer l'indicateur de modification
+        const changeIndicator = input.parentElement.querySelector('.change-indicator');
+        if (changeIndicator) {
+            changeIndicator.style.display = 'none';
+        }
+    }
+
+    // Recalculer le stock total
+    calculateTotalStock();
+}
+
+// 🆕 Fonction pour créer un indicateur de changement
+function createChangeIndicator(parentElement) {
+    const indicator = document.createElement('div');
+    indicator.className = 'change-indicator text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1';
+    indicator.style.display = 'none';
+    parentElement.appendChild(indicator);
+    return indicator;
+}
+
+
+
+
+
+
+
+// 🆕 Fonction pour mettre à jour l'indicateur des changements
+function updateChangesIndicator() {
+    const stockInputs = document.querySelectorAll('input[name^="stock_couleur"]');
+    const changesIndicator = document.getElementById('changesIndicator');
+
+    if (!changesIndicator) return;
+
+    let changesCount = 0;
+    let totalDifference = 0;
+
+    stockInputs.forEach(input => {
+        const originalValue = parseInt(input.getAttribute('data-original-value') || '0');
+        const currentValue = parseInt(input.value) || 0;
+
+        if (currentValue !== originalValue) {
+            changesCount++;
+            totalDifference += (currentValue - originalValue);
+        }
+    });
+
+    if (changesCount === 0) {
+        changesIndicator.textContent = 'Aucune modification';
+        changesIndicator.className = 'text-xs text-gray-500';
+    } else {
+        const sign = totalDifference > 0 ? '+' : '';
+        changesIndicator.textContent = `${changesCount} modification(s) (${sign}${totalDifference} unités)`;
+        changesIndicator.className = 'text-xs text-orange-600 font-medium';
+    }
+}
+
+
 
 // Fonction pour mettre à jour la prévisualisation et le nom de couleur
 function updateColorPreview() {
@@ -599,66 +707,303 @@ document.addEventListener('DOMContentLoaded', function() {
     const stockTotal = document.getElementById('stockTotal');
     const stockTotalHidden = document.getElementById('stockTotalHidden');
 
+    // Fonction pour initialiser les valeurs de stock par couleur
+    function initializeStockByColor() {
+        console.log('🔍 Initialisation des stocks par couleur...');
+
+        // Récupérer les données de stock_couleurs du produit
+        const productStockCouleurs = @json($product->stock_couleurs ?: []);
+        console.log('🔍 Stock_couleurs du produit:', productStockCouleurs);
+
+        if (productStockCouleurs && Array.isArray(productStockCouleurs)) {
+            // Initialiser les stocks pour les couleurs prédéfinies
+            productStockCouleurs.forEach((stockCouleur, index) => {
+                const colorName = stockCouleur.name;
+                const stockQuantity = stockCouleur.quantity || 0;
+
+                console.log(`🔍 Initialisation stock pour ${colorName}: ${stockQuantity}`);
+
+                // Chercher la couleur prédéfinie correspondante
+                console.log(`🔍 Recherche de la couleur prédéfinie: ${colorName}`);
+                const predefinedColorCard = document.querySelector(`.color-card[data-color-name="${colorName}"]`);
+                console.log(`🔍 Élément trouvé:`, predefinedColorCard);
+
+                if (predefinedColorCard) {
+                    const stockInput = predefinedColorCard.querySelector('input[name^="stock_couleur_"]');
+                    if (stockInput) {
+                        stockInput.value = stockQuantity;
+                        console.log(`✅ Stock initialisé pour ${colorName}: ${stockQuantity}`);
+                    }
+
+                    // Cocher toutes les couleurs qui ont un stock défini (même 0)
+                    const checkbox = predefinedColorCard.querySelector('input[name="couleurs_predefinies[]"]');
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        if (stockQuantity > 0) {
+                            console.log(`✅ Couleur ${colorName} cochée (stock > 0)`);
+                            // Ajouter une classe pour indiquer que c'est en stock
+                            predefinedColorCard.classList.add('has-stock');
+                        } else {
+                            console.log(`⚠️ Couleur ${colorName} cochée mais stock = 0`);
+                            // Ajouter une classe pour indiquer que c'est en rupture
+                            predefinedColorCard.classList.add('out-of-stock');
+                        }
+                    }
+                } else {
+                    // C'est peut-être une couleur personnalisée
+                    console.log(`🔍 Couleur ${colorName} non trouvée dans les prédéfinies, recherche dans les personnalisées...`);
+
+                    // Vérifier d'abord si la couleur existe déjà dans les données du produit
+                    const productColors = @json($product->couleur ?: []);
+                    let colorExistsInProduct = false;
+                    let existingColorData = null;
+
+                    if (Array.isArray(productColors)) {
+                        for (const color of productColors) {
+                            if (color.name === colorName) {
+                                colorExistsInProduct = true;
+                                existingColorData = color;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Chercher dans les couleurs personnalisées déjà affichées
+                    const customColorItems = document.querySelectorAll('.custom-color-item');
+                    let foundInDOM = false;
+
+                    customColorItems.forEach(item => {
+                        const colorNameElement = item.querySelector('span');
+                        if (colorNameElement && colorNameElement.textContent === colorName) {
+                            const stockInput = item.querySelector('input[type="number"]');
+                            if (stockInput) {
+                                stockInput.value = stockQuantity;
+                                console.log(`✅ Stock initialisé pour couleur personnalisée existante ${colorName}: ${stockQuantity}`);
+                                foundInDOM = true;
+                            }
+                        }
+                    });
+
+                    // Vérification supplémentaire : chercher aussi dans le conteneur des couleurs personnalisées
+                    if (!foundInDOM) {
+                        const customColorsContainer = document.getElementById('customColorsContainer');
+                        if (customColorsContainer) {
+                            const existingColorNames = Array.from(customColorsContainer.querySelectorAll('.custom-color-item span'))
+                                .map(span => span.textContent);
+
+                            if (existingColorNames.includes(colorName)) {
+                                console.log(`⚠️ Couleur ${colorName} trouvée dans le conteneur, marquage comme trouvée`);
+                                foundInDOM = true;
+                            }
+                        }
+                    }
+
+                    // Créer la couleur personnalisée seulement si elle n'existe nulle part
+                    if (!foundInDOM) {
+                        if (colorExistsInProduct) {
+                            console.log(`🔍 Création de la couleur personnalisée ${colorName} depuis les données du produit`);
+                            createCustomColorFromProductData(existingColorData, stockQuantity);
+                        } else if (stockQuantity > 0) {
+                            console.log(`🔍 Création de la couleur personnalisée ${colorName} avec stock ${stockQuantity}`);
+                            createCustomColorFromStock(colorName, stockQuantity);
+                        }
+                    } else {
+                        console.log(`✅ Couleur personnalisée ${colorName} existe déjà dans le DOM, pas de création`);
+                    }
+                }
+            });
+
+            // Mettre à jour l'affichage
+            updateSelectedColorsCount();
+            updateSelectedColorsSummary();
+            calculateTotalStock();
+        }
+    }
+
+    // Fonction pour créer une couleur personnalisée depuis les données du produit
+    function createCustomColorFromProductData(colorData, stockQuantity) {
+        const colorName = colorData.name;
+        const hexColor = colorData.hex || generateHexFromName(colorName);
+
+        // Créer l'élément HTML pour la couleur personnalisée
+        const customColorHTML = `
+            <div class="custom-color-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm"
+                              style="background-color: ${hexColor}"></span>
+                        <span class="text-sm font-medium text-gray-700">${colorName}</span>
+                    </div>
+                    <button type="button" onclick="removeCustomColor(this)"
+                            class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-full transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-xs font-medium text-gray-600">Stock:</label>
+                    <input type="number" name="stock_couleur_custom_${customColorCounter++}"
+                           placeholder="0" min="0"
+                           class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                           value="${stockQuantity}">
+                </div>
+                <input type="hidden" name="couleurs_personnalisees[]" value="${colorName}">
+            </div>
+        `;
+
+        // Ajouter à la liste des couleurs personnalisées
+        const container = document.getElementById('customColorsContainer');
+        if (container) {
+            container.insertAdjacentHTML('beforeend', customColorHTML);
+            console.log(`✅ Couleur personnalisée ${colorName} créée depuis les données du produit avec stock ${stockQuantity}`);
+        }
+    }
+
+    // Fonction pour créer une couleur personnalisée à partir des données de stock
+    function createCustomColorFromStock(colorName, stockQuantity) {
+        // Récupérer la vraie couleur hexadécimale depuis le produit
+        let hexColor = null;
+
+        // Chercher la couleur dans les données du produit
+        const productColors = @json($product->couleur ?: []);
+        if (Array.isArray(productColors)) {
+            for (const color of productColors) {
+                if (color.name === colorName) {
+                    hexColor = color.hex;
+                    break;
+                }
+            }
+        }
+
+        // Si pas de couleur trouvée, utiliser une couleur par défaut
+        if (!hexColor) {
+            hexColor = generateHexFromName(colorName);
+        }
+
+        // Créer l'élément HTML pour la couleur personnalisée
+        const customColorHTML = `
+            <div class="custom-color-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm"
+                              style="background-color: ${hexColor}"></span>
+                        <span class="text-sm font-medium text-gray-700">${colorName}</span>
+                    </div>
+                    <button type="button" onclick="removeCustomColor(this)"
+                            class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-full transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-xs font-medium text-gray-600">Stock:</label>
+                    <input type="number" name="stock_couleur_custom_${customColorCounter++}"
+                           placeholder="0" min="0"
+                           class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                           value="${stockQuantity}">
+                </div>
+                <input type="hidden" name="couleurs_personnalisees[]" value="${colorName}">
+            </div>
+        `;
+
+        // Ajouter à la liste des couleurs personnalisées
+        const container = document.getElementById('customColorsContainer');
+        if (container) {
+            container.insertAdjacentHTML('beforeend', customColorHTML);
+            console.log(`✅ Couleur personnalisée ${colorName} créée avec stock ${stockQuantity}`);
+        }
+    }
+
+    // Fonction pour générer une couleur hexadécimale basée sur le nom
+    function generateHexFromName(name) {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        const hue = Math.abs(hash) % 360;
+        const saturation = 70 + (Math.abs(hash) % 30);
+        const lightness = 50 + (Math.abs(hash) % 20);
+
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+    // Initialiser le stock total avec la valeur existante du produit
     if (stockTotal) stockTotal.value = initialStock;
     if (stockTotalHidden) stockTotalHidden.value = initialStock;
 
     // Calculer le stock total initial
     calculateTotalStock();
+
+    // Initialiser les stocks par couleur
+    initializeStockByColor();
+
+
 });
 
-// Fonction pour calculer le stock total
+// 🆕 Fonction pour calculer le stock total (CORRIGÉE)
 function calculateTotalStock() {
     let total = 0;
 
-    // Calculer le stock des couleurs prédéfinies
-    const predefinedStockInputs = document.querySelectorAll('input[name^="stock_couleur_"]');
+    console.log('🔄 Début du calcul du stock total...');
 
-    predefinedStockInputs.forEach((input) => {
-        // Trouver la checkbox de couleur en remontant jusqu'au conteneur principal
-        let colorContainer = input.parentElement;
-        let checkbox = null;
+    // 1. Calculer le stock des couleurs prédéfinies COCHÉES uniquement
+    const predefinedStockInputs = document.querySelectorAll('input[name^="stock_couleur_"]:not([name*="custom"])');
+    console.log('📊 Inputs couleurs prédéfinies trouvés:', predefinedStockInputs.length);
 
-        // Remonter jusqu'à trouver le conteneur avec la checkbox
-        while (colorContainer && !checkbox) {
-            checkbox = colorContainer.querySelector('input[name="couleurs_predefinies[]"]');
-            if (!checkbox) {
-                colorContainer = colorContainer.parentElement;
-            }
-        }
+    predefinedStockInputs.forEach((input, index) => {
+        // Vérifier si la couleur est cochée
+        let colorContainer = input.closest('.color-card');
+        let checkbox = colorContainer ? colorContainer.querySelector('input[name="couleurs_predefinies[]"]') : null;
 
         if (checkbox && checkbox.checked) {
-            const stockValue = parseInt(input.value) || 0;
-            total += stockValue;
+            const value = parseInt(input.value) || 0;
+            const colorName = input.getAttribute('data-color-name') || `Prédéfinie_${index}`;
+            total += value;
+            console.log(`   ✅ ${colorName}: ${value} unités (total: ${total})`);
+        } else {
+            console.log(`   ⏭️ Couleur prédéfinie non cochée, ignorée`);
         }
     });
 
-    // Calculer le stock des couleurs personnalisées
+    // 2. Calculer le stock des couleurs personnalisées (TOUTES)
     const customStockInputs = document.querySelectorAll('input[name^="stock_couleur_custom_"]');
-    customStockInputs.forEach((input) => {
-        const stockValue = parseInt(input.value) || 0;
-        total += stockValue;
+    console.log('📊 Inputs couleurs personnalisées trouvés:', customStockInputs.length);
+
+    customStockInputs.forEach((input, index) => {
+        const value = parseInt(input.value) || 0;
+        const colorName = input.getAttribute('data-color-name') || `Personnalisée_${index}`;
+        total += value;
+        console.log(`   🎨 ${colorName}: ${value} unités (total: ${total})`);
     });
 
-    // Mettre à jour l'affichage
-    const stockTotal = document.getElementById('stockTotal');
-    const stockTotalHidden = document.getElementById('stockTotalHidden');
+    // 3. Mettre à jour l'affichage avec validation
+    const stockTotalElement = document.getElementById('stockTotal');
+    const stockTotalHiddenElement = document.getElementById('stockTotalHidden');
 
-    if (stockTotal) {
-        stockTotal.value = total;
+    if (stockTotalElement) {
+        stockTotalElement.value = total;
+        console.log('✅ Stock total affiché mis à jour:', total);
+
         // Forcer la mise à jour de l'affichage
-        stockTotal.dispatchEvent(new Event('input', { bubbles: true }));
-        stockTotal.dispatchEvent(new Event('change', { bubbles: true }));
-        // Forcer le rafraîchissement visuel
-        stockTotal.style.backgroundColor = '#ffffff';
+        stockTotalElement.dispatchEvent(new Event('input', { bubbles: true }));
+        stockTotalElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Indicateur visuel de mise à jour
+        stockTotalElement.style.backgroundColor = '#d1fae5'; // Vert clair
         setTimeout(() => {
-            stockTotal.style.backgroundColor = '#f9fafb';
-        }, 100);
+            stockTotalElement.style.backgroundColor = '#f9fafb'; // Retour normal
+        }, 300);
+    } else {
+        console.warn('⚠️ Élément stockTotal non trouvé');
     }
 
-    if (stockTotalHidden) {
-        stockTotalHidden.value = total;
+    if (stockTotalHiddenElement) {
+        stockTotalHiddenElement.value = total;
+        console.log('✅ Stock total caché mis à jour:', total);
+    } else {
+        console.warn('⚠️ Élément stockTotalHidden non trouvé');
     }
 
+    console.log('🎯 Stock total final calculé:', total);
     return total;
 }
 
@@ -783,10 +1128,46 @@ function prepareFormData() {
 
     // Initialiser l'affichage au chargement de la page
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialiser les stocks par couleur
+        initializeStockByColor();
+
         updateSelectedColorsCount();
         updateSelectedColorsSummary();
     });
 </script>
+
+<style>
+    .color-card {
+        transition: all 0.3s ease;
+    }
+    .color-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Styles pour les couleurs en stock */
+    .color-card.has-stock {
+        border-color: #10b981;
+        background-color: #f0fdf4;
+    }
+
+    /* Styles pour les couleurs en rupture */
+    .color-card.out-of-stock {
+        border-color: #ef4444;
+        background-color: #fef2f2;
+        opacity: 0.8;
+    }
+
+    .color-card.out-of-stock .color-name {
+        color: #dc2626;
+        font-style: italic;
+    }
+
+    .color-card.out-of-stock input[type="number"] {
+        background-color: #fee2e2;
+        border-color: #fca5a5;
+    }
+</style>
 @endsection
 
 

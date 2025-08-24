@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Traits\GeneratesOrderReferences;
 use App\Services\StockService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -27,48 +28,88 @@ class OrderController extends Controller
             'adresse_client' => 'required|string',
             'numero_telephone_client' => 'required|string|max:20',
             'seller_id' => 'required|exists:users,id',
-            'product_id' => 'required|exists:produits,id',
-            'taille_produit' => 'required|string|max:10',
-            'quantite_produit' => 'required|integer|min:1',
+            'products' => 'required|array|min:1',
+            'products.*.product_id' => 'required|exists:produits,id',
+            'products.*.couleur_produit' => 'required|string',
+            'products.*.taille_produit' => 'nullable|string',
+            'products.*.quantite_produit' => 'required|integer|min:1',
+            'products.*.prix_vente_client' => 'required|numeric|min:0.01',
             'commentaire' => 'nullable|string',
+            'status' => 'nullable|string',
         ]);
 
         // Générer automatiquement une référence unique
         $data['reference'] = $this->generateUniqueOrderReference();
 
-        // Calcul des prix
-        $product = \App\Models\Product::find($data['product_id']);
-        $data['prix_produit'] = $product->prix_vente;
-        $data['prix_commande'] = $product->prix_vente * $data['quantite_produit'];
-        $data['produits'] = json_encode([['product_id' => $data['product_id'], 'qty' => $data['quantite_produit']]]);
-        $data['status'] = 'en attente';
+        // Traiter chaque produit et calculer les totaux
+        $produits = [];
+        $prixTotalCommande = 0;
 
-        // Vérifier le stock disponible
-        if ($product->quantite_stock < $data['quantite_produit']) {
-            return back()->withErrors(['quantite_produit' => 'Stock insuffisant. Stock disponible: ' . $product->quantite_stock]);
+        foreach ($data['products'] as $productData) {
+            $product = \App\Models\Product::find($productData['product_id']);
+
+            // Vérifier le stock disponible
+            if ($product->quantite_stock < $productData['quantite_produit']) {
+                return back()->withErrors(['quantite_produit' => "Stock insuffisant pour {$product->name}. Stock disponible: {$product->quantite_stock}"]);
+            }
+
+            $prixProduit = $productData['prix_vente_client'] * $productData['quantite_produit'];
+            $prixTotalCommande += $prixProduit;
+
+            $produits[] = [
+                'product_id' => $productData['product_id'],
+                'qty' => $productData['quantite_produit'],
+                'couleur' => $productData['couleur_produit'],
+                'taille' => $productData['taille_produit'] ?? 'N/A',
+                'prix_vente_client' => $productData['prix_vente_client'],
+                'prix_achat_vendeur' => $product->prix_vente,
+            ];
+        }
+
+        // Calculer les frais de livraison
+        $prixLivraison = 0;
+        if (isset($data['ville']) && $data['ville'] !== '') {
+            $cityConfig = config("delivery.cities.{$data['ville']}");
+            if ($cityConfig) {
+                $prixLivraison = $cityConfig['price'];
+            }
         }
 
         // Créer la commande
-        $order = Order::create($data);
+        $orderData = [
+            'reference' => $data['reference'],
+            'nom_client' => $data['nom_client'],
+            'ville' => $data['ville'],
+            'adresse_client' => $data['adresse_client'],
+            'numero_telephone_client' => $data['numero_telephone_client'],
+            'seller_id' => $data['seller_id'],
+            'produits' => json_encode($produits),
+            'prix_commande' => $prixTotalCommande,
+            'status' => $data['status'] ?? 'en attente',
+            'commentaire' => $data['commentaire'] ?? null,
+        ];
 
-        // Diminuer automatiquement le stock du produit
-        $success = StockService::decreaseStock(
-            $data['product_id'],
-            'Couleur unique', // Couleur par défaut pour les commandes admin
-            $data['quantite_produit']
-        );
+        $order = Order::create($orderData);
 
-        if (!$success) {
-            Log::error("Échec de la mise à jour du stock pour le produit ID: {$data['product_id']}");
+        // Diminuer automatiquement le stock pour chaque produit
+        foreach ($produits as $productData) {
+            $success = StockService::decreaseStock(
+                $productData['product_id'],
+                $productData['couleur'],
+                $productData['qty']
+            );
+
+            if (!$success) {
+                Log::error("Échec de la mise à jour du stock pour le produit ID: {$productData['product_id']}");
+            } else {
+                $product = \App\Models\Product::find($productData['product_id']);
+                if ($product) {
+                    Log::info("Stock diminué pour le produit {$product->name} (ID: {$product->id}) - Couleur: {$productData['couleur']} - Quantité: {$productData['qty']} - Nouveau stock: {$product->quantite_stock}");
+                }
+            }
         }
 
-        // Log de la diminution du stock
-        $product = \App\Models\Product::find($data['product_id']);
-        if ($product) {
-            Log::info("Stock diminué pour le produit {$product->name} (ID: {$product->id}) - Quantité: {$data['quantite_produit']} - Nouveau stock: {$product->quantite_stock}");
-        }
-
-        return redirect()->route('admin.orders.index')->with('success', "Commande créée avec succès! Référence: {$order->reference}");
+        return redirect()->route('admin.orders.index')->with('success', "Commande créée avec succès! Référence: {$order->reference}, Prix total: " . number_format($prixTotalCommande, 2) . " MAD");
     }
 
     public function edit(Order $order)
@@ -92,9 +133,12 @@ class OrderController extends Controller
             'seller_id' => 'required|exists:users,id',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:produits,id',
-            'products.*.taille_produit' => 'required|string',
+            'products.*.couleur_produit' => 'required|string',
+            'products.*.taille_produit' => 'nullable|string',
             'products.*.quantite_produit' => 'required|integer|min:1',
+            'products.*.prix_vente_client' => 'required|numeric|min:0.01',
             'commentaire' => 'nullable|string',
+            'status' => 'nullable|string',
         ]);
 
         // Récupérer les anciennes quantités pour ajuster le stock
@@ -123,14 +167,16 @@ class OrderController extends Controller
                 }
             }
 
-            $prixProduit = $product->prix_vente * $newQuantity;
+            $prixProduit = $productData['prix_vente_client'] * $newQuantity;
             $prixTotalCommande += $prixProduit;
 
             $produits[] = [
                 'product_id' => $productData['product_id'],
                 'qty' => $newQuantity,
-                'taille' => $productData['taille_produit'],
-                'prix_vente_client' => $product->prix_vente,
+                'couleur' => $productData['couleur_produit'],
+                'taille' => $productData['taille_produit'] ?? 'N/A',
+                'prix_vente_client' => $productData['prix_vente_client'],
+                'prix_achat_vendeur' => $product->prix_vente,
             ];
         }
 
@@ -143,6 +189,7 @@ class OrderController extends Controller
             'seller_id' => $data['seller_id'],
             'produits' => json_encode($produits),
             'prix_commande' => $prixTotalCommande,
+            'status' => $data['status'] ?? $order->status,
             'commentaire' => $data['commentaire'] ?? null,
         ]);
 
@@ -153,12 +200,23 @@ class OrderController extends Controller
             $oldQuantity = $oldQuantities[$productData['product_id']] ?? 0;
 
             if ($newQuantity !== $oldQuantity) {
-                $success = StockService::adjustStock(
-                    $productData['product_id'],
-                    'Couleur unique', // Couleur par défaut pour les commandes admin
-                    $oldQuantity,
-                    $newQuantity
-                );
+                // Remettre l'ancien stock
+                if ($oldQuantity > 0) {
+                    $success = StockService::increaseStock(
+                        $productData['product_id'],
+                        $oldProducts[array_search($productData['product_id'], array_column($oldProducts, 'product_id'))]['couleur'] ?? 'Couleur unique',
+                        $oldQuantity
+                    );
+                }
+
+                // Diminuer le nouveau stock
+                if ($newQuantity > 0) {
+                    $success = StockService::decreaseStock(
+                        $productData['product_id'],
+                        $productData['couleur_produit'],
+                        $newQuantity
+                    );
+                }
 
                 if (!$success) {
                     Log::error("Échec de l'ajustement du stock pour le produit ID: {$productData['product_id']}");
@@ -168,7 +226,7 @@ class OrderController extends Controller
             }
         }
 
-        return redirect()->route('admin.orders.index')->with('success', 'Commande mise à jour avec succès!');
+        return redirect()->route('admin.orders.index')->with('success', 'Commande mise à jour avec succès! Prix total: ' . number_format($prixTotalCommande, 2) . ' MAD');
     }
 
     public function destroy(Order $order)
@@ -229,7 +287,7 @@ class OrderController extends Controller
     public function bulkDelete(Request $request)
     {
         // Debug: logger la requête reçue
-        \Log::info('Bulk delete request reçue:', [
+        Log::info('Bulk delete request reçue:', [
             'all_data' => $request->all(),
             'order_ids' => $request->order_ids,
             'method' => $request->method(),
@@ -242,7 +300,7 @@ class OrderController extends Controller
                 'order_ids.*' => 'required|integer|exists:commandes,id'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Erreur de validation bulk delete:', [
+            Log::error('Erreur de validation bulk delete:', [
                 'errors' => $e->errors(),
                 'request_data' => $request->all()
             ]);
@@ -271,18 +329,18 @@ class OrderController extends Controller
                         // Remettre le stock qui avait été diminué
                         $product->increment('quantite_stock', $productData['qty']);
 
-                        \Log::info("Stock remis en lot pour {$product->name} (ID: {$product->id}) - Quantité: {$productData['qty']} - Nouveau stock: {$product->quantite_stock}");
+                        Log::info("Stock remis en lot pour {$product->name} (ID: {$product->id}) - Quantité: {$productData['qty']} - Nouveau stock: {$product->quantite_stock}");
                     }
                 }
 
                 $order->delete();
                 $deletedCount++;
 
-                \Log::info("Commande supprimée en lot - ID: {$orderId}, Référence: {$order->reference}");
+                Log::info("Commande supprimée en lot - ID: {$orderId}, Référence: {$order->reference}");
 
             } catch (\Exception $e) {
                 $errors[] = "Erreur lors de la suppression de la commande ID {$orderId}: " . $e->getMessage();
-                \Log::error("Erreur suppression en lot commande ID {$orderId}: " . $e->getMessage());
+                Log::error("Erreur suppression en lot commande ID {$orderId}: " . $e->getMessage());
             }
         }
 

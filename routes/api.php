@@ -39,9 +39,9 @@ Route::middleware(['auth:api', 'role:seller'])->group(function () {
             'id' => $product->id,
             'name' => $product->name,
             'quantite_stock' => $product->quantite_stock,
-            'stock_couleurs' => json_decode($product->stock_couleurs, true),
-            'couleur' => json_decode($product->couleur, true),
-            'tailles' => json_decode($product->tailles, true)
+            'stock_couleurs' => $product->stock_couleurs,
+            'couleur' => $product->couleur,
+            'tailles' => $product->tailles
         ]);
     });
 });

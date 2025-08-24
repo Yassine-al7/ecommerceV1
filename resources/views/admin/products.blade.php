@@ -125,12 +125,12 @@
                                 </div>
 
                                 <!-- Couleurs -->
-                                @if($product->couleur)
+                                @if($product->couleur_filtree ?? $product->couleur)
                                     <div class="mb-3">
                                         <span class="text-sm text-gray-600 mr-2">Couleurs:</span>
                                         @php
-                                            // Décoder les couleurs en utilisant le Helper
-                                            $couleurs = ColorHelper::decodeColors($product->couleur);
+                                            // Utiliser les couleurs filtrées si disponibles, sinon les originales
+                                            $couleurs = ColorHelper::decodeColors($product->couleur_filtree ?? $product->couleur);
                                         @endphp
 
                                         <div class="flex flex-wrap gap-2 mt-1">

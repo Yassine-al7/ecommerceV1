@@ -73,11 +73,12 @@ class OrderController extends Controller
             ->with('category:id,name,slug')
             ->get();
 
-                // Traiter les produits pour s'assurer qu'ils ont des données de stock
+                // 🆕 FILTRER LES COULEURS AVEC STOCK = 0 POUR LES VENDEURS
         foreach ($products as $product) {
             // Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs
             if (empty($product->stock_couleurs) && !empty($product->couleur)) {
-                $couleurs = json_decode($product->couleur, true) ?: [];
+                // Les accesseurs du modèle ont déjà décodé les données en tableaux
+                $couleurs = $product->couleur;
                 $stockCouleurs = [];
 
                 foreach ($couleurs as $couleur) {
@@ -88,54 +89,61 @@ class OrderController extends Controller
                     ];
                 }
 
-                $product->stock_couleurs = json_encode($stockCouleurs);
+                $product->stock_couleurs = $stockCouleurs;
                 \Log::info("Stock par défaut créé pour {$product->name}: " . json_encode($stockCouleurs));
             }
 
-            // Si stock_couleurs existe mais contient des quantités de 0, les initialiser avec le stock total
-            if (!empty($product->stock_couleurs) && $product->quantite_stock > 0) {
-                $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
-                $hasZeroStock = false;
+            // 🆕 FILTRER LES COULEURS AVEC STOCK ≤ 0
+            if (!empty($product->stock_couleurs)) {
+                // Les accesseurs du modèle ont déjà décodé les données en tableaux
+                $stockCouleurs = $product->stock_couleurs;
+                $couleurs = $product->couleur;
 
-                foreach ($stockCouleurs as $stockColor) {
-                    if (isset($stockColor['quantity']) && $stockColor['quantity'] === 0) {
-                        $hasZeroStock = true;
-                        break;
-                    }
-                }
+                if (is_array($stockCouleurs) && is_array($couleurs)) {
+                    $couleursFiltrees = [];
+                    $stockCouleursFiltres = [];
 
-                if ($hasZeroStock) {
-                    // Répartir équitablement le stock total entre les couleurs
-                    $nombreCouleurs = count($stockCouleurs);
-                    $stockParCouleur = (int) ($product->quantite_stock / $nombreCouleurs);
-                    $reste = $product->quantite_stock % $nombreCouleurs;
+                    foreach ($stockCouleurs as $index => $stock) {
+                        if ($stock['quantity'] > 0) {
+                            // Conserver la couleur et son stock
+                            $stockCouleursFiltres[] = $stock;
 
-                    foreach ($stockCouleurs as $index => &$stockColor) {
-                        $stockColor['quantity'] = $stockParCouleur;
-                        if ($index === 0) {
-                            $stockColor['quantity'] += $reste;
+                            // Trouver la couleur correspondante
+                            if (isset($couleurs[$index])) {
+                                $couleursFiltrees[] = $couleurs[$index];
+                            }
+                        } else {
+                            \Log::info("🗑️ Couleur filtrée pour {$product->name}: {$stock['name']} (stock: {$stock['quantity']})");
                         }
                     }
 
-                    $product->stock_couleurs = json_encode($stockCouleurs);
-                    \Log::info("Stock par couleur initialisé pour {$product->name}: " . json_encode($stockCouleurs));
+                    // Mettre à jour les attributs du produit pour l'affichage
+                    $product->couleur = $couleursFiltrees;
+                    $product->stock_couleurs = $stockCouleursFiltres;
+
+                    \Log::info("🎨 Filtrage des couleurs pour {$product->name}:", [
+                        'couleurs_originales' => count($couleurs),
+                        'couleurs_filtrees' => count($couleursFiltrees),
+                        'stock_original' => count($stockCouleurs),
+                        'stock_filtre' => count($stockCouleursFiltres)
+                    ]);
                 }
             }
 
-            // Si pas de couleurs, créer une couleur par défaut
+            // Si pas de couleurs après filtrage, créer une couleur par défaut
             if (empty($product->couleur)) {
-                $product->couleur = json_encode(['Couleur unique']);
-                $product->stock_couleurs = json_encode([
+                $product->couleur = ['Couleur unique'];
+                $product->stock_couleurs = [
                     ['name' => 'Couleur unique', 'quantity' => $product->quantite_stock ?? 10]
-                ]);
+                ];
                 \Log::info("Couleur par défaut créée pour {$product->name}: Couleur unique");
             }
 
             // Debug des données finales
             \Log::info("Produit {$product->name} - Données finales:");
-            \Log::info("  - Couleur: " . $product->couleur);
-            \Log::info("  - Stock couleurs: " . $product->stock_couleurs);
-            \Log::info("  - Tailles: " . $product->tailles);
+            \Log::info("  - Couleur: " . json_encode($product->couleur));
+            \Log::info("  - Stock couleurs: " . json_encode($product->stock_couleurs));
+            \Log::info("  - Tailles: " . json_encode($product->tailles));
         }
 
         // Debug des tailles et catégories pour vérifier ce qui est récupéré
@@ -188,9 +196,10 @@ class OrderController extends Controller
 			$product = auth()->user()->assignedProducts()->where('produits.id', $productData['product_id'])->with('category')->firstOrFail();
 
 			            // Récupérer les tailles et couleurs spécifiques de ce produit depuis la base de données
-            $tailles = json_decode($product->tailles, true) ?: [];
-            $couleurs = json_decode($product->couleur, true) ?: [];
-            $stockCouleurs = json_decode($product->stock_couleurs, true) ?: [];
+            // Les accesseurs du modèle ont déjà décodé les données en tableaux
+            $tailles = $product->tailles;
+            $couleurs = $product->couleur;
+            $stockCouleurs = $product->stock_couleurs;
 
             // Debug des tailles et couleurs
             \Log::info("Produit {$product->name} (ID: {$product->id}) - Tailles: " . json_encode($tailles));
@@ -237,6 +246,17 @@ class OrderController extends Controller
 				return back()->withErrors(['couleur_produit' => "La couleur '{$couleurSelectionnee}' n'existe pas pour le produit '{$product->name}'"])->withInput();
 			}
 
+			// Vérifier la disponibilité de la couleur et de la taille
+			if (!$product->isColorAndSizeAvailable($couleurSelectionnee, $productData['taille_produit'] ?? null)) {
+				$errorMessage = "La couleur '{$couleurSelectionnee}'";
+				if (!$product->isAccessory() && !empty($productData['taille_produit'])) {
+					$errorMessage .= " avec la taille '{$productData['taille_produit']}'";
+				}
+				$errorMessage .= " n'est pas disponible pour le produit '{$product->name}'";
+
+				return back()->withErrors(['couleur_produit' => $errorMessage])->withInput();
+			}
+
 			// Avertissement si stock insuffisant (mais permet la commande)
 			if ($stockCouleur < (int) $productData['quantite_produit']) {
 				\Log::warning("Commande en rupture de stock: {$productData['quantite_produit']} {$couleurSelectionnee} demandés, seulement {$stockCouleur} disponibles");
@@ -258,6 +278,15 @@ class OrderController extends Controller
                     }
 
                     // Nettoyer aussi les tailles disponibles
+                    // S'assurer que $tailles est un tableau avant d'utiliser array_map
+                    if (!is_array($tailles)) {
+                        \Log::warning("Tailles n'est pas un tableau pour {$product->name}, conversion en tableau: " . json_encode($tailles));
+                        $tailles = is_string($tailles) ? json_decode($tailles, true) : [];
+                        if (!is_array($tailles)) {
+                            $tailles = ['S', 'M', 'L']; // Fallback par défaut
+                        }
+                    }
+
                     $taillesClean = array_map(function($taille) {
                         return preg_replace('/[\[\]\'"]/', '', trim((string)$taille));
                     }, $tailles);
@@ -368,7 +397,8 @@ class OrderController extends Controller
 		foreach ($products as $product) {
 			// Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs
 			if (empty($product->stock_couleurs) && !empty($product->couleur)) {
-				$couleurs = json_decode($product->couleur, true) ?: [];
+				// Les accesseurs du modèle ont déjà décodé les données en tableaux
+				$couleurs = $product->couleur;
 				$stockCouleurs = [];
 
 				foreach ($couleurs as $couleur) {
@@ -379,15 +409,15 @@ class OrderController extends Controller
 					];
 				}
 
-				$product->stock_couleurs = json_encode($stockCouleurs);
+				$product->stock_couleurs = $stockCouleurs;
 			}
 
 			// Si pas de couleurs, créer une couleur par défaut
 			if (empty($product->couleur)) {
-				$product->couleur = json_encode(['Couleur unique']);
-				$product->stock_couleurs = json_encode([
+				$product->couleur = ['Couleur unique'];
+				$product->stock_couleurs = [
 					['name' => 'Couleur unique', 'quantity' => $product->quantite_stock ?? 10]
-				]);
+				];
 			}
 		}
 
@@ -438,7 +468,8 @@ class OrderController extends Controller
 			$product = auth()->user()->assignedProducts()->where('produits.id', $productData['product_id'])->with('category')->firstOrFail();
 
 			// Récupérer les tailles spécifiques de ce produit depuis la base de données
-			$tailles = json_decode($product->tailles, true) ?: [];
+			// Les accesseurs du modèle ont déjà décodé les données en tableaux
+			$tailles = $product->tailles;
 
 			// Vérifier si c'est un accessoire par catégorie (plus précis)
 			$isAccessoire = $product->category && $product->category->slug === 'accessoires';
@@ -467,6 +498,15 @@ class OrderController extends Controller
 				}
 
 				// Nettoyer aussi les tailles disponibles
+				// S'assurer que $tailles est un tableau avant d'utiliser array_map
+				if (!is_array($tailles)) {
+					\Log::warning("Tailles n'est pas un tableau pour {$product->name}, conversion en tableau: " . json_encode($tailles));
+					$tailles = is_string($tailles) ? json_decode($tailles, true) : [];
+					if (!is_array($tailles)) {
+						$tailles = ['S', 'M', 'L']; // Fallback par défaut
+					}
+				}
+
 				$taillesClean = array_map(function($taille) {
 					return preg_replace('/[\[\]\'"]/', '', trim((string)$taille));
 				}, $tailles);

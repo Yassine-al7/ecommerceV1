@@ -53,12 +53,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
     // Routes pour la gestion du stock par couleur
-    Route::get('/color-stock', [ColorStockController::class, 'index'])->name('color-stock.index');
-    Route::get('/color-stock/{product}', [ColorStockController::class, 'show'])->name('color-stock.show');
-    Route::post('/color-stock/{product}/update', [ColorStockController::class, 'updateColorStock'])->name('color-stock.update');
-    Route::get('/color-stock/statistics', [ColorStockController::class, 'getStatistics'])->name('color-stock.statistics');
-    Route::get('/color-stock/search', [ColorStockController::class, 'searchByColor'])->name('color-stock.search');
-    Route::get('/color-stock/export', [ColorStockController::class, 'export'])->name('color-stock.export');
+    Route::get('/color-stock', [ColorStockController::class, 'index'])->name('color_stock.index');
+    Route::get('/color-stock/{product}', [ColorStockController::class, 'show'])->name('color_stock.show');
+    Route::get('/color-stock/{product}/edit', [ColorStockController::class, 'edit'])->name('color_stock.edit');
+    Route::put('/color-stock/{product}', [ColorStockController::class, 'update'])->name('color_stock.update');
+
+    // API routes pour la gestion du stock
+    Route::post('/color-stock/check-availability', [ColorStockController::class, 'checkAvailability'])->name('color_stock.check_availability');
+    Route::post('/color-stock/get-sizes', [ColorStockController::class, 'getSizesForColor'])->name('color_stock.get_sizes');
+    Route::post('/color-stock/decrease', [ColorStockController::class, 'decreaseStock'])->name('color_stock.decrease');
+    Route::post('/color-stock/increase', [ColorStockController::class, 'increaseStock'])->name('color_stock.increase');
 });
 
 
