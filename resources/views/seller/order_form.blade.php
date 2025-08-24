@@ -1224,13 +1224,18 @@ function calculateTotals() {
     const prixTotalElement = document.getElementById('prixTotalCommande');
     const margeTotaleElement = document.getElementById('margeBeneficeTotale');
 
+    // Affichage du prix total commande APRÈS déduction de la livraison
+    const prixTotalApresLivraison = prixTotalCommande - prixLivraison;
+
     if (prixTotalElement) {
-        prixTotalElement.value = prixTotalCommande.toFixed(2);
-        console.log(`✅ Prix total commande mis à jour: ${prixTotalElement.value} DH`);
+        prixTotalElement.value = prixTotalApresLivraison.toFixed(2);
+        console.log(`✅ Prix total commande (après livraison) mis à jour: ${prixTotalElement.value} DH`);
 
         // Vérification finale pour s'assurer que la logique est respectée
         if (prixTotalCommande > 0) {
-            console.log(`🎯 CONFIRMATION: Prix total commande = ${prixTotalCommande.toFixed(2)} DH (prix de vente fixe)`);
+            console.log(`🎯 CONFIRMATION: Prix total commande (avant livraison) = ${prixTotalCommande.toFixed(2)} DH`);
+            console.log(`🎯 CONFIRMATION: Prix livraison = ${prixLivraison.toFixed(2)} DH`);
+            console.log(`🎯 CONFIRMATION: Prix total (après livraison) = ${prixTotalApresLivraison.toFixed(2)} DH`);
         }
     } else {
         console.error('❌ Élément prixTotalCommande non trouvé');

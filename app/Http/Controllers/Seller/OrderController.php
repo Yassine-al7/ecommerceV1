@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Traits\GeneratesOrderReferences;
 use App\Services\StockService;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -178,12 +179,25 @@ class OrderController extends Controller
 		// Générer une référence unique
 		$data['reference'] = $this->generateUniqueOrderReference();
 
-		// Prix de livraison selon la ville sélectionnée
+		// Prix de livraison selon la ville sélectionnée (normalisation clé/nom)
 		$prixLivraison = 0;
-		if (isset($data['ville']) && $data['ville'] !== '') {
-			$cityConfig = config("delivery.cities.{$data['ville']}");
-			if ($cityConfig) {
-				$prixLivraison = $cityConfig['price'];
+		if (!empty($data['ville'])) {
+			$rawVille = (string) $data['ville'];
+			$normKey = (string) \Illuminate\Support\Str::of($rawVille)->lower()->ascii()->replaceMatches('/\s+/', '_');
+
+			// 1) Essayer par clé normalisée
+			$cityConfig = config("delivery.cities.{$normKey}");
+			// 2) Sinon, chercher par nom normalisé
+			if (!$cityConfig) {
+				$cities = config('delivery.cities', []);
+				foreach ($cities as $cfg) {
+					$nameNorm = (string) \Illuminate\Support\Str::of($cfg['name'] ?? '')->lower()->ascii()->replaceMatches('/\s+/', '_');
+					if ($nameNorm === $normKey) { $cityConfig = $cfg; break; }
+				}
+			}
+
+			if ($cityConfig && isset($cityConfig['price'])) {
+				$prixLivraison = (float) $cityConfig['price'];
 			}
 		}
 
