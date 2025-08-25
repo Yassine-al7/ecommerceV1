@@ -2,7 +2,7 @@
 
 /* Styles généraux */
 .gradient-bg {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #1d4ed8 50%, #2563eb 75%, #3b82f6 100%);
+    background: linear-gradient(135deg, var(--brand-gradient-start) 0%, var(--brand-secondary) 25%, var(--brand-gradient-mid) 50%, var(--brand-primary) 75%, var(--brand-gradient-end) 100%);
 }
 
 .glass-effect {
@@ -26,7 +26,7 @@
     top: 1rem !important;
     left: 1rem !important;
     z-index: 10000 !important;
-    background-color: #2563eb !important;
+    background-color: var(--brand-primary) !important;
     color: white !important;
     padding: 0.75rem !important;
     border-radius: 0.75rem !important;
@@ -37,7 +37,7 @@
 }
 
 .hamburger-button:hover {
-    background-color: #1d4ed8 !important;
+    background-color: var(--brand-secondary) !important;
     transform: scale(1.05) !important;
     box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4) !important;
 }
@@ -81,13 +81,15 @@
     left: 0 !important;
     right: 0 !important;
     z-index: 9999 !important;
-    background-color: #1e40af !important;
+    /* Background gradient handled inline in layout for Option B */
+    background-color: transparent !important;
     color: white !important;
     padding: 1rem !important;
     transition: transform 0.3s ease-in-out !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
     max-height: 100vh !important;
     overflow-y: auto !important;
+    /* No background image for Option B */
 }
 
 /* Sidebar fermé par défaut (avec Tailwind) */
@@ -123,7 +125,7 @@
 .sidebar-header {
     position: sticky !important;
     top: 0 !important;
-    background-color: #1e40af !important;
+    background-color: var(--brand-secondary) !important;
     padding: 1rem !important;
     margin: -1rem -1rem 1rem -1rem !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -216,17 +218,54 @@
 }
 
 #sidebar nav a {
-    color: white !important;
+    color: var(--sidebar-link, #0a7cff) !important;
     padding: 0.75rem !important;
     border-radius: 0.5rem !important;
     transition: background-color 0.2s ease !important;
     display: flex !important;
     align-items: center !important;
     text-decoration: none !important;
+    position: relative !important;
+    border-left: 3px solid transparent !important;
 }
 
 #sidebar nav a:hover {
     background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--sidebar-link-hover, #003b8f) !important;
+}
+
+/* Active nav indicator (mobile and desktop) */
+#sidebar nav a.nav-link.active,
+#sidebarDesktop a.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+#sidebar nav a.nav-link.active::before,
+#sidebarDesktop a.nav-link.active::before {
+    content: "";
+    position: absolute !important;
+    left: 0 !important;
+    top: 12% !important;
+    bottom: 12% !important;
+    width: 3px !important;
+    border-radius: 2px !important;
+    background: linear-gradient(180deg, var(--brand-primary), var(--brand-gradient-end)) !important;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.6) !important;
+}
+
+#sidebar nav a.nav-link.active::after,
+#sidebarDesktop a.nav-link.active::after {
+    content: "";
+    position: absolute !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 9999px !important;
+    background: var(--sidebar-link, #0a7cff) !important;
+    box-shadow: 0 0 6px rgba(10, 124, 255, 0.8) !important;
 }
 
 #sidebar nav a i {
@@ -236,8 +275,8 @@
 }
 
 /* Unification parfaite de la luminosité de la page */
-body {
-    background-color: #e2e8f0 !important; /* Fond unifié avec le bouton hamburger */
+body:not(.gradient-bg) {
+    background-color: var(--brand-gradient-end, #e2e8f0) !important; /* Utilise la couleur de marque si dispo */
     color: #334155 !important; /* Texte équilibré et lisible */
     position: relative !important; /* Position relative pour le z-index */
     z-index: 1 !important; /* Z-index de base pour le contenu */

@@ -3,95 +3,77 @@
 @section('title', 'Inscription Vendeur')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Inscription Vendeur
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Créez votre compte vendeur pour commencer
-            </p>
-        </div>
-        <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
+<div class="card-gradient card-frame rounded-2xl shadow-2xl p-8">
+    <div class="text-center mb-6">
+        <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto mx-auto rounded-md bg-white/10 p-2">
+        <h2 class="mt-4 text-2xl font-bold text-white">{{ __('ui.register.title') }}</h2>
+        <p class="mt-2 text-sm text-blue-200">{{ __('ui.register.subtitle') }}</p>
+    </div>
+    <form class="space-y-5" method="POST" action="{{ route('register') }}">
             @csrf
             <input type="hidden" name="role" value="seller">
 
             <div class="space-y-4">
                 <!-- Nom complet -->
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Nom complet *</label>
-                    <input id="name" name="name" type="text" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="Votre nom complet" value="{{ old('name') }}">
+                <div class="form-field">
+                    <input id="name" name="name" type="text" required class="input-dark" placeholder="{{ __('ui.fields.name') }}">
+                    <label for="name" class="floating-label">{{ __('ui.fields.name') }} *</label>
                     @error('name')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="error-text">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Email -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Adresse email *</label>
-                    <input id="email" name="email" type="email" autocomplete="email" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="votre@email.com" value="{{ old('email') }}">
+                <div class="form-field">
+                    <input id="email" name="email" type="email" autocomplete="email" required class="input-dark" placeholder="{{ __('ui.fields.email') }}">
+                    <label for="email" class="floating-label">{{ __('ui.fields.email') }} *</label>
                     @error('email')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="error-text">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Numéro de téléphone -->
-                <div>
-                    <label for="numero_telephone" class="block text-sm font-medium text-gray-700">Numéro de téléphone *</label>
-                    <input id="numero_telephone" name="numero_telephone" type="tel" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="+212 6 XX XX XX XX" value="{{ old('numero_telephone') }}">
+                <div class="form-field">
+                    <input id="numero_telephone" name="numero_telephone" type="tel" required class="input-dark" placeholder="{{ __('ui.fields.phone') }}">
+                    <label for="numero_telephone" class="floating-label">{{ __('ui.fields.phone') }} *</label>
                     @error('numero_telephone')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="error-text">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Nom du magasin -->
-                <div>
-                    <label for="store_name" class="block text-sm font-medium text-gray-700">Nom du magasin *</label>
-                    <input id="store_name" name="store_name" type="text" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="Nom de votre boutique" value="{{ old('store_name') }}">
+                <div class="form-field">
+                    <input id="store_name" name="store_name" type="text" required class="input-dark" placeholder="{{ __('ui.fields.store_name') }}">
+                    <label for="store_name" class="floating-label">{{ __('ui.fields.store_name') }} *</label>
                     @error('store_name')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="error-text">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- RIB -->
-                <div>
-                    <label for="rib" class="block text-sm font-medium text-gray-700">RIB *</label>
-                    <input id="rib" name="rib" type="text" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="007 810 0001000000000000" value="{{ old('rib') }}">
+                <div class="form-field">
+                    <input id="rib" name="rib" type="text" required class="input-dark" placeholder="{{ __('ui.fields.rib') }}">
+                    <label for="rib" class="floating-label">{{ __('ui.fields.rib') }} *</label>
                     @error('rib')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="error-text">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Mot de passe -->
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe *</label>
-                    <input id="password" name="password" type="password" autocomplete="new-password" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="Minimum 8 caractères">
+                <div class="form-field">
+                    <input id="password" name="password" type="password" autocomplete="new-password" required class="input-dark" placeholder="{{ __('ui.fields.password') }}">
+                    <label for="password" class="floating-label">{{ __('ui.fields.password') }} *</label>
                     @error('password')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="error-text">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Confirmation du mot de passe -->
-                <div>
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmer le mot de passe *</label>
-                    <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="Répétez votre mot de passe">
+                <div class="form-field">
+                    <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required class="input-dark" placeholder="{{ __('ui.fields.password_confirm') }}">
+                    <label for="password_confirmation" class="floating-label">{{ __('ui.fields.password_confirm') }} *</label>
                     @error('password_confirmation')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="error-text">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -107,20 +89,18 @@
             @endif
 
             <div>
-                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[color:var(--sidebar-link)] hover:bg-[color:var(--sidebar-link-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--sidebar-link)]">
                     <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                         <svg class="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
                         </svg>
                     </span>
-                    Créer mon compte vendeur
+                    {{ __('ui.register.create') }}
                 </button>
             </div>
 
             <div class="text-center">
-                <a href="{{ route('login') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
-                    Déjà inscrit ? Se connecter
-                </a>
+                <a href="{{ route('login') }}" class="font-medium link-brand">{{ __('ui.register.already') }} {{ __('ui.register.login') }}</a>
             </div>
         </form>
     </div>

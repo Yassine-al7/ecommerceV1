@@ -8,12 +8,42 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/sidebar-mobile.css') }}" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: {{ config('branding.primary') }};
+            --brand-secondary: {{ config('branding.secondary') }};
+            --brand-on-primary: {{ config('branding.on_primary') }};
+            --brand-gradient-start: {{ config('branding.gradient')[0] }};
+            --brand-gradient-mid: {{ config('branding.gradient')[1] }};
+            --brand-gradient-end: {{ config('branding.gradient')[2] }};
+            --sidebar-link: {{ data_get(config('branding'), 'sidebar.link_color') }};
+            --sidebar-link-hover: {{ data_get(config('branding'), 'sidebar.link_hover') }};
+            --sidebar-text: {{ data_get(config('branding'), 'sidebar.text_color') }};
+            --sidebar-theme: {{ data_get(config('branding'), 'sidebar.theme') === 'light' ? 'light' : 'dark' }};
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--brand-gradient-start) 0%, var(--brand-secondary) 25%, var(--brand-gradient-mid) 50%, var(--brand-primary) 75%, var(--brand-gradient-end) 100%);
+        }
+        .brand-text { color: var(--brand-on-primary); }
+        .brand-bg { background-color: var(--brand-primary); }
+        .brand-border { border-color: var(--brand-primary); }
+
+        /* Subtle vignette overlay */
+        .vignette-bg::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(120% 120% at 50% 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%);
+            z-index: 0;
+        }
+    </style>
 </head>
-<body class="gradient-bg min-h-screen">
+<body class="gradient-bg vignette-bg min-h-screen">
     <div class="min-h-screen">
         <div class="flex flex-col min-h-screen">
             <!-- Bouton toggle sidebar mobile -->
-            <button id="sidebarToggle" class="hamburger-button fixed top-4 left-4 z-50 md:hidden bg-blue-600 text-white p-3 rounded-xl shadow-lg hover:bg-blue-700 hover:scale-105 transition-all duration-200 group">
+            <button id="sidebarToggle" class="hamburger-button fixed top-4 left-4 z-50 md:hidden brand-bg text-white p-3 rounded-xl shadow-lg hover:scale-105 transition-all duration-200 group">
                 <div class="flex flex-col items-center justify-center w-6 h-6">
                     <span class="hamburger-line w-6 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100"></span>
                     <span class="hamburger-line w-6 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
@@ -27,15 +57,14 @@
 
 
             <!-- Sidebar Mobile (en haut) - UNIQUEMENT sur mobile -->
-            <aside id="sidebar" class="md:hidden fixed top-0 left-0 right-0 z-[9999] bg-blue-800 text-white p-4 space-y-4 transform -translate-y-full transition-transform duration-300 ease-in-out shadow-2xl max-h-screen overflow-y-auto">
+            <aside id="sidebar" class="md:hidden fixed top-0 left-0 right-0 z-[9999] text-white p-4 space-y-4 transform -translate-y-full transition-transform duration-300 ease-in-out shadow-2xl max-h-screen overflow-y-auto" style="background: linear-gradient(180deg, #0f172a, #1e293b);">
                 @auth
                     @if(auth()->user()->isAdmin())
                         <!-- Navigation Admin Mobile -->
                         <div class="sidebar-header">
                             <div class="flex items-center justify-between w-full">
-                                <div class="flex items-center space-x-3 flex-1">
-                                    <i class="fas fa-user-shield text-2xl text-blue-200"></i>
-                                    <div class="text-xl font-bold tracking-wide text-white">Admin Panel</div>
+                                <div class="flex items-center justify-start flex-1">
+                                    <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-14 w-auto rounded-md bg-white/10 p-1">
                                 </div>
                                 <button id="closeSidebarAdmin" class="text-white hover:text-gray-300 p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0">
                                     <i class="fas fa-times text-xl"></i>
@@ -76,9 +105,8 @@
                         <!-- Navigation Vendeur Mobile -->
                         <div class="sidebar-header">
                             <div class="flex items-center justify-between w-full">
-                                <div class="flex items-center space-x-3 flex-1">
-                                    <i class="fas fa-store text-2xl text-green-200"></i>
-                                    <div class="text-xl font-bold tracking-wide text-white">Seller Panel</div>
+                                <div class="flex items-center justify-start flex-1">
+                                    <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-14 w-auto rounded-md bg-white/10 p-1">
                                 </div>
                                 <button id="closeSidebarSeller" class="text-white hover:text-gray-300 p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0">
                                     <i class="fas fa-times text-xl"></i>
@@ -134,40 +162,45 @@
             </aside>
 
             <!-- Sidebar Desktop (à gauche) - UNIQUEMENT sur desktop -->
-            <aside id="sidebarDesktop" class="hidden md:block fixed inset-y-0 left-0 z-40 w-72 text-white p-6 space-y-6 glass-effect overflow-y-auto">
+            <aside id="sidebarDesktop" class="hidden md:block fixed inset-y-0 left-0 z-40 w-72 p-6 space-y-6 glass-effect overflow-y-auto" style="
+                background: linear-gradient(180deg, #0f172a, #1e293b);
+                color: {{ config('branding.sidebar.theme') === 'light' ? '#0a0a0a' : '#ffffff' }};
+            ">
                 @auth
                     @if(auth()->user()->isAdmin())
-                        <div class="text-xl md:text-2xl font-bold tracking-wide mb-3">Admin Panel</div>
+                        <div class="flex items-center justify-center mb-4">
+                            <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto rounded-md bg-white/10 p-1">
+                        </div>
                         <nav class="space-y-1">
-                            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.dashboard') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-gauge text-lg"></i><span class="text-sm md:text-base">Dashboard</span>
                             </a>
-                            <a href="{{ route('admin.products.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.products.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.products.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-box text-lg"></i><span class="text-sm md:text-base">Produits</span>
                             </a>
-                            <a href="{{ route('admin.categories.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.categories.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-tags text-lg"></i><span class="text-sm md:text-base">Catégories</span>
                             </a>
-                            <a href="{{ route('admin.orders.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.orders.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-list-check text-lg"></i><span class="text-sm md:text-base">Commandes</span>
                             </a>
 
-                            <a href="{{ route('admin.statistics.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.statistics.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.statistics.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-chart-bar text-lg"></i><span class="text-sm md:text-base">Statistiques</span>
                             </a>
-                            <a href="{{ route('admin.stock.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.stock.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-boxes text-lg"></i><span class="text-sm md:text-base">Stock</span>
                             </a>
-                            <a href="{{ route('admin.invoices.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.invoices.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-file-invoice text-lg"></i><span class="text-sm md:text-base">Facturation</span>
                             </a>
-                            <a href="{{ route('admin.messages.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.messages.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-bullhorn text-lg"></i><span class="text-sm md:text-base">Messages</span>
                             </a>
-                            <a href="{{ route('admin.users.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.users.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-store text-lg"></i><span class="text-sm md:text-base">Vendeurs</span>
                             </a>
-                            <a href="{{ route('admin.admins.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('admin.admins.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-user-shield text-lg"></i><span class="text-sm md:text-base">Administrateurs</span>
                             </a>
                         </nav>
@@ -182,13 +215,15 @@
                             </form>
                         </div>
                     @else
-                        <div class="text-xl md:text-2xl font-bold tracking-wide mb-3">Seller Panel</div>
+                        <div class="flex items-center justify-center mb-4">
+                            <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto rounded-md bg-white/10 p-1">
+                        </div>
                         <nav class="space-y-1">
-                            <a href="{{ route('seller.dashboard') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('seller.dashboard') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.dashboard') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-gauge text-lg"></i><span class="text-sm md:text-base">Dashboard</span>
                             </a>
 
-                            <a href="{{ route('seller.products.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('seller.products.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.products.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-box text-lg"></i><span class="text-sm md:text-base">Mes Produits</span>
                             </a>
 
@@ -196,29 +231,29 @@
                             <div class="pt-2">
                                 <h4 class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Commandes</h4>
                                 <div class="space-y-1 ml-2">
-                                    <a href="{{ route('seller.orders.create') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.create') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.orders.create') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-plus text-blue-400 text-sm"></i><span class="text-xs md:text-sm">Nouvelle commande</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.orders.index') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-list text-gray-400 text-sm"></i><span class="text-xs md:text-sm">Toutes les commandes</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=en%20attente') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-clock text-yellow-400 text-sm"></i><span class="text-xs md:text-sm">En attente</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=confirme') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-check text-blue-400 text-sm"></i><span class="text-xs md:text-sm">Confirmé</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=livré') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-check-circle text-green-400 text-sm"></i><span class="text-xs md:text-sm">Livré</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=annulé') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-times-circle text-red-400 text-sm"></i><span class="text-xs md:text-sm">Annulé</span>
                                     </a>
                                 </div>
                             </div>
 
                             <!-- Facturation -->
-                            <a href="{{ route('seller.invoices.index') }}" class="flex items-center space-x-2 md:space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                            <a href="{{ route('seller.invoices.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.invoices.*') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                 <i class="fas fa-file-invoice text-purple-400 text-lg"></i><span class="text-sm md:text-base">Facturation</span>
                             </a>
                         </nav>

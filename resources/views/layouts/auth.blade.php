@@ -7,23 +7,136 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --brand-primary: {{ config('branding.primary') }};
+            --brand-secondary: {{ config('branding.secondary') }};
+            --brand-on-primary: {{ config('branding.on_primary') }};
+            --brand-gradient-start: {{ config('branding.gradient')[0] }};
+            --brand-gradient-mid: {{ config('branding.gradient')[1] }};
+            --brand-gradient-end: {{ config('branding.gradient')[2] }};
+            --sidebar-link: {{ data_get(config('branding'), 'sidebar.link_color') }};
+            --sidebar-link-hover: {{ data_get(config('branding'), 'sidebar.link_hover') }};
+        }
         .gradient-bg {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #1d4ed8 50%, #2563eb 75%, #3b82f6 100%);
+            background: linear-gradient(135deg, var(--brand-gradient-start) 0%, var(--brand-secondary) 25%, var(--brand-gradient-mid) 50%, var(--brand-primary) 75%, var(--brand-gradient-end) 100%);
         }
         .glass-effect {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        .card-gradient {
+            background: linear-gradient(180deg, #0f172a, #1e293b);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .card-frame { position: relative; }
+        .card-frame::after {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: 1rem; /* match rounded-2xl */
+            padding: 1px;
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Floating labels with dark inputs */
+        .form-field { position: relative; }
+        .input-dark {
+            width: 100%;
+            padding: 1.1rem 1rem 0.9rem 1rem;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            border-radius: 0.75rem; /* rounded-lg */
+            transition: box-shadow .2s, border-color .2s, background .2s;
+        }
+        .input-dark::placeholder { color: transparent; }
+        .input-dark:focus {
+            outline: none;
+            border-color: var(--sidebar-link);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--sidebar-link) 30%, transparent);
+            background: rgba(255, 255, 255, 0.09);
+        }
+        .floating-label {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.8);
+            font-size: .95rem;
+            transition: all .18s ease;
+            pointer-events: none;
+        }
+        .input-dark:focus + .floating-label,
+        .input-dark:not(:placeholder-shown) + .floating-label {
+            top: 0.35rem;
+            transform: none;
+            font-size: .75rem;
+            color: var(--sidebar-link);
+        }
+        .error-text { margin-top: .35rem; font-size: .85rem; color: #fecaca; }
         .auth-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+        /* Subtle vignette overlay */
+        .vignette-bg::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(120% 120% at 50% 40%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%);
+            z-index: 0;
+        }
+        /* Gradient mesh blobs (brand blue + deep navy) */
+        .mesh-bg::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(600px 420px at 22% 28%, color-mix(in srgb, var(--sidebar-link) 28%, transparent) 0%, transparent 60%),
+                radial-gradient(700px 480px at 78% 72%, rgba(15,23,42,0.35) 0%, transparent 60%);
+            filter: blur(12px);
+            z-index: 0;
+        }
+        /* Gentle center dim to blend card with background (auth pages only) */
+        .auth-container::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(600px 420px at 50% 42%, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0) 60%);
+            z-index: 0;
+        }
+        .auth-container > * { position: relative; z-index: 1; }
+        /* Subtle grain on auth pages */
+        .auth-container::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 3px 3px;
+            opacity: .6;
+            z-index: 0;
+        }
+        .link-brand { color: var(--sidebar-link); }
+        .link-brand:hover { color: var(--sidebar-link-hover); }
+        .btn-brand {
+            color: var(--sidebar-link);
+            border-color: transparent;
+        }
+        .btn-brand:focus { outline: 2px solid var(--sidebar-link); outline-offset: 2px; }
+        .btn-brand:hover { color: var(--sidebar-link-hover); }
     </style>
 </head>
-<body class="gradient-bg">
+<body class="gradient-bg vignette-bg mesh-bg">
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
             @yield('content')

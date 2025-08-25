@@ -3,14 +3,14 @@
 @section('title', 'Login')
 
 @section('content')
-<div class="glass-effect rounded-2xl shadow-2xl p-8">
+<div class="card-gradient card-frame rounded-2xl shadow-2xl p-8">
     <!-- Logo/Header -->
     <div class="text-center mb-8">
-        <div class="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center mb-4">
-            <i class="fas fa-user-lock text-2xl text-blue-600"></i>
+        <div class="mx-auto mb-4">
+            <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-20 w-auto mx-auto rounded-md bg-white/10 p-2">
         </div>
-        <h2 class="text-3xl font-bold text-white">Welcome Back</h2>
-        <p class="text-blue-200 mt-2">Sign in to your account</p>
+        <h2 class="text-3xl font-bold text-white">{{ __('ui.login.title') }}</h2>
+        <p class="text-blue-200 mt-2">{{ __('ui.login.subtitle') }}</p>
     </div>
 
     <!-- Success Message -->
@@ -42,48 +42,29 @@
     <form method="POST" action="{{ route('login') }}" class="space-y-6">
         @csrf
 
-        <!-- Email Field -->
-        <div>
-            <label for="email" class="block text-sm font-medium text-blue-200 mb-2">
-                <i class="fas fa-envelope mr-2"></i>Email Address
+        <!-- Email Field (floating) -->
+        <div class="form-field">
+            <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus
+                   class="input-dark" placeholder="Email">
+            <label for="email" class="floating-label">
+                <i class="fas fa-envelope mr-2"></i>{{ __('ui.fields.email') }}
             </label>
-            <input type="email"
-                   name="email"
-                   id="email"
-                   value="{{ old('email') }}"
-                   required
-                   autofocus
-                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                   placeholder="Enter your email">
             @error('email')
-                <p class="mt-2 text-sm text-red-300">
-                    <i class="fas fa-exclamation-triangle mr-1"></i>{{ $message }}
-                </p>
+                <p class="error-text"><i class="fas fa-exclamation-triangle mr-1"></i>{{ $message }}</p>
             @enderror
         </div>
 
-        <!-- Password Field -->
-        <div>
-            <label for="password" class="block text-sm font-medium text-blue-200 mb-2">
-                <i class="fas fa-lock mr-2"></i>Password
+        <!-- Password Field (floating) -->
+        <div class="form-field">
+            <input type="password" name="password" id="password" required class="input-dark" placeholder="Password">
+            <label for="password" class="floating-label">
+                <i class="fas fa-lock mr-2"></i>{{ __('ui.fields.password') }}
             </label>
-            <div class="relative">
-                <input type="password"
-                       name="password"
-                       id="password"
-                       required
-                       class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                       placeholder="Enter your password">
-                <button type="button"
-                        onclick="togglePassword()"
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-white">
-                    <i id="password-icon" class="fas fa-eye"></i>
-                </button>
-            </div>
+            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-300 hover:text-white">
+                <i id="password-icon" class="fas fa-eye"></i>
+            </button>
             @error('password')
-                <p class="mt-2 text-sm text-red-300">
-                    <i class="fas fa-exclamation-triangle mr-1"></i>{{ $message }}
-                </p>
+                <p class="error-text"><i class="fas fa-exclamation-triangle mr-1"></i>{{ $message }}</p>
             @enderror
         </div>
 
@@ -100,8 +81,8 @@
             </div>
             <div class="text-sm">
                 <a href="{{ route('password.request') }}"
-                   class="font-medium text-white hover:text-blue-200 transition duration-200">
-                    Forgot password?
+                   class="font-medium link-brand transition duration-200">
+                    {{ __('ui.login.forgot_password') }}
                 </a>
             </div>
         </div>
@@ -109,21 +90,21 @@
         <!-- Submit Button -->
         <div>
             <button type="submit"
-                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 transform hover:scale-105">
+                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[color:var(--sidebar-link)] hover:bg-[color:var(--sidebar-link-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--sidebar-link)] transition duration-200 transform hover:scale-105">
                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                    <i class="fas fa-sign-in-alt group-hover:text-blue-400"></i>
+                    <i class="fas fa-sign-in-alt"></i>
                 </span>
-                Sign In
+                {{ __('ui.login.sign_in') }}
             </button>
         </div>
 
         <!-- Register Link -->
         <div class="text-center">
             <p class="text-sm text-blue-200">
-                Don't have an account?
+                {{ __('ui.login.no_account') }}
                 <a href="{{ route('register') }}"
-                   class="font-medium text-white hover:text-blue-200 transition duration-200">
-                    Create one now
+                   class="font-medium link-brand transition duration-200">
+                    {{ __('ui.login.create_now') }}
                 </a>
             </p>
         </div>
