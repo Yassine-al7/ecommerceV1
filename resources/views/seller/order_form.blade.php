@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', isset($order) ? 'Modifier Commande' : 'Créer Commande')
+@section('title', isset($order) ? __('seller_order_form.title_edit') : __('seller_order_form.title_create'))
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">{{ isset($order) ? 'Modifier' : 'Créer' }} une commande</h1>
-            <p class="text-gray-600 mt-2">Remplissez les informations pour {{ isset($order) ? 'modifier' : 'créer' }} une nouvelle commande</p>
+            <h1 class="text-3xl font-bold text-gray-800">{{ isset($order) ? __('seller_order_form.title_edit') : __('seller_order_form.title_create') }}</h1>
+            <p class="text-gray-600 mt-2">{{ isset($order) ? __('seller_order_form.subtitle_edit') : __('seller_order_form.subtitle_create') }}</p>
         </div>
 
         @if(isset($errors) && $errors->any())
@@ -31,18 +31,18 @@
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                         <i class="fas fa-user mr-2 text-blue-600"></i>
-                        Informations client
+                        {{ __('seller_order_form.client_info') }}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom client *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.client_name') }}</label>
                             <input type="text" name="nom_client" value="{{ old('nom_client', $order->nom_client ?? '') }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ville *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.city') }}</label>
                             <select name="ville" id="villeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                <option value="">Sélectionnez une ville</option>
+                                <option value="">{{ __('seller_order_form.select_city') }}</option>
                                 <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
                                 <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
                                 <option value="Fès" @selected(old('ville', $order->ville ?? '') == 'Fès')>Fès - 25 DH (2-3 jours)</option>
@@ -51,7 +51,7 @@
                                 <option value="Tanger" @selected(old('ville', $order->ville ?? '') == 'Tanger')>Tanger - 30 DH (2-3 jours)</option>
                                 <option value="Meknès" @selected(old('ville', $order->ville ?? '') == 'Meknès')>Meknès - 25 DH (2-3 jours)</option>
                                 <option value="Oujda" @selected(old('ville', $order->ville ?? '') == 'Oujda')>Oujda - 35 DH (3-4 jours)</option>
-                                <option value="Tétouan" @selected(old('ville', $order->ville ?? '') == 'Tétouan')>Tétouan - 30 DH (2-3 jours)</option>
+                                <option value="Tétouan" @selected(old('ville', $order->ville ?? '') == 'Tétouan')>Tétouان - 30 DH (2-3 jours)</option>
                                 <option value="El Jadida" @selected(old('ville', $order->ville ?? '') == 'El Jadida')>El Jadida - 20 DH (1-2 jours)</option>
                                 <option value="Safi" @selected(old('ville', $order->ville ?? '') == 'Safi')>Safi - 25 DH (2-3 jours)</option>
                                 <option value="Béni Mellal" @selected(old('ville', $order->ville ?? '') == 'Béni Mellal')>Béni Mellal - 25 DH (2-3 jours)</option>
@@ -60,15 +60,15 @@
                                 <option value="Mohammedia" @selected(old('ville', $order->ville ?? '') == 'Mohammedia')>Mohammedia - 18 DH (1-2 jours)</option>
                                 <option value="Autre" @selected(old('ville', $order->ville ?? '') == 'Autre')>Autre - 40 DH (3-5 jours)</option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Le prix de livraison sera calculé automatiquement <strong>par commande</strong></p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.delivery_select_city') }}</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Adresse *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.address') }}</label>
                             <input type="text" name="adresse_client" value="{{ old('adresse_client', $order->adresse_client ?? '') }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.phone') }}</label>
                             <input type="text" name="numero_telephone_client" value="{{ old('numero_telephone_client', $order->numero_telephone_client ?? '') }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                         </div>
@@ -78,84 +78,73 @@
                 <!-- Informations produits -->
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
-                        <span><i class="fas fa-box mr-2 text-green-600"></i>Produits de la commande</span>
-                        <button type="button" onclick="refreshStockDisplay()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105" title="Rafraîchir l'affichage du stock">
-                            <i class="fas fa-sync-alt mr-2"></i>Rafraîchir Stock
+                        <span><i class="fas fa-box mr-2 text-green-600"></i>{{ __('seller_order_form.products_section') }}</span>
+                        <button type="button" onclick="refreshStockDisplay()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105" title="{{ __('seller_order_form.refresh_stock') }}">
+                            <i class="fas fa-sync-alt mr-2"></i>{{ __('seller_order_form.refresh_stock') }}
                         </button>
                     </h3>
 
                     <div id="productsContainer">
                         <!-- Premier produit -->
                         <div class="product-item border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50" data-product-index="0">
-                                                    <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-medium text-gray-900">Produit #1</h4>
-                            <div class="flex items-center space-x-2">
-                                <button type="button" class="add-product-btn text-green-600 hover:text-green-800" onclick="addProduct()" title="Ajouter un produit">
-                                    <i class="fas fa-plus-circle text-lg"></i>
-                                </button>
-                                <button type="button" class="edit-product-btn text-blue-600 hover:text-blue-800" onclick="editProduct(this)" title="Modifier ce produit">
-                                    <i class="fas fa-edit text-lg"></i>
-                                </button>
-                                <button type="button" class="remove-product-btn text-red-600 hover:text-red-800" onclick="removeProduct(this)" style="display: none;" title="Supprimer ce produit">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-900">{{ __('seller_order_form.product_title', ['num' => 1]) }}</h4>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" class="add-product-btn text-green-600 hover:text-green-800" onclick="addProduct()" title="{{ __('seller_order_form.add_product') }}"><i class="fas fa-plus-circle text-lg"></i></button>
+                                    <button type="button" class="edit-product-btn text-blue-600 hover:text-blue-800" onclick="editProduct(this)" title="{{ __('seller_order_form.edit_product') }}"><i class="fas fa-edit text-lg"></i></button>
+                                    <button type="button" class="remove-product-btn text-red-600 hover:text-red-800" onclick="removeProduct(this)" style="display: none;" title="{{ __('seller_order_form.remove_product') }}"><i class="fas fa-trash"></i></button>
+                                </div>
                             </div>
-                        </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Produit *</label>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
                                     <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                <option value="">Sélectionnez un produit</option>
-                                @foreach(($products ?? []) as $p)
-                                            <option value="{{ $p->id }}"
-                                                    data-image="{{ $p->image }}"
-                                                    data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}"
-                                                    data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">
-                                        {{ $p->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Couleur *</label>
-                            <select name="products[0][couleur_produit]" class="color-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                <option value="">Sélectionnez d'abord un produit</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Taille *</label>
-                                    <select name="products[0][taille_produit]" class="size-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                <option value="">Sélectionnez d'abord un produit</option>
-                            </select>
+                                        <option value="">{{ __('seller_order_form.select_product') }}</option>
+                                        @foreach(($products ?? []) as $p)
+                                            <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantité *</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.color_field') }}</label>
+                                    <select name="products[0][couleur_produit]" class="color-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                        <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.size_field') }}</label>
+                                    <select name="products[0][taille_produit]" class="size-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                        <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.quantity') }}</label>
                                     <input type="number" name="products[0][quantite_produit]" class="quantity-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="1" min="1" required>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Prix de vente au client (DH) *</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.sale_price_client') }}</label>
                                     <input type="number" name="products[0][prix_vente_client]" class="prix-vente-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" step="0.01" min="0.01" required>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Prix d'achat (DH)</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.purchase_price') }}</label>
                                     <input type="text" class="prix-achat-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold" readonly>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Marge par produit (DH)</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.margin_per_product') }}</label>
                                     <input type="text" class="marge-produit-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-semibold text-center" readonly>
                                 </div>
                             </div>
 
                             <!-- Image du produit -->
                             <div class="product-image mt-4 hidden">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Image du produit</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
                                 <div class="w-32 h-32 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                                     <img class="w-full h-full object-cover" alt="Image produit">
                                 </div>
@@ -168,26 +157,26 @@
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                         <i class="fas fa-calculator mr-2 text-purple-600"></i>
-                        Résumé de la commande
+                        {{ __('seller_order_form.totals_section') }}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prix total commande (DH)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.total_order_price') }}</label>
                             <input type="text" id="prixTotalCommande" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-semibold text-center text-lg" readonly>
-                            <p class="text-xs text-gray-500 mt-1">💡 <strong>Note:</strong> Le prix total est la somme des prix de vente au client (pas × quantité)</p>
+                            <p class="text-xs text-gray-500 mt-1">💡 <strong>Note:</strong> {{ __('seller_order_form.note_total_price') }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prix de livraison (DH)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.delivery_price') }}</label>
                             <input type="text" id="prixLivraison" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-yellow-50 text-yellow-700 font-semibold text-center" readonly>
-                            <p id="deliveryInfo" class="text-xs text-gray-500 mt-1">Sélectionnez une ville</p>
-                            <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Note:</strong> Le prix de livraison est calculé <strong>par commande</strong>, pas par produit</p>
+                            <p id="deliveryInfo" class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.delivery_select_city') }}</p>
+                            <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Note:</strong> {{ __('seller_order_form.delivery_note') }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Marge bénéfice totale (DH)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.total_profit_margin') }}</label>
                             <input type="text" id="margeBeneficeTotale" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-green-50 text-green-700 font-semibold text-center text-lg" readonly>
-                            <p class="text-xs text-gray-500 mt-1">Calculée automatiquement : Marge produits - Prix de livraison</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.total_profit_hint') }}</p>
                         </div>
                     </div>
                 </div>
@@ -196,19 +185,19 @@
                 <div>
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                         <i class="fas fa-comment mr-2 text-purple-600"></i>
-                        Commentaire
+                        {{ __('seller_order_form.comment_section') }}
                     </h3>
-                    <textarea name="commentaire" rows="3" placeholder="Ajoutez un commentaire optionnel..."
+                    <textarea name="commentaire" rows="3" placeholder="{{ __('seller_order_form.comment_placeholder') }}"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('commentaire', $order->commentaire ?? '') }}</textarea>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                     <a href="{{ route('seller.orders.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i>Retour
+                        <i class="fas fa-arrow-left mr-2"></i>{{ __('seller_order_form.actions_back') }}
                     </a>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-save mr-2"></i>{{ isset($order) ? 'Mettre à jour' : 'Créer' }}
+                        <i class="fas fa-save mr-2"></i>{{ isset($order) ? __('seller_order_form.actions_submit_update') : __('seller_order_form.actions_submit_create') }}
                     </button>
                 </div>
             </form>
@@ -355,7 +344,7 @@ function addProduct() {
                 <button type="button" class="edit-product-btn text-blue-600 hover:text-blue-800" onclick="editProduct(this)" title="Modifier ce produit">
                     <i class="fas fa-edit text-lg"></i>
                 </button>
-                <button type="button" class="remove-product-btn text-red-600 hover:text-red-800" onclick="removeProduct(this)" title="Supprimer ce produit">
+                <button type="button" class="remove-product-btn text-red-600 hover:text-red-800" onclick="removeProduct(this)" style="display: none;" title="Supprimer ce produit">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>

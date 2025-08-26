@@ -9,15 +9,15 @@
 <body>
     @extends('layouts.app')
 
-    @section('title', 'Mes Commandes')
+    @section('title', __('seller_orders.title'))
 
     @section('content')
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-7xl mx-auto">
             <!-- Header Section -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Mes Commandes</h1>
-                <p class="text-gray-600">Gérez vos commandes et suivez leur progression</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ __('seller_orders.title') }}</h1>
+                <p class="text-gray-600">{{ __('seller_orders.subtitle') }}</p>
             </div>
 
             <!-- Cartes de Statistiques -->
@@ -29,7 +29,7 @@
                             <i class="fas fa-shopping-cart text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total</p>
+                            <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.total') }}</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ $stats['total'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -42,7 +42,7 @@
                             <i class="fas fa-clock text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">En Attente</p>
+                            <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.pending') }}</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ $stats['en_attente'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
                             <i class="fas fa-check-circle text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Confirmé</p>
+                            <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.confirmed') }}</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ $stats['confirme'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -68,7 +68,7 @@
                             <i class="fas fa-truck text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Livré</p>
+                            <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.delivered') }}</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ $stats['livre'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
                             <i class="fas fa-exclamation-triangle text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Problématique</p>
+                            <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.issue') }}</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ $stats['problematique'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                             <i class="fas fa-phone text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Pas de Réponse</p>
+                            <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.no_answer') }}</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ $stats['pas_de_reponse'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -105,11 +105,11 @@
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-800">Gestion des Commandes</h2>
-                        <p class="text-sm text-gray-600">Créez et gérez vos commandes</p>
+                        <h2 class="text-lg font-semibold text-gray-800">{{ __('seller_orders.manage') }}</h2>
+                        <p class="text-sm text-gray-600">{{ __('seller_orders.manage_sub') }}</p>
                     </div>
                     <a href="{{ route('seller.orders.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-plus mr-2"></i>Nouvelle Commande
+                        <i class="fas fa-plus mr-2"></i>{{ __('seller_orders.new_order') }}
                     </a>
                 </div>
             </div>
@@ -123,7 +123,7 @@
             <!-- Tableau des Commandes -->
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-800">Liste des Commandes</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">{{ __('seller_orders.list') }}</h3>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -131,25 +131,25 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Référence
+                                    {{ __('seller_orders.table.reference') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Client
+                                    {{ __('seller_orders.table.client') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Ville
+                                    {{ __('seller_orders.table.city') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Statut
+                                    {{ __('seller_orders.table.status') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Prix Total
+                                    {{ __('seller_orders.table.total_price') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date
+                                    {{ __('seller_orders.table.date') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
+                                    {{ __('seller_orders.table.actions') }}
                                 </th>
                             </tr>
                         </thead>
@@ -190,7 +190,7 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                        Aucune commande trouvée
+                                        {{ __('seller_orders.table.empty') }}
                                     </td>
                                 </tr>
                             @endforelse

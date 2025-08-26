@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facturation</title>
+    <title>الفوترة</title>
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/responsive.css') }}" rel="stylesheet">
     <style>
@@ -75,15 +75,15 @@
 use Illuminate\Support\Facades\DB;
 @endphp
 
-    @section('title', 'Gestion des Facturations')
+    @section('title', 'إدارة الفوترة')
 
     @section('content')
     <div class="min-h-screen bg-gray-50 py-4 md:py-8">
     <div class="container-responsive">
             <!-- En-tête -->
             <div class="mb-6 md:mb-8">
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 text-center md:text-left">Gestion des Facturations</h1>
-                <p class="text-gray-600 text-center md:text-left">Gérez les paiements des vendeurs et le suivi des factures</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 text-center md:text-left">إدارة الفوترة</h1>
+                <p class="text-gray-600 text-center md:text-left">إدارة مدفوعات البائعين وتتبع الفواتير</p>
             </div>
 
             @if(session('success'))
@@ -100,7 +100,7 @@ use Illuminate\Support\Facades\DB;
                             <i class="fas fa-users text-blue-600 text-lg md:text-xl"></i>
                         </div>
                         <div class="ml-3 md:ml-4">
-                            <p class="text-sm font-medium text-blue-600">Vendeurs Actifs</p>
+                            <p class="text-sm font-medium text-blue-600">البائعون النشطون</p>
                             <p class="text-xl md:text-2xl font-bold text-blue-900" id="totalVendeurs">{{ $orders->pluck('seller_id')->unique()->count() }}</p>
                         </div>
                     </div>
@@ -112,7 +112,7 @@ use Illuminate\Support\Facades\DB;
                             <i class="fas fa-shopping-cart text-green-600 text-lg md:text-xl"></i>
                         </div>
                         <div class="ml-3 md:ml-4">
-                            <p class="text-sm font-medium text-green-600">Commandes Livrées</p>
+                            <p class="text-sm font-medium text-green-600">الطلبات المسلمة</p>
                             <p class="text-xl md:text-2xl font-bold text-green-900" id="totalCommandes">{{ $orders->total() }}</p>
                         </div>
                     </div>
@@ -124,9 +124,9 @@ use Illuminate\Support\Facades\DB;
                             <i class="fas fa-money-bill-wave text-yellow-600 text-lg md:text-xl"></i>
                         </div>
                         <div class="ml-3 md:ml-4">
-                            <p class="text-sm font-medium text-yellow-600">Total Commandes</p>
+                            <p class="text-sm font-medium text-yellow-600">إجمالي الطلبات</p>
                             <p class="text-xl md:text-2xl font-bold text-yellow-900" id="totalVentes">{{ number_format($orders->sum('prix_commande'), 0) }} MAD</p>
-                            <p class="text-xs text-yellow-600">Chiffre d'affaires global</p>
+                            <p class="text-xs text-yellow-600">إجمالي رقم المعاملات</p>
                         </div>
                     </div>
                 </div>
@@ -137,7 +137,7 @@ use Illuminate\Support\Facades\DB;
                             <i class="fas fa-chart-line text-green-600 text-lg md:text-xl"></i>
                         </div>
                         <div class="ml-3 md:ml-4">
-                            <p class="text-sm font-medium text-green-600" id="margeBeneficeTitle">Total Marge Bénéfice</p>
+                            <p class="text-sm font-medium text-green-600" id="margeBeneficeTitle">إجمالي هامش الربح</p>
                             <p class="text-xl md:text-2xl font-bold text-green-900" id="totalBenefices">{{ number_format($orders->sum('marge_benefice'), 0) }} MAD</p>
                             <p class="text-xs text-green-600" id="pourcentageMarge">
                                 @php
@@ -145,7 +145,7 @@ use Illuminate\Support\Facades\DB;
                                     $totalMargeBenefice = $orders->sum('marge_benefice');
                                     $pourcentageMarge = $totalRevenue > 0 ? round(($totalMargeBenefice / $totalRevenue) * 100, 1) : 0;
                                 @endphp
-                                Marge bénéfice globale: {{ $pourcentageMarge }}%
+                                الهامش الكلي: {{ $pourcentageMarge }}%
                             </p>
                         </div>
                     </div>
@@ -159,26 +159,26 @@ use Illuminate\Support\Facades\DB;
                     <div class="actions-buttons">
                         <a href="{{ route('admin.invoices.export') }}"
                            class="btn bg-green-600 hover:bg-green-700 text-white">
-                            <i class="fas fa-download mr-2"></i>Exporter CSV
+                            <i class="fas fa-download mr-2"></i>تصدير CSV
                         </a>
                         <button onclick="resetFilters()"
                                 class="btn bg-gray-600 hover:bg-gray-700 text-white">
-                            <i class="fas fa-refresh mr-2"></i>Réinitialiser
+                            <i class="fas fa-refresh mr-2"></i>إعادة التعيين
                         </button>
                     </div>
 
                     <!-- Résumé des filtres actifs -->
                     <div class="text-sm text-gray-600 text-center md:text-left">
-                        <span id="filterSummary">Tous les vendeurs affichés</span>
+                        <span id="filterSummary">عرض جميع البائعين</span>
                     </div>
                 </div>
 
                 <!-- Filtres -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="form-group">
-                        <label class="form-label">Vendeur *</label>
+                        <label class="form-label">البائع *</label>
                         <select id="sellerFilter" class="form-input">
-                            <option value="">Tous les vendeurs</option>
+                            <option value="">كل البائعين</option>
                             @foreach($orders->pluck('seller_id')->unique() as $sellerId)
                                 @php $seller = App\Models\User::find($sellerId); @endphp
                                 @if($seller)
@@ -186,21 +186,21 @@ use Illuminate\Support\Facades\DB;
                                 @endif
                             @endforeach
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Sélectionnez un vendeur pour voir ses ventes spécifiques</p>
+                        <p class="text-xs text-gray-500 mt-1">اختر بائعًا لعرض مبيعاته</p>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Statut de Paiement</label>
+                        <label class="form-label">حالة الدفع</label>
                         <select id="paymentFilter" class="form-input">
-                            <option value="">Tous les statuts</option>
-                            <option value="payé">Payé</option>
-                            <option value="non payé">Non payé</option>
+                            <option value="">كل الحالات</option>
+                            <option value="payé">مدفوع</option>
+                            <option value="non payé">غير مدفوع</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Recherche</label>
-                        <input type="text" id="searchFilter" placeholder="Nom du client..."
+                        <label class="form-label">بحث</label>
+                        <input type="text" id="searchFilter" placeholder="اسم العميل..."
                                class="form-input">
                     </div>
                 </div>
@@ -209,19 +209,19 @@ use Illuminate\Support\Facades\DB;
             <!-- Tableau des factures -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-4 md:p-6 border-b border-gray-200">
-                    <h2 class="text-lg md:text-xl font-semibold text-gray-800 text-center md:text-left">Factures des Vendeurs</h2>
+                    <h2 class="text-lg md:text-xl font-semibold text-gray-800 text-center md:text-left">فواتير البائعين</h2>
                     <p class="text-sm text-gray-600 mt-1 text-center md:text-left">
-                        <span id="tableSummary">Total: {{ $orders->total() }} commandes livrées</span>
+                        <span id="tableSummary">المجموع: {{ $orders->total() }} طلبات مسلمة</span>
                     </p>
                     <!-- Note explicative sur les calculs -->
                     <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <div class="flex items-start">
                             <i class="fas fa-info-circle text-blue-500 mr-2 mt-1"></i>
                             <div class="text-xs text-blue-700">
-                                <p class="font-medium mb-1">Différence entre Marge Bénéfice et Bénéfice Réel Vendeur :</p>
+                                <p class="font-medium mb-1">الفرق بين هامش الربح والربح الفعلي للبائع:</p>
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li><strong>Marge Bénéfice :</strong> Prix de vente client - Prix d'achat vendeur (sans livraison)</li>
-                                    <li><strong>Bénéfice Réel Vendeur :</strong> Prix de vente client - Prix d'achat vendeur - Prix de livraison</li>
+                                    <li><strong>هامش الربح:</strong> سعر بيع العميل - سعر شراء البائع (بدون التوصيل)</li>
+                                    <li><strong>الربح الفعلي للبائع:</strong> سعر بيع العميل - سعر شراء البائع - سعر التوصيل</li>
                                 </ul>
                             </div>
                         </div>
@@ -234,29 +234,28 @@ use Illuminate\Support\Facades\DB;
                         <thead class="sticky-header">
                             <tr>
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                                    Vendeur
+                                    البائع
                                 </th>
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 hidden-mobile">
                                     RIB
                                 </th>
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                                    Client
+                                    العميل
                                 </th>
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48 hidden-mobile">
-                                    Produits
+                                    المنتجات
                                 </th>
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                                    Prix Commande
+                                    سعر الطلب
                                 </th>
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                                    Marge Bénéfice
-                                </th>
-
-                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                                    Statut
+                                    هامش الربح
                                 </th>
                                 <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                                    Actions
+                                    الحالة
+                                </th>
+                                <th class="table-cell text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                                    إجراءات
                                 </th>
                             </tr>
                         </thead>
@@ -295,7 +294,7 @@ use Illuminate\Support\Facades\DB;
                                                     {{ $order->seller->rib }}
                                                 </span>
                                             @else
-                                                <span class="text-gray-400 text-xs">Non défini</span>
+                                                <span class="text-gray-400 text-xs">غير محدد</span>
                                             @endif
                                         </div>
                                     </td>
@@ -306,7 +305,7 @@ use Illuminate\Support\Facades\DB;
                                             <div class="text-xs text-gray-500">{{ $order->ville }}</div>
                                         </td>
 
-                                                                                        <!-- Produits -->
+                                            <!-- Produits -->
                                     <td class="table-cell hidden-mobile">
                                         <div class="text-sm text-gray-900 max-w-xs">
                                             @if(is_array($order->produits))
@@ -372,26 +371,24 @@ use Illuminate\Support\Facades\DB;
                                         </div>
                                     </td>
 
-                                                                                        <!-- Prix Commande (ce que le client paie) -->
+                                            <!-- Prix Commande -->
                                     <td class="table-cell whitespace-nowrap">
                                         <div class="text-sm font-semibold text-blue-600">
                                             {{ number_format($order->prix_commande, 0) }} MAD
                                         </div>
                                     </td>
 
-                                                                                                                                        <!-- Marge Bénéfice -->
+                                            <!-- Marge Bénéfice -->
                                     <td class="table-cell whitespace-nowrap">
                                         <div class="text-sm">
                                             <div class="font-semibold text-emerald-600">
                                                 {{ number_format($order->marge_benefice, 0) }} DH
                                             </div>
                                             <div class="text-xs text-gray-500">
-                                                Marge bénéfice
+                                                هامش الربح
                                             </div>
                                         </div>
                                     </td>
-
-
 
                                             <!-- Statut Paiement -->
                                     <td class="table-cell whitespace-nowrap">
@@ -405,10 +402,9 @@ use Illuminate\Support\Facades\DB;
                                     <td class="table-cell whitespace-nowrap text-sm font-medium">
                                             <button onclick="togglePaymentStatus({{ $order->id }})"
                                                     class="btn btn-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100">
-                                                <i class="fas fa-edit"></i> <span class="hidden sm:inline">Modifier</span>
+                                                <i class="fas fa-edit"></i> <span class="hidden sm:inline">تعديل</span>
                                             </button>
 
-                                            <!-- Formulaire de modification du statut (caché par défaut) -->
                                             <form id="paymentForm{{ $order->id }}" method="POST"
                                                   action="{{ route('admin.invoices.update-status', $order->id) }}"
                                                   class="hidden mt-2">
@@ -416,8 +412,8 @@ use Illuminate\Support\Facades\DB;
                                     @method('PATCH')
                                                 <select name="facturation_status" onchange="this.form.submit()"
                                                         class="form-input text-sm">
-                                                    <option value="non payé" @selected($order->facturation_status == 'non payé')>Non payé</option>
-                                                    <option value="payé" @selected($order->facturation_status == 'payé')>Payé</option>
+                                                    <option value="non payé" @selected($order->facturation_status == 'non payé')>غير مدفوع</option>
+                                                    <option value="payé" @selected($order->facturation_status == 'payé')>مدفوع</option>
                                     </select>
                                 </form>
                             </td>
@@ -439,8 +435,8 @@ use Illuminate\Support\Facades\DB;
                         <div class="text-gray-400 mb-4">
                             <i class="fas fa-file-invoice text-4xl md:text-6xl"></i>
                         </div>
-                        <h3 class="text-lg md:text-xl font-medium text-gray-800 mb-2">Aucune facture trouvée</h3>
-                        <p class="text-gray-600">Il n'y a pas encore de commandes livrées à facturer.</p>
+                        <h3 class="text-lg md:text-xl font-medium text-gray-800 mb-2">لا توجد فواتير</h3>
+                        <p class="text-gray-600">لا توجد طلبات مسلمة للفوترة حتى الآن.</p>
                     </div>
                 @endif
             </div>
@@ -605,7 +601,7 @@ use Illuminate\Support\Facades\DB;
         });
 
         // Mettre à jour le résumé du tableau
-        document.getElementById('tableSummary').textContent = `Total: ${visibleCount} commandes livrées`;
+        document.getElementById('tableSummary').textContent = `المجموع: ${visibleCount} طلبات مسلمة`;
 
         // Mettre à jour les statistiques avec les données filtrées localement
         updateStatistics(visibleCount, totalRevenue, totalMargeBenefice);
@@ -626,7 +622,7 @@ use Illuminate\Support\Facades\DB;
         const selectedPayment = document.getElementById('paymentFilter').value;
 
         if (margeTitle) {
-            margeTitle.textContent = 'Total Marge Bénéfice';
+            margeTitle.textContent = 'إجمالي هامش الربح';
         }
 
         // Calculer et mettre à jour le pourcentage de marge bénéfice
@@ -636,16 +632,16 @@ use Illuminate\Support\Facades\DB;
         const pourcentageElement = document.getElementById('pourcentageMarge');
         if (pourcentageElement) {
             if (selectedPayment === 'non payé') {
-                pourcentageElement.textContent = `Marge bénéfice des commandes non payées: ${pourcentageMarge}%`;
+                pourcentageElement.textContent = `هامش ربح الطلبات غير المدفوعة: ${pourcentageMarge}%`;
             } else if (selectedPayment === 'payé') {
-                pourcentageElement.textContent = `Marge bénéfice des commandes payées: ${pourcentageMarge}%`;
+                pourcentageElement.textContent = `هامش ربح الطلبات المدفوعة: ${pourcentageMarge}%`;
             } else {
-                pourcentageElement.textContent = `Marge bénéfice globale: ${pourcentageMarge}%`;
+                pourcentageElement.textContent = `الهامش الكلي: ${pourcentageMarge}%`;
             }
         }
 
         // Mettre à jour le résumé du tableau
-        document.getElementById('tableSummary').textContent = `Total: ${visibleCount} commandes livrées`;
+        document.getElementById('tableSummary').textContent = `المجموع: ${visibleCount} طلبات مسلمة`;
     }
 
     function updateFilterSummary(selectedSeller, selectedPayment, searchTerm, visibleCount) {
@@ -653,20 +649,20 @@ use Illuminate\Support\Facades\DB;
 
         if (selectedSeller) {
             const sellerName = document.getElementById('sellerFilter').options[document.getElementById('sellerFilter').selectedIndex].text;
-            summary = `Vendeur: ${sellerName}`;
+            summary = `البائع: ${sellerName}`;
         } else {
-            summary = 'Tous les vendeurs';
+            summary = 'كل البائعين';
         }
 
         if (selectedPayment) {
-            summary += ` | Statut: ${selectedPayment}`;
+            summary += ` | الحالة: ${selectedPayment}`;
         }
 
         if (searchTerm) {
-            summary += ` | Recherche: "${searchTerm}"`;
+            summary += ` | البحث: "${searchTerm}"`;
         }
 
-        summary += ` | ${visibleCount} résultat(s)`;
+        summary += ` | ${visibleCount} نتيجة`;
 
         document.getElementById('filterSummary').textContent = summary;
     }

@@ -5,9 +5,9 @@
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">Ajouter un Produit</h1>
+                <h1 class="text-2xl font-bold text-gray-800">إضافة منتج</h1>
                 <a href="{{ route('admin.products.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                    <i class="fas fa-arrow-left mr-2"></i>Retour
+                    <i class="fas fa-arrow-left mr-2"></i>رجوع
                 </a>
             </div>
 
@@ -17,7 +17,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Nom du produit -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom du Produit *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">اسم المنتج *</label>
                         <input type="text" name="name" value="{{ old('name') }}" required
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         @error('name')
@@ -27,9 +27,9 @@
 
                     <!-- Catégorie -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">التصنيف *</label>
                         <select name="categorie_id" id="categorie_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Sélectionner une catégorie</option>
+                            <option value="">اختر تصنيفًا</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" @selected(old('categorie_id') == $category->id)>
                                     {{ $category->name }}
@@ -43,14 +43,14 @@
 
                     <!-- Couleurs -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleurs du Produit *</label>
-                        <p class="text-xs text-gray-500 mb-3">Sélectionnez des couleurs disponibles ou ajoutez vos propres couleurs personnalisées.</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ألوان المنتج *</label>
+                        <p class="text-xs text-gray-500 mb-3">اختر الألوان المتاحة أو أضف ألوانًا مخصصة.</p>
 
                         <!-- Couleurs prédéfinies avec checkboxes -->
                         <div class="mb-6">
                             <p class="text-sm font-medium text-gray-700 mb-4 flex items-center">
                                 <i class="fas fa-palette mr-2 text-blue-600"></i>
-                                Couleurs disponibles : <span id="selectedColorsCount" class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">0 sélectionnée</span>
+                                الألوان المتاحة: <span id="selectedColorsCount" class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">0 محددة</span>
                             </p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 @php
@@ -75,7 +75,7 @@
                                             </label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <label class="text-xs font-medium text-gray-600">Stock:</label>
+                                            <label class="text-xs font-medium text-gray-600">المخزون:</label>
                                             <input type="number" name="stock_couleur_{{ $loop->index }}"
                                                    placeholder="0" min="0"
                                                    class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 stock-input"
@@ -91,11 +91,11 @@
                         <div class="mb-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm">
                             <p class="text-sm font-semibold text-blue-800 mb-4 flex items-center">
                                 <i class="fas fa-palette mr-2 text-blue-600"></i>
-                                Ajouter une couleur personnalisée
+                                إضافة لون مخصص
                             </p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                                 <div class="flex flex-col space-y-2">
-                                    <label class="text-xs font-medium text-blue-700">Sélectionner la couleur</label>
+                                    <label class="text-xs font-medium text-blue-700">اختر اللون</label>
                                     <div class="flex items-center space-x-3">
                                         <input type="color" id="newColorPicker" value="#ff6b6b"
                                                class="w-14 h-12 border-2 border-gray-300 rounded-lg cursor-pointer shadow-sm">
@@ -104,14 +104,14 @@
                                     </div>
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <label class="text-xs font-medium text-blue-700 mb-2 block">Nom de la couleur</label>
-                                    <input type="text" id="newColorName" placeholder="Ex: Corail, Indigo, Marine..."
+                                    <label class="text-xs font-medium text-blue-700 mb-2 block">اسم اللون</label>
+                                    <input type="text" id="newColorName" placeholder="مثال: مرجاني، نيلي، بحري..."
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm">
                                 </div>
                                 <div class="flex items-end">
                                     <button type="button" onclick="addCustomColor()"
                                             class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 hover:shadow-md font-medium">
-                                        <i class="fas fa-plus mr-2"></i>Ajouter
+                                        <i class="fas fa-plus mr-2"></i>إضافة
                                     </button>
                                 </div>
                             </div>
@@ -121,7 +121,7 @@
                         <div id="selectedColorsSummary" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg" style="display: none;">
                             <h4 class="text-sm font-semibold text-green-800 mb-2 flex items-center">
                                 <i class="fas fa-check-circle mr-2"></i>
-                                Couleurs sélectionnées :
+                                الألوان المحددة:
                             </h4>
                             <div id="selectedColorsList" class="flex flex-wrap gap-2">
                                 <!-- Les couleurs sélectionnées seront affichées ici -->
@@ -145,8 +145,8 @@
 
                     <!-- Tailles -->
                     <div class="md:col-span-2" id="taillesSection">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tailles Disponibles <span id="taillesRequired" class="text-red-500">*</span></label>
-                        <p class="text-xs text-gray-500 mb-2">Cochez des tailles standards ou ajoutez des tailles personnalisées (ex: 37, 32 Bébé, ESPA 37).</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">المقاسات المتاحة <span id="taillesRequired" class="text-red-500">*</span></label>
+                        <p class="text-xs text-gray-500 mb-2">حدد مقاسات قياسية أو أضف مقاسات مخصصة.</p>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             @php
                                 $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
@@ -161,8 +161,8 @@
                             @endforeach
                         </div>
                         <div class="flex items-center space-x-2">
-                            <input type="text" id="customSizeInput" placeholder="Ex: ESPA 37, 32 Bébé" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <button type="button" onclick="addCustomSize()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Ajouter</button>
+                            <input type="text" id="customSizeInput" placeholder="مثال: ESPA 37" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <button type="button" onclick="addCustomSize()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">إضافة</button>
                         </div>
                         <div id="customSizesContainer" class="flex flex-wrap gap-2 mt-3"></div>
                         <input type="hidden" id="customSizesHidden" name="tailles[]">
@@ -173,7 +173,7 @@
 
                     <!-- Prix Admin -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Prix Admin (MAD) *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">سعر المشرف (MAD) *</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2 text-gray-500">MAD</span>
                             <input type="number" name="prix_admin" value="{{ old('prix_admin') }}" step="0.01" min="0" required
@@ -186,7 +186,7 @@
 
                     <!-- Prix de Vente -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Prix de Vente (MAD) *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">سعر البيع (MAD) *</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2 text-gray-500">MAD</span>
                             <input type="number" name="prix_vente" value="{{ old('prix_vente') }}" step="0.01" min="0" required
@@ -199,16 +199,16 @@
 
                     <!-- Quantité en Stock Total (Calculée automatiquement) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Quantité en Stock Total</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">الكمية الإجمالية في المخزون</label>
                         <input type="number" id="stockTotal" value="0" min="0" readonly
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold">
-                        <p class="text-xs text-gray-500 mt-1">💡 Calculé automatiquement : somme des stocks de toutes les couleurs</p>
+                        <p class="text-xs text-gray-500 mt-1">💡 يُحسب تلقائيًا: مجموع مخزون جميع الألوان</p>
                         <input type="hidden" name="quantite_stock" id="stockTotalHidden" value="0">
                     </div>
 
                     <!-- Image -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Image du Produit</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">صورة المنتج</label>
                         <input type="file" name="image" accept="image/*"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         @error('image')
@@ -221,7 +221,7 @@
                 <div class="flex justify-end space-x-4 pt-6 border-t">
 
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-save mr-2"></i>Créer le Produit
+                        <i class="fas fa-save mr-2"></i>إنشاء المنتج
                     </button>
                 </div>
             </form>
@@ -334,10 +334,10 @@ function addCustomColor() {
             </button>
         </div>
         <div class="flex items-center space-x-2">
-            <label class="text-xs font-medium text-gray-600">Stock:</label>
+            <label class="text-xs font-medium text-gray-600">المخزون:</label>
             <input type="number" name="stock_couleur_custom_${customColorCounter}"
                    placeholder="0" min="0"
-                   class="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                   class="W-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
                    value="0">
         </div>
     `;

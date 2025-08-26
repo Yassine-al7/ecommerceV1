@@ -6,13 +6,13 @@
         <!-- En-tête avec actions -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Gestion des Vendeurs</h1>
-                <p class="text-gray-600 mt-1">Gérez les comptes vendeurs de votre plateforme</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-900">إدارة البائعين</h1>
+                <p class="text-gray-600 mt-1">إدارة حسابات البائعين على منصتك</p>
             </div>
             <a href="{{ route('admin.users.create') }}"
                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 <i class="fas fa-plus mr-2"></i>
-                Nouveau Vendeur
+                بائع جديد
             </a>
         </div>
 
@@ -24,7 +24,7 @@
                         <i class="fas fa-store text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Vendeurs</p>
+                        <p class="text-sm font-medium text-gray-600">إجمالي البائعين</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['total'] }}</p>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Vendeurs Actifs</p>
+                        <p class="text-sm font-medium text-gray-600">نشطون</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['active'] }}</p>
                     </div>
                 </div>
@@ -48,7 +48,7 @@
                         <i class="fas fa-ban text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Vendeurs Inactifs</p>
+                        <p class="text-sm font-medium text-gray-600">غير نشطين</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['inactive'] }}</p>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                         <i class="fas fa-user-plus text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Récents (7j)</p>
+                        <p class="text-sm font-medium text-gray-600">جدد (7 أيام)</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['recent'] }}</p>
                     </div>
                 </div>
@@ -71,23 +71,23 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Recherche</label>
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">بحث</label>
                     <input type="text"
                            id="search"
                            name="search"
                            value="{{ request('search') }}"
-                           placeholder="Nom, email, magasin..."
+                           placeholder="الاسم، البريد، المتجر..."
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit"
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-search mr-2"></i>Rechercher
+                        <i class="fas fa-search mr-2"></i>بحث
                     </button>
                     @if(request()->has('search'))
                         <a href="{{ route('admin.users.index') }}"
                            class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                            <i class="fas fa-times mr-2"></i>Reset
+                            <i class="fas fa-times mr-2"></i>إعادة ضبط
                         </a>
                     @endif
                 </div>
@@ -113,7 +113,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-800">
-                    Liste des Utilisateurs ({{ $users->total() }})
+                    قائمة المستخدمين ({{ $users->total() }})
                 </h2>
             </div>
 
@@ -123,22 +123,22 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Utilisateur
+                                    المستخدم
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Rôle
+                                    الدور
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Statut
+                                    الحالة
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Informations
+                                    معلومات
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date création
+                                    تاريخ الإنشاء
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
+                                    إجراءات
                                 </th>
                             </tr>
                         </thead>
@@ -167,7 +167,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                             <i class="fas fa-store mr-1"></i>
-                                            Vendeur
+                                            بائع
                                         </span>
                                     </td>
 
@@ -176,7 +176,7 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                             {{ $user->is_active ?? true ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                             <i class="fas {{ $user->is_active ?? true ? 'fa-check-circle' : 'fa-times-circle' }} mr-1"></i>
-                                            {{ $user->is_active ?? true ? 'Actif' : 'Inactif' }}
+                                            {{ $user->is_active ?? true ? 'نشط' : 'غير نشط' }}
                                         </span>
                                     </td>
 
@@ -204,11 +204,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center space-x-2">
                                             <a href="{{ route('admin.users.show', $user) }}"
-                                               class="text-blue-600 hover:text-blue-900">
+                                               class="text-blue-600 hover:text-blue-900" title="عرض">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="{{ route('admin.users.edit', $user) }}"
-                                               class="text-green-600 hover:text-green-900">
+                                               class="text-green-600 hover:text-green-900" title="تعديل">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             @if($user->id !== auth()->id())
@@ -218,18 +218,18 @@
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit"
-                                                            class="text-orange-600 hover:text-orange-900">
+                                                            class="text-orange-600 hover:text-orange-900" title="تبديل الحالة">
                                                         <i class="fas {{ $user->is_active ?? true ? 'fa-ban' : 'fa-check' }}"></i>
                                                     </button>
                                                 </form>
                                                 <form method="POST"
                                                       action="{{ route('admin.users.destroy', $user) }}"
-                                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"
+                                                      onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟')"
                                                       style="display: inline;">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                            class="text-red-600 hover:text-red-900">
+                                                            class="text-red-600 hover:text-red-900" title="حذف">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
@@ -253,18 +253,18 @@
                     <div class="text-gray-400 mb-4">
                         <i class="fas fa-users text-6xl"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-800 mb-2">Aucun vendeur trouvé</h3>
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">لا يوجد بائعون</h3>
                     <p class="text-gray-600 mb-4">
-                                            @if(request()->has('search'))
-                        Aucun vendeur ne correspond à vos critères de recherche.
-                    @else
-                        Commencez par créer un nouveau vendeur.
-                    @endif
+                        @if(request()->has('search'))
+                            لا يوجد بائع يطابق معايير البحث.
+                        @else
+                            ابدأ بإنشاء بائع جديد.
+                        @endif
                     </p>
-                                            <a href="{{ route('admin.users.create') }}"
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                            <i class="fas fa-plus mr-2"></i>Nouveau Vendeur
-                        </a>
+                    <a href="{{ route('admin.users.create') }}"
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>بائع جديد
+                    </a>
                 </div>
             @endif
         </div>

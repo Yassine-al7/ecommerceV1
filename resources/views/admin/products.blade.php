@@ -10,7 +10,7 @@
 <body>
     @extends('layouts.app')
 
-    @section('title', 'Gestion des Produits')
+    @section('title', 'إدارة المنتجات')
 
     @php
     use App\Helpers\ColorHelper;
@@ -21,8 +21,8 @@
         <div class="container-responsive">
             <!-- Header -->
             <div class="mb-6 md:mb-8">
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 text-center md:text-left">Gestion des Produits</h1>
-                <p class="text-gray-600 text-center md:text-left">Gérez votre catalogue de produits et assignez-les aux vendeurs</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 text-center md:text-left">إدارة المنتجات</h1>
+                <p class="text-gray-600 text-center md:text-left">قم بإدارة كتالوج المنتجات وقم بتعيينها للبائعين</p>
             </div>
 
             @if(session('success'))
@@ -35,12 +35,12 @@
             <div class="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h2 class="text-lg md:text-xl font-semibold text-gray-800 text-center md:text-left">Liste des Produits</h2>
-                        <p class="text-gray-600 mt-1 text-center md:text-left">Total: {{ $products->count() }} produits</p>
+                        <h2 class="text-lg md:text-xl font-semibold text-gray-800 text-center md:text-left">قائمة المنتجات</h2>
+                        <p class="text-gray-600 mt-1 text-center md:text-left">المجموع: {{ $products->count() }} منتج</p>
                     </div>
                     <div class="actions-buttons">
                         <a href="{{ route('admin.products.create') }}" class="btn bg-blue-600 hover:bg-blue-700 text-white">
-                            <i class="fas fa-plus mr-2"></i>Créer un produit
+                            <i class="fas fa-plus mr-2"></i>إنشاء منتج
                         </a>
                     </div>
                 </div>
@@ -81,13 +81,13 @@
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                 <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
                                     <i class="fas fa-image text-4xl mb-2"></i>
-                                    <p class="text-sm">Image manquante</p>
-                                    <p class="text-xs text-red-400 mt-1">Fichier introuvable</p>
+                                    <p class="text-sm">صورة مفقودة</p>
+                                    <p class="text-xs text-red-400 mt-1">الملف غير موجود</p>
                                 </div>
                             @else
                                 <div class="text-gray-400 text-center">
                                     <i class="fas fa-image text-4xl mb-2"></i>
-                                    <p class="text-sm">Aucune image</p>
+                                    <p class="text-sm">لا توجد صورة</p>
                                 </div>
                             @endif
 
@@ -95,11 +95,11 @@
                             <div class="absolute top-2 right-2">
                                 @if($product->assignedUsers && $product->assignedUsers->count() > 0)
                                     <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                                        Assigné ({{ $product->assignedUsers->count() }})
+                                        مُعيّن ({{ $product->assignedUsers->count() }})
                                     </span>
                                 @else
                                     <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                                        Non assigné
+                                        غير مُعيّن
                                     </span>
                                 @endif
                             </div>
@@ -127,7 +127,7 @@
                                 <!-- Couleurs -->
                                 @if($product->couleur_filtree ?? $product->couleur)
                                     <div class="mb-3">
-                                        <span class="text-sm text-gray-600 mr-2">Couleurs:</span>
+                                        <span class="text-sm text-gray-600 mr-2">الألوان:</span>
                                         @php
                                             // Utiliser les couleurs filtrées si disponibles, sinon les originales
                                             $couleurs = ColorHelper::decodeColors($product->couleur_filtree ?? $product->couleur);
@@ -159,19 +159,19 @@
                                 <!-- Prix et stock -->
                                 <div class="space-y-2 mb-3">
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Prix Admin:</span>
+                                        <span class="text-sm text-gray-600">سعر المشرف:</span>
                                         <span class="font-semibold text-gray-800">{{ number_format($product->prix_admin, 0) }} MAD</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Prix Vente:</span>
+                                        <span class="text-sm text-gray-600">سعر البيع:</span>
                                         <span class="font-semibold text-blue-600">{{ number_format($product->prix_vente, 0) }} MAD</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Stock:</span>
+                                        <span class="text-sm text-gray-600">المخزون:</span>
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full
                                             {{ $product->quantite_stock > 10 ? 'bg-green-100 text-green-800' :
                                                ($product->quantite_stock > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                            {{ $product->quantite_stock }} unités
+                                            {{ $product->quantite_stock }} وحدة
                                         </span>
                                     </div>
                                 </div>
@@ -179,7 +179,7 @@
                                 <!-- Tailles -->
                                 @if($product->tailles && is_array($product->tailles))
                                     <div class="mb-3">
-                                        <span class="text-sm text-gray-600">Tailles:</span>
+                                        <span class="text-sm text-gray-600">المقاسات:</span>
                                         <div class="flex flex-wrap gap-1 mt-1">
                                             @foreach(array_slice($product->tailles, 0, 4) as $taille)
                                                 <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ $taille }}</span>
@@ -196,19 +196,19 @@
                                     <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                                         <a href="{{ route('admin.products.assign', $product) }}"
                                            class="btn btn-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100">
-                                            <i class="fas fa-link mr-1"></i>Assigner
+                                            <i class="fas fa-link mr-1"></i>تعيين
                                         </a>
                                         <a href="{{ route('admin.products.edit', $product) }}"
                                            class="btn btn-sm text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100">
-                                            <i class="fas fa-edit mr-1"></i>Modifier
+                                            <i class="fas fa-edit mr-1"></i>تعديل
                                         </a>
                                         <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
                                                     class="btn btn-sm text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100"
-                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')">
-                                                <i class="fas fa-trash mr-1"></i>Supprimer
+                                                    onclick="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
+                                                <i class="fas fa-trash mr-1"></i>حذف
                                             </button>
                                         </form>
                                     </div>
@@ -223,12 +223,12 @@
                     <div class="text-gray-400 mb-4">
                         <i class="fas fa-box-open text-4xl md:text-6xl"></i>
                     </div>
-                    <h3 class="text-lg md:text-xl font-medium text-gray-800 mb-2">Aucun produit trouvé</h3>
-                    <p class="text-gray-600 mb-6">Commencez par créer votre premier produit pour enrichir votre catalogue.</p>
+                    <h3 class="text-lg md:text-xl font-medium text-gray-800 mb-2">لا توجد منتجات</h3>
+                    <p class="text-gray-600 mb-6">ابدأ بإنشاء أول منتج لإثراء الكتالوج.</p>
                     <div class="actions-buttons justify-center">
                         <a href="{{ route('admin.products.create') }}"
                            class="btn bg-blue-600 hover:bg-blue-700 text-white">
-                            <i class="fas fa-plus mr-2"></i>Créer votre premier produit
+                            <i class="fas fa-plus mr-2"></i>أنشئ أول منتج لك
                         </a>
                     </div>
                 </div>

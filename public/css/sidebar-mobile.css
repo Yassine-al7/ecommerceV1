@@ -226,7 +226,7 @@
     align-items: center !important;
     text-decoration: none !important;
     position: relative !important;
-    border-left: 3px solid transparent !important;
+    border-right: 3px solid transparent !important;
 }
 
 #sidebar nav a:hover {
@@ -245,7 +245,7 @@
 #sidebarDesktop a.nav-link.active::before {
     content: "";
     position: absolute !important;
-    left: 0 !important;
+    right: 0 !important;
     top: 12% !important;
     bottom: 12% !important;
     width: 3px !important;

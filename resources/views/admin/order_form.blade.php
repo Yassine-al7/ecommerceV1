@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', isset($order) ? 'Modifier Commande' : 'Créer Commande')
+@section('title', isset($order) ? 'تعديل الطلب' : 'إنشاء طلب')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -10,21 +10,21 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">
-                        {{ isset($order) ? 'Modifier la commande' : 'Créer une nouvelle commande' }}
+                        {{ isset($order) ? 'تعديل الطلب' : 'إنشاء طلب جديد' }}
                     </h1>
                     <p class="text-gray-600 mt-2">
-                        {{ isset($order) ? "Référence: {$order->reference}" : 'Remplissez les informations ci-dessous' }}
+                        {{ isset($order) ? "المرجع: {$order->reference}" : 'املأ المعلومات أدناه' }}
                     </p>
                 </div>
                 <div class="flex space-x-3">
                     <a href="{{ route('admin.orders.index') }}"
                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i>Retour
+                        <i class="fas fa-arrow-left mr-2"></i>رجوع
                     </a>
                     @if(isset($order))
                     <a href="{{ route('admin.orders.show', $order->id) }}"
                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-eye mr-2"></i>Voir
+                        <i class="fas fa-eye mr-2"></i>عرض
                     </a>
                     @endif
                 </div>
@@ -43,23 +43,23 @@
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                    Informations de base
+                    معلومات أساسية
                 </h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Référence -->
                     @if(isset($order))
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Référence</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">المرجع</label>
                         <input type="text" value="{{ $order->reference }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600" readonly>
-                        <p class="text-xs text-gray-500 mt-1">La référence ne peut pas être modifiée</p>
+                        <p class="text-xs text-gray-500 mt-1">لا يمكن تعديل المرجع</p>
                     </div>
                     @endif
 
                     <!-- Nom client -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom client *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">اسم العميل *</label>
                         <input type="text" name="nom_client"
                                value="{{ old('nom_client', $order->nom_client ?? '') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -71,9 +71,9 @@
 
                     <!-- Ville -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ville *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">المدينة *</label>
                         <select name="ville" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                            <option value="">Sélectionner une ville</option>
+                            <option value="">اختر مدينة</option>
                             @foreach(config('delivery.cities', []) as $cityCode => $cityData)
                                 <option value="{{ $cityCode }}" @selected(old('ville', $order->ville ?? '') == $cityCode)>
                                     {{ $cityData['name'] ?? $cityCode }} - {{ $cityData['price'] ?? 0 }} MAD
@@ -87,7 +87,7 @@
 
                     <!-- Adresse client -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Adresse complète *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">العنوان الكامل *</label>
                         <textarea name="adresse_client" rows="2"
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   required>{{ old('adresse_client', $order->adresse_client ?? '') }}</textarea>
@@ -98,7 +98,7 @@
 
                     <!-- Téléphone -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">الهاتف *</label>
                         <input type="tel" name="numero_telephone_client"
                                value="{{ old('numero_telephone_client', $order->numero_telephone_client ?? '') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -110,9 +110,9 @@
 
                     <!-- Vendeur -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Vendeur *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">البائع *</label>
                         <select name="seller_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                            <option value="">Sélectionner un vendeur</option>
+                            <option value="">اختر بائعًا</option>
                             @foreach($sellers as $seller)
                                 <option value="{{ $seller->id }}" @selected(old('seller_id', $order->seller_id ?? '') == $seller->id)>
                                     {{ $seller->name }} ({{ $seller->email }})
@@ -126,7 +126,7 @@
 
                     <!-- Statut -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">الحالة</label>
                         <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             @foreach(['en attente', 'non confirmé', 'confirme', 'en livraison', 'livre', 'pas de réponse', 'annulé', 'retourné'] as $status)
                                 <option value="{{ $status }}" @selected(old('status', $order->status ?? 'en attente') == $status)>
@@ -145,14 +145,14 @@
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-box text-green-500 mr-2"></i>
-                    Produits de la commande
+                    منتجات الطلب
                 </h2>
 
                 <!-- Bouton d'ajout de produit -->
                 <div class="mb-4">
                     <button type="button" onclick="addProductRow()"
                             class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-plus mr-2"></i>Ajouter un produit
+                        <i class="fas fa-plus mr-2"></i>إضافة منتج
                     </button>
                 </div>
 
@@ -161,13 +161,13 @@
                     <table class="min-w-full border border-gray-200 rounded-lg">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Couleur</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taille</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix unitaire</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix total</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">المنتج</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">اللون</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">المقاس</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">الكمية</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">سعر الوحدة</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">السعر الإجمالي</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">إجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="productsTableBody">
@@ -178,7 +178,7 @@
                                             <select name="products[{{ $index }}][product_id]"
                                                     class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                     onchange="updateProductInfo({{ $index }})" required>
-                                                <option value="">Sélectionner un produit</option>
+                                                <option value="">اختر منتجًا</option>
                                                 @foreach($products as $product)
                                                     <option value="{{ $product->id }}"
                                                             data-prix="{{ $product->prix_vente }}"
@@ -195,13 +195,13 @@
                                         <td class="px-4 py-3">
                                             <select name="products[{{ $index }}][couleur_produit]"
                                                     class="couleur-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                                <option value="">Sélectionner une couleur</option>
+                                                <option value="">اختر لونًا</option>
                                             </select>
                                         </td>
                                         <td class="px-4 py-3">
                                             <select name="products[{{ $index }}][taille_produit]"
                                                     class="taille-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                                <option value="">Sélectionner une taille</option>
+                                                <option value="">اختر مقاسًا</option>
                                             </select>
                                         </td>
                                         <td class="px-4 py-3">
@@ -235,7 +235,7 @@
                                         <select name="products[0][product_id]"
                                                 class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 onchange="updateProductInfo(0)" required>
-                                            <option value="">Sélectionner un produit</option>
+                                            <option value="">اختر منتجًا</option>
                                             @foreach($products as $product)
                                                 <option value="{{ $product->id }}"
                                                         data-prix="{{ $product->prix_vente }}"
@@ -251,13 +251,13 @@
                                     <td class="px-4 py-3">
                                         <select name="products[0][couleur_produit]"
                                                 class="couleur-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                            <option value="">Sélectionner une couleur</option>
+                                            <option value="">اختر لونًا</option>
                                         </select>
                                     </td>
                                     <td class="px-4 py-3">
                                         <select name="products[0][taille_produit]"
                                                 class="taille-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                            <option value="">Sélectionner une taille</option>
+                                            <option value="">اختر مقاسًا</option>
                                         </select>
                                     </td>
                                     <td class="px-4 py-3">
@@ -295,12 +295,12 @@
                             <i class="fas fa-info-circle text-blue-500 mt-1"></i>
                         </div>
                         <div class="ml-3">
-                            <h3 class="text-sm font-medium text-blue-800">Information sur le stock</h3>
+                            <h3 class="text-sm font-medium text-blue-800">معلومات حول المخزون</h3>
                             <div class="mt-2 text-sm text-blue-700">
-                                <p class="mb-2">• <strong>Seules les couleurs en stock sont affichées</strong> dans la liste déroulante</p>
-                                <p class="mb-2">• <strong>Si une couleur ne s'affiche pas</strong>, cela signifie qu'elle n'est pas en stock</p>
-                                <p class="mb-2">• <strong>Le stock est vérifié en temps réel</strong> pour chaque couleur sélectionnée</p>
-                                <p>• <strong>Les couleurs en rupture de stock</strong> sont automatiquement masquées</p>
+                                <p class="mb-2">• <strong>يتم عرض الألوان المتوفرة فقط</strong> في القائمة المنسدلة</p>
+                                <p class="mb-2">• <strong>إذا لم يظهر لون</strong> فهذا يعني أنه غير متوفر</p>
+                                <p class="mb-2">• <strong>يتم التحقق من المخزون</strong> في الوقت الفعلي لكل لون</p>
+                                <p>• <strong>الألوان غير المتوفرة</strong> يتم إخفاؤها تلقائيًا</p>
                             </div>
                         </div>
                     </div>
@@ -313,12 +313,12 @@
             <div class="flex justify-end space-x-4">
                 <button type="button" onclick="window.history.back()"
                         class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors">
-                    Annuler
+                    إلغاء
                 </button>
                 <button type="submit"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors">
                     <i class="fas fa-save mr-2"></i>
-                    {{ isset($order) ? 'Mettre à jour' : 'Créer' }} la commande
+                    {{ isset($order) ? 'تحديث' : 'إنشاء' }} الطلب
                 </button>
             </div>
         </form>

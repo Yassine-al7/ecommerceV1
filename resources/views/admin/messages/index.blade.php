@@ -7,55 +7,55 @@
         <div class="mb-6 md:mb-8">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Gestion des Messages</h1>
-                    <p class="text-gray-600 mt-2">Envoyez des messages et alertes à tous les vendeurs</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">إدارة الرسائل</h1>
+                    <p class="text-gray-600 mt-2">أرسل رسائل وتنبيهات إلى جميع البائعين</p>
                 </div>
                 <a href="{{ route('admin.messages.create') }}"
                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2">
                     <i class="fas fa-plus"></i>
-                    <span>Nouveau Message</span>
+                    <span>رسالة جديدة</span>
                 </a>
             </div>
         </div>
 
-        <!-- Statistiques -->
+        <!-- إحصائيات -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
                 <div class="text-2xl font-bold text-blue-600">{{ $stats['total'] }}</div>
-                <div class="text-sm text-gray-600">Total Messages</div>
+                <div class="text-sm text-gray-600">إجمالي الرسائل</div>
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
                 <div class="text-2xl font-bold text-green-600">{{ $stats['active'] }}</div>
-                <div class="text-sm text-gray-600">Messages Actifs</div>
+                <div class="text-sm text-gray-600">رسائل مفعلة</div>
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
                 <div class="text-2xl font-bold text-red-600">{{ $stats['urgent'] }}</div>
-                <div class="text-sm text-gray-600">Messages Urgents</div>
+                <div class="text-sm text-gray-600">رسائل عاجلة</div>
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
                 <div class="text-2xl font-bold text-purple-600">{{ $stats['celebration'] }}</div>
-                <div class="text-sm text-gray-600">Félicitations</div>
+                <div class="text-sm text-gray-600">تهاني</div>
             </div>
         </div>
 
-        <!-- Liste des Messages -->
+        <!-- قائمة الرسائل -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-800">Messages Existants</h2>
+                    <h2 class="text-lg font-semibold text-gray-800">الرسائل الحالية</h2>
 
-                    <!-- Actions en lot -->
+                    <!-- إجراءات جماعية -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3" id="bulkActions" style="display: none;">
-                        <span class="text-sm text-gray-600" id="selectedCount">0 sélectionné(s)</span>
+                        <span class="text-sm text-gray-600" id="selectedCount">0 محدد</span>
                         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                             <button onclick="bulkToggleStatus()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors whitespace-nowrap">
-                                <i class="fas fa-toggle-on mr-1 sm:mr-2"></i><span class="hidden sm:inline">Activer/Désactiver</span><span class="sm:hidden">Toggle</span>
+                                <i class="fas fa-toggle-on mr-1 sm:mr-2"></i><span class="hidden sm:inline">تفعيل/تعطيل</span><span class="sm:hidden">Toggle</span>
                             </button>
                             <button onclick="bulkDelete()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors whitespace-nowrap">
-                                <i class="fas fa-trash mr-1 sm:mr-2"></i><span class="hidden sm:inline">Supprimer</span><span class="sm:hidden">Del</span>
+                                <i class="fas fa-trash mr-1 sm:mr-2"></i><span class="hidden sm:inline">حذف</span><span class="sm:hidden">Del</span>
                             </button>
                             <button onclick="clearSelection()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors whitespace-nowrap">
-                                <i class="fas fa-times mr-1 sm:mr-2"></i><span class="hidden sm:inline">Annuler</span><span class="sm:hidden">Annul</span>
+                                <i class="fas fa-times mr-1 sm:mr-2"></i><span class="hidden sm:inline">إلغاء</span><span class="sm:hidden">Annul</span>
                             </button>
                         </div>
                     </div>
@@ -69,17 +69,17 @@
                             <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" onchange="toggleSelectAll()">
                             </th>
-                            <th class="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
-                            <th class="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priorité</th>
-                            <th class="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cibles</th>
-                            <th class="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                            <th class="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expire</th>
-                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th class="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">النوع</th>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">العنوان</th>
+                            <th class="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">الأولوية</th>
+                            <th class="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">الفئات المستهدفة</th>
+                            <th class="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                            <th class="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ينتهي</th>
+                            <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                                                @forelse($messages as $message)
+                        @forelse($messages as $message)
                             <tr class="hover:bg-gray-50" data-message-id="{{ $message->id }}">
                                 <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
                                     <input type="checkbox" name="selected_messages[]" value="{{ $message->id }}"
@@ -116,44 +116,44 @@
                                             @endforeach
                                         </div>
                                     @else
-                                        <span class="text-sm text-gray-500">Tous les rôles</span>
+                                        <span class="text-sm text-gray-500">كل الأدوار</span>
                                     @endif
                                 </td>
                                 <td class="hidden sm:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
                                     @if($message->is_active)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            Actif
+                                            مفعل
                                         </span>
                                     @else
-                                        <span class="text-sm text-gray-500">Inactif</span>
+                                        <span class="text-sm text-gray-500">غير مفعل</span>
                                     @endif
                                 </td>
                                 <td class="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if($message->expires_at)
                                         {{ $message->expires_at->format('d/m/Y H:i') }}
                                     @else
-                                        <span class="text-gray-400">Jamais</span>
+                                        <span class="text-gray-400">أبدًا</span>
                                     @endif
                                 </td>
                                 <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center justify-center space-x-2 md:space-x-3">
                                         <a href="{{ route('admin.messages.edit', $message) }}"
                                            class="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                                           title="Modifier">
+                                           title="تعديل">
                                             <i class="fas fa-edit text-xs md:text-sm"></i>
                                         </a>
 
                                         <button type="button"
                                                 onclick="toggleMessageStatus({{ $message->id }}, {{ $message->is_active ? 'true' : 'false' }})"
                                                 class="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full {{ $message->is_active ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' }} transition-colors"
-                                                title="{{ $message->is_active ? 'Désactiver' : 'Activer' }}">
+                                                title="{{ $message->is_active ? 'تعطيل' : 'تفعيل' }}">
                                             <i class="fas fa-{{ $message->is_active ? 'pause' : 'play' }} text-xs md:text-sm"></i>
                                         </button>
 
                                         <button type="button"
                                                 onclick="deleteMessage({{ $message->id }})"
                                                 class="inline-flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-                                                title="Supprimer">
+                                                title="حذف">
                                             <i class="fas fa-trash text-xs md:text-sm"></i>
                                         </button>
                                     </div>
@@ -162,7 +162,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="px-6 py-4 text-center text-gray-500">
-                                    Aucun message trouvé. <a href="{{ route('admin.messages.create') }}" class="text-blue-600 hover:underline">Créer le premier message</a>
+                                    لا توجد رسائل. <a href="{{ route('admin.messages.create') }}" class="text-blue-600 hover:underline">أنشئ أول رسالة</a>
                                 </td>
                             </tr>
                         @endforelse

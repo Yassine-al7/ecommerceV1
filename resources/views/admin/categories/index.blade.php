@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Gestion des Catégories')
+@section('title', __('admin_categories.title'))
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -8,11 +8,11 @@
         <!-- Header Section -->
         <div class="mb-8 flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Gestion des Catégories</h1>
-                <p class="text-gray-600">Gérez les catégories de produits de votre boutique</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ __('admin_categories.title') }}</h1>
+                <p class="text-gray-600">{{ __('admin_categories.subtitle') }}</p>
             </div>
             <a href="{{ route('admin.categories.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                <i class="fas fa-plus mr-2"></i>Nouvelle Catégorie
+                <i class="fas fa-plus mr-2"></i>{{ __('admin_categories.new') }}
             </a>
         </div>
 
@@ -40,19 +40,19 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Nom
+                                {{ __('admin_categories.table.name') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Description
+                                {{ __('admin_categories.table.description') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Slug
+                                {{ __('admin_categories.table.slug') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Produits
+                                {{ __('admin_categories.table.products') }}
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
+                                {{ __('admin_categories.table.actions') }}
                             </th>
                         </tr>
                     </thead>
@@ -64,32 +64,32 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">
-                                        {{ Str::limit($category->description, 50) ?: 'Aucune description' }}
+                                        {{ Str::limit($category->description, 50) ?: __('admin_categories.table.empty_description') }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $category->slug ?: 'Aucun slug' }}</div>
+                                    <div class="text-sm text-gray-900">{{ $category->slug ?: __('admin_categories.table.empty_slug') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ $category->products_count }} produit(s)
+                                        {{ __('admin_categories.table.products_badge', ['count' => $category->products_count]) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('admin.categories.edit', $category->id) }}"
-                                           class="text-blue-600 hover:text-blue-900" title="Modifier">
+                                           class="text-blue-600 hover:text-blue-900" title="{{ __('admin_categories.table.edit') }}">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="{{ route('admin.categories.destroy', $category->id) }}"
                                               method="POST"
                                               class="inline"
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
+                                              onsubmit="return confirm('{{ __('admin_categories.table.confirm_delete') }}')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
                                                     class="text-red-600 hover:text-red-900"
-                                                    title="Supprimer"
+                                                    title="{{ __('admin_categories.table.delete') }}"
                                                     {{ $category->products_count > 0 ? 'disabled' : '' }}>
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -102,8 +102,8 @@
                                 <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                                     <div class="flex flex-col items-center py-8">
                                         <i class="fas fa-folder-open text-4xl text-gray-300 mb-4"></i>
-                                        <p class="text-lg font-medium text-gray-500">Aucune catégorie trouvée</p>
-                                        <p class="text-sm text-gray-400 mt-2">Commencez par créer votre première catégorie</p>
+                                        <p class="text-lg font-medium text-gray-500">{{ __('admin_categories.none_found_title') }}</p>
+                                        <p class="text-sm text-gray-400 mt-2">{{ __('admin_categories.none_found_hint') }}</p>
                                     </div>
                                 </td>
                             </tr>

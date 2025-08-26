@@ -3,11 +3,11 @@
 @section('title', 'Reset Password')
 
 @section('content')
-<div class="glass-effect rounded-2xl shadow-2xl p-8">
+<div class="card-gradient card-frame rounded-2xl shadow-2xl p-8">
     <!-- Logo/Header -->
     <div class="text-center mb-8">
-        <div class="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center mb-4">
-            <i class="fas fa-key text-2xl text-blue-600"></i>
+        <div class="mx-auto mb-4">
+            <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto mx-auto rounded-md bg-white/10 p-2">
         </div>
         <h2 class="text-3xl font-bold text-white">Reset Password</h2>
         <p class="text-blue-200 mt-2">Enter your email to receive a reset link</p>
@@ -48,9 +48,9 @@
         <!-- Submit Button -->
         <div>
             <button type="submit"
-                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 transform hover:scale-105">
+                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[color:var(--sidebar-link)] hover:bg-[color:var(--sidebar-link-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--sidebar-link)] transition duration-200 transform hover:scale-105">
                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                    <i class="fas fa-paper-plane group-hover:text-blue-400"></i>
+                    <i class="fas fa-paper-plane"></i>
                 </span>
                 Send Reset Link
             </button>

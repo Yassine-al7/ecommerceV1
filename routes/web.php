@@ -1,10 +1,4 @@
-// Locale switcher
-Route::get('/locale/{locale}', function ($locale) {
-    if (in_array($locale, ['en', 'fr', 'ar'])) {
-        session(['locale' => $locale]);
-    }
-    return back();
-})->name('locale.switch');
+
 <?php
 
 use Illuminate\Support\Facades\Route;

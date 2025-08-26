@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Statistiques - Admin Panel')
+@section('title', 'الإحصائيات - لوحة الإدارة')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Statistiques - Graphiques</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">الإحصائيات - الرسوم البيانية</h1>
 
         <!-- Chiffre d'affaires total des commandes livrées -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Chiffre d'Affaires Total</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">إجمالي رقم المعاملات</h3>
             <div class="text-4xl font-bold text-green-600 mb-2">
                 {{ number_format($topSellers->sum('total_revenue'), 2) }} MAD
             </div>
-            <p class="text-sm text-gray-600">Total des commandes livrées</p>
+            <p class="text-sm text-gray-600">إجمالي الطلبات المسلمة</p>
         </div>
 
         <!-- Graphique des top 5 produits vendus -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 Produits Les Plus Vendus</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">أفضل 5 منتجات مبيعًا</h3>
             <div class="h-80">
                 <canvas id="productsChart"></canvas>
             </div>
@@ -26,7 +26,7 @@
 
         <!-- Graphique des top 6 vendeurs -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 6 Vendeurs Par Ventes</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">أفضل 6 بائعين حسب المبيعات</h3>
             <div class="h-80">
                 <canvas id="sellersChart"></canvas>
             </div>
@@ -35,9 +35,9 @@
         <!-- Graphique en ligne des ventes par mois -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                📈 Évolution des Ventes Réelles (6 derniers mois)
+                📈 تطور المبيعات الفعلية (آخر 6 أشهر)
                 <span class="text-sm font-normal text-gray-600 ml-2">
-                    🔵 Commandes | 💰 Chiffre d'affaires
+                    🔵 الطلبات | 💰 رقم المعاملات
                 </span>
             </h3>
             <div class="h-80">
@@ -52,120 +52,46 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuration des couleurs pour les graphiques
-    const colors = {
-        primary: '#3b82f6',
-        secondary: '#10b981',
-        accent: '#f59e0b',
-        danger: '#ef4444',
-        purple: '#8b5cf6',
-        pink: '#ec4899'
-    };
+    const colors = { primary: '#3b82f6', secondary: '#10b981', accent: '#f59e0b', danger: '#ef4444', purple: '#8b5cf6', pink: '#ec4899' };
 
-    // Graphique des top 5 produits vendus
-    const productsCtx = document.getElementById('productsChart').getContext('2d');
-    new Chart(productsCtx, {
+    new Chart(document.getElementById('productsChart').getContext('2d'), {
         type: 'bar',
         data: {
             labels: {!! json_encode($topProducts->pluck('name')) !!},
             datasets: [{
-                label: 'Nombre de ventes',
+                label: 'عدد المبيعات',
                 data: {!! json_encode($topProducts->pluck('total_sales')) !!},
-                backgroundColor: [
-                    colors.primary,
-                    colors.secondary,
-                    colors.accent,
-                    colors.purple,
-                    colors.pink
-                ],
-                borderColor: [
-                    colors.primary,
-                    colors.secondary,
-                    colors.accent,
-                    colors.purple,
-                    colors.pink
-                ],
+                backgroundColor: [colors.primary, colors.secondary, colors.accent, colors.purple, colors.pink],
+                borderColor: [colors.primary, colors.secondary, colors.accent, colors.purple, colors.pink],
                 borderWidth: 2,
                 borderRadius: 8
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
     });
 
-    // Graphique des top 6 vendeurs
-    const sellersCtx = document.getElementById('sellersChart').getContext('2d');
-    new Chart(sellersCtx, {
+    new Chart(document.getElementById('sellersChart').getContext('2d'), {
         type: 'bar',
         data: {
             labels: {!! json_encode($topSellers->pluck('name')) !!},
             datasets: [{
-                label: 'Chiffre d\'affaires (MAD)',
+                label: 'رقم المعاملات (MAD)',
                 data: {!! json_encode($topSellers->pluck('total_revenue')) !!},
-                backgroundColor: [
-                    colors.primary,
-                    colors.secondary,
-                    colors.accent,
-                    colors.danger,
-                    colors.purple,
-                    colors.pink
-                ],
-                borderColor: [
-                    colors.primary,
-                    colors.secondary,
-                    colors.accent,
-                    colors.danger,
-                    colors.purple,
-                    colors.pink
-                ],
+                backgroundColor: [colors.primary, colors.secondary, colors.accent, colors.danger, colors.purple, colors.pink],
+                borderColor: [colors.primary, colors.secondary, colors.accent, colors.danger, colors.purple, colors.pink],
                 borderWidth: 2,
                 borderRadius: 8
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString() + ' MAD';
-                        }
-                    }
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() + ' MAD' } } } }
     });
 
-    // Graphique en ligne des ventes par mois (données réelles)
-    const salesCtx = document.getElementById('salesChart').getContext('2d');
-    new Chart(salesCtx, {
+    new Chart(document.getElementById('salesChart').getContext('2d'), {
         type: 'line',
         data: {
             labels: {!! json_encode($monthlySales->pluck('month_name')) !!},
             datasets: [{
-                label: 'Nombre de commandes livrées',
+                label: 'عدد الطلبات المسلمة',
                 data: {!! json_encode($monthlySales->pluck('total_orders')) !!},
                 borderColor: colors.primary,
                 backgroundColor: colors.primary + '20',
@@ -177,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pointBorderWidth: 2,
                 pointRadius: 6
             }, {
-                label: '💰 Chiffre d\'affaires (MAD)',
+                label: '💰 رقم المعاملات (MAD)',
                 data: {!! json_encode($monthlySales->pluck('total_revenue')) !!},
                 borderColor: colors.secondary,
                 backgroundColor: colors.secondary + '20',
@@ -195,56 +121,10 @@ document.addEventListener('DOMContentLoaded', function() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        pointStyle: 'circle',
-                        padding: 20,
-                        font: {
-                            size: 12,
-                            weight: 'bold'
-                        }
-                    }
-                }
-            },
-                            scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Nombre de commandes'
-                        },
-                        ticks: {
-                            stepSize: 1,
-                            callback: function(value) {
-                                return Math.round(value); // Forcer les nombres entiers
-                            }
-                        }
-                    },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Chiffre d\'affaires (MAD)'
-                    },
-                    grid: {
-                        drawOnChartArea: false,
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString() + ' MAD';
-                        }
-                    }
-                }
+            plugins: { legend: { display: true, position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 20, font: { size: 12, weight: 'bold' } } } },
+            scales: {
+                y: { type: 'linear', display: true, position: 'left', beginAtZero: true, title: { display: true, text: 'عدد الطلبات' }, ticks: { stepSize: 1, callback: v => Math.round(v) } },
+                y1: { type: 'linear', display: true, position: 'right', beginAtZero: true, title: { display: true, text: 'رقم المعاملات (MAD)' }, grid: { drawOnChartArea: false }, ticks: { callback: v => v.toLocaleString() + ' MAD' } }
             }
         }
     });

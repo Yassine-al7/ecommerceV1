@@ -1,36 +1,36 @@
 @extends('layouts.app')
 
-@section('title', 'Gérer l\'Assignation des Vendeurs')
+@section('title', 'إدارة تعيين البائعين')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-6xl mx-auto">
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Gérer l'Assignation des Vendeurs</h1>
-            <p class="text-gray-600">Assignez ou désassignez des vendeurs pour le produit : <strong>{{ $product->name }}</strong></p>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">إدارة تعيين البائعين</h1>
+            <p class="text-gray-600">قم بتعيين أو إزالة تعيين البائعين للمنتج: <strong>{{ $product->name }}</strong></p>
         </div>
 
         <!-- Informations du produit -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
             <h3 class="text-lg font-medium text-blue-900 mb-4 flex items-center">
                 <i class="fas fa-box mr-2"></i>
-                Informations du produit
+                معلومات المنتج
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <span class="text-sm font-medium text-blue-700">Nom:</span>
+                    <span class="text-sm font-medium text-blue-700">الاسم:</span>
                     <p class="text-blue-900 font-semibold">{{ $product->name }}</p>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-blue-700">Catégorie:</span>
-                    <p class="text-blue-900">{{ $product->category->name ?? 'Non définie' }}</p>
+                    <span class="text-sm font-medium text-blue-700">التصنيف:</span>
+                    <p class="text-blue-900">{{ $product->category->name ?? 'غير محدد' }}</p>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-blue-700">Stock:</span>
-                    <p class="text-blue-900">{{ $product->quantite_stock }} unités</p>
+                    <span class="text-sm font-medium text-blue-700">المخزون:</span>
+                    <p class="text-blue-900">{{ $product->quantite_stock }} وحدة</p>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-blue-700">Prix Admin:</span>
+                    <span class="text-sm font-medium text-blue-700">سعر المشرف:</span>
                     <p class="text-blue-900">{{ number_format($product->prix_admin, 0) }} MAD</p>
                 </div>
             </div>
@@ -69,21 +69,21 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                     <div class="flex items-center space-x-4">
                         <button type="button" id="selectAll" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                            <i class="fas fa-check-square mr-1"></i>Sélectionner tout
+                            <i class="fas fa-check-square mr-1"></i>تحديد الكل
                         </button>
                         <button type="button" id="deselectAll" class="text-sm text-gray-600 hover:text-gray-800 font-medium">
-                            <i class="fas fa-square mr-1"></i>Désélectionner tout
+                            <i class="fas fa-square mr-1"></i>إلغاء التحديد
                         </button>
                     </div>
                     <div class="text-sm text-gray-600">
-                        <span id="selectedCount">0</span> vendeur(s) sélectionné(s)
+                        <span id="selectedCount">0</span> بائع(ون) محددون
                     </div>
                 </div>
 
                 <!-- Liste des vendeurs avec cases à cocher -->
                 <div class="space-y-4">
                     <h3 class="text-lg font-medium text-gray-800 border-b border-gray-200 pb-2">
-                        Liste des Vendeurs
+                        قائمة البائعين
                     </h3>
 
                     @foreach($sellers as $seller)
@@ -94,7 +94,7 @@
 
                         <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                             <div class="flex items-center justify-between">
-                                <!-- Case à cocher et infos vendeur -->
+                                <!-- Case à cocher و infos vendeur -->
                                 <div class="flex items-center space-x-4">
                                     <input type="checkbox"
                                            name="selected_sellers[]"
@@ -121,11 +121,11 @@
                                 <div class="flex items-center space-x-4">
                                     @if($isAssigned)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check-circle mr-1"></i>Assigné
+                                            <i class="fas fa-check-circle mr-1"></i>مُعيّن
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            <i class="fas fa-times-circle mr-1"></i>Non assigné
+                                            <i class="fas fa-times-circle mr-1"></i>غير مُعيّن
                                         </span>
                                     @endif
                                 </div>
@@ -136,20 +136,20 @@
                                 <div class="mt-4 pl-9 border-l-2 border-blue-200 bg-blue-50 p-3 rounded">
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                         <div>
-                                            <span class="font-medium text-blue-700">Prix Admin:</span>
+                                            <span class="font-medium text-blue-700">سعر المشرف:</span>
                                             <p class="text-blue-900">{{ number_format($assignment->pivot->prix_admin ?? $product->prix_admin, 0) }} MAD</p>
                                         </div>
                                         <div>
-                                            <span class="font-medium text-blue-700">Prix Vente:</span>
+                                            <span class="font-medium text-blue-700">سعر البيع:</span>
                                             <p class="text-blue-900">{{ number_format($assignment->pivot->prix_vente ?? $product->prix_vente, 0) }} MAD</p>
                                         </div>
                                         <div>
-                                            <span class="font-medium text-blue-700">Visible:</span>
+                                            <span class="font-medium text-blue-700">مرئي:</span>
                                             <p class="text-blue-900">
                                                 @if($assignment->pivot->visible ?? true)
-                                                    <span class="text-green-600">Oui</span>
+                                                    <span class="text-green-600">نعم</span>
                                                 @else
-                                                    <span class="text-red-600">Non</span>
+                                                    <span class="text-red-600">لا</span>
                                                 @endif
                                             </p>
                                         </div>
@@ -162,23 +162,23 @@
 
                 <!-- Paramètres globaux -->
                 <div class="border-t border-gray-200 pt-6">
-                    <h3 class="text-lg font-medium text-gray-800 mb-4">Paramètres d'Assignation</h3>
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">إعدادات التعيين</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Prix admin (MAD)</label>
+                            <label class="block text-sm font-medium text-gray-700">سعر المشرف (MAD)</label>
                             <input type="number" step="0.01" name="prix_admin"
                                    value="{{ old('prix_admin', $product->prix_admin) }}"
-                                   placeholder="Prix admin du produit"
+                                   placeholder="سعر المشرف للمنتج"
                                    class="mt-1 w-full border rounded px-3 py-2">
-                            <p class="text-xs text-gray-500 mt-1">Laissez vide pour utiliser le prix du produit</p>
+                            <p class="text-xs text-gray-500 mt-1">اتركه فارغًا لاستخدام سعر المنتج</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Prix vente (MAD)</label>
+                            <label class="block text-sm font-medium text-gray-700">سعر البيع (MAD)</label>
                             <input type="number" step="0.01" name="prix_vente"
                                    value="{{ old('prix_vente', $product->prix_vente) }}"
-                                   placeholder="Prix vente du produit"
+                                   placeholder="سعر بيع المنتج"
                                    class="mt-1 w-full border rounded px-3 py-2">
-                            <p class="text-xs text-gray-500 mt-1">Laissez vide pour utiliser le prix du produit</p>
+                            <p class="text-xs text-gray-500 mt-1">اتركه فارغًا لاستخدام سعر المنتج</p>
                         </div>
                     </div>
 
@@ -186,21 +186,21 @@
                     <div class="mt-4 flex items-center space-x-3">
                         <input type="checkbox" name="visible" value="1" id="visible"
                                @checked(old('visible', true)) class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                        <label for="visible" class="text-sm font-medium text-gray-700">Visible pour les vendeurs assignés</label>
+                        <label for="visible" class="text-sm font-medium text-gray-700">مرئي للبائعين المُعيّنين</label>
                     </div>
                 </div>
 
                 <!-- Actions -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-gray-200">
                     <a href="{{ route('admin.products.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors text-center">
-                        <i class="fas fa-arrow-left mr-2"></i>Retour
+                        <i class="fas fa-arrow-left mr-2"></i>رجوع
                     </a>
                     <div class="flex flex-col sm:flex-row gap-3">
                         <button type="submit" name="action" value="assign" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-                            <i class="fas fa-link mr-2"></i>Assigner les Vendeurs Sélectionnés
+                            <i class="fas fa-link mr-2"></i>تعيين البائعين المحددين
                         </button>
                         <button type="submit" name="action" value="remove" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors">
-                            <i class="fas fa-unlink mr-2"></i>Désassigner les Vendeurs Sélectionnés
+                            <i class="fas fa-unlink mr-2"></i>إلغاء تعيين البائعين المحددين
                         </button>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Gestion des Commandes')
+@section('title', __('admin_orders.title'))
 
 @php
 use App\Helpers\OrderHelper;
@@ -18,7 +18,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-clock text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">En Attente</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.pending') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['en attente'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -31,7 +31,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Confirmé</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.confirmed') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['confirme'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -44,7 +44,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-truck text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Livré</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.delivered') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['livre'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -57,7 +57,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-phone text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Pas de Réponse</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.no_answer') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['pas de réponse'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -70,7 +70,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-exclamation-triangle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Problématique</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.issue') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['problematique'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -82,27 +82,27 @@ use App\Helpers\OrderHelper;
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Filtre par statut -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin_orders.filters.status') }}</label>
                     <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Tous les statuts</option>
-                        <option value="en attente">En attente</option>
-                        <option value="confirme">Confirmé</option>
+                        <option value="">{{ __('admin_orders.filters.all_statuses') }}</option>
+                        <option value="en attente">{{ __('admin_orders.stats.pending') }}</option>
+                        <option value="confirme">{{ __('admin_orders.stats.confirmed') }}</option>
                         <option value="en livraison">En livraison</option>
-                        <option value="livre">Livré</option>
-                        <option value="pas de réponse">Pas de réponse</option>
-                        <option value="problematique">Problématique</option>
+                        <option value="livre">{{ __('admin_orders.stats.delivered') }}</option>
+                        <option value="pas de réponse">{{ __('admin_orders.stats.no_answer') }}</option>
+                        <option value="problematique">{{ __('admin_orders.stats.issue') }}</option>
                     </select>
                 </div>
 
                 <!-- Filtre par date de début -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date de début</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin_orders.filters.start_date') }}</label>
                     <input type="date" id="dateDebut" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <!-- Filtre par date de fin -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date de fin</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin_orders.filters.end_date') }}</label>
                     <input type="date" id="dateFin" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
@@ -111,14 +111,14 @@ use App\Helpers\OrderHelper;
             <div class="flex items-center justify-between mt-4">
                 <div class="flex space-x-2">
                     <button onclick="applyFilters()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-filter mr-2"></i>Appliquer les filtres
+                        <i class="fas fa-filter mr-2"></i>{{ __('admin_orders.filters.apply') }}
                     </button>
                     <button onclick="resetFilters()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-undo mr-2"></i>Réinitialiser
+                        <i class="fas fa-undo mr-2"></i>{{ __('admin_orders.filters.reset') }}
                     </button>
                 </div>
                 <div class="text-sm text-gray-600">
-                    <span id="totalOrders">{{ $orders->total() }}</span> commande(s) trouvée(s)
+                    <span id="totalOrders">{{ $orders->total() }}</span> {{ __('admin_orders.filters.found', ['count' => '']) }}
                 </div>
             </div>
         </div>
@@ -126,9 +126,9 @@ use App\Helpers\OrderHelper;
         <!-- Tableau des commandes -->
         <div class="bg-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">Gestion des Commandes</h1>
+                <h1 class="text-2xl font-bold text-gray-800">{{ __('admin_orders.title') }}</h1>
                 <a href="{{ route('admin.orders.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                    <i class="fas fa-plus mr-2"></i>Nouvelle Commande
+                    <i class="fas fa-plus mr-2"></i>{{ __('admin_orders.actions.new') }}
                 </a>
             </div>
 
@@ -143,22 +143,22 @@ use App\Helpers\OrderHelper;
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                         <span class="text-sm font-medium text-blue-800">
-                            <span id="selectedCount">0</span> commande(s) sélectionnée(s)
+                            <span id="selectedCount">0</span> {{ __('admin_orders.bulk.selected', ['count' => '']) }}
                         </span>
                         <div class="flex items-center space-x-2">
                             <button id="bulkStatusBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors">
-                                <i class="fas fa-edit mr-1"></i>Modifier le statut
+                                <i class="fas fa-edit mr-1"></i>{{ __('admin_orders.bulk.edit_status') }}
                             </button>
                             <button id="bulkExportBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors">
-                                <i class="fas fa-download mr-1"></i>Exporter
+                                <i class="fas fa-download mr-1"></i>{{ __('admin_orders.bulk.export') }}
                             </button>
                             <button id="bulkDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors">
-                                <i class="fas fa-trash mr-1"></i>Supprimer
+                                <i class="fas fa-trash mr-1"></i>{{ __('admin_orders.bulk.delete') }}
                             </button>
                         </div>
                     </div>
                     <button id="clearSelectionBtn" class="text-blue-600 hover:text-blue-800 text-sm">
-                        <i class="fas fa-times mr-1"></i>Effacer la sélection
+                        <i class="fas fa-times mr-1"></i>{{ __('admin_orders.bulk.clear') }}
                     </button>
                 </div>
             </div>
@@ -168,34 +168,34 @@ use App\Helpers\OrderHelper;
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" title="Sélectionner toutes les commandes">
+                                <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" title="{{ __('admin_orders.table.select_all_title') }}">
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Référence
+                                {{ __('admin_orders.table.reference') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Date
+                                {{ __('admin_orders.table.date') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Client
+                                {{ __('admin_orders.table.client') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Vendeur
+                                {{ __('admin_orders.table.seller') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Ville
+                                {{ __('admin_orders.table.city') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Statut
+                                {{ __('admin_orders.table.status') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Commentaire
+                                {{ __('admin_orders.table.comment') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Prix Total
+                                {{ __('admin_orders.table.total') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
+                                {{ __('admin_orders.table.actions') }}
                             </th>
                         </tr>
                     </thead>
@@ -203,7 +203,7 @@ use App\Helpers\OrderHelper;
                         @forelse($orders as $order)
                             <tr class="hover:bg-gray-50 {{ $order->commentaire ? 'bg-yellow-50 border-l-4 border-yellow-400' : '' }}" data-status="{{ $order->status }}" data-date="{{ $order->created_at->format('Y-m-d') }}" data-order-id="{{ $order->id }}">
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                    <input type="checkbox" class="order-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" value="{{ $order->id }}" title="Sélectionner cette commande">
+                                    <input type="checkbox" class="order-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" value="{{ $order->id }}" title="{{ __('admin_orders.table.select_row_title') }}">
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                                     <div class="text-sm leading-5 text-gray-900">{{ $order->reference }}</div>
