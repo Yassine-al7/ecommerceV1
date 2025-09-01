@@ -1,0 +1,49 @@
+name: 🚀 Simple Deploy (FTP/SCP)
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+
+    - name: 📦 Install dependencies
+      run: composer install --no-dev --optimize-autoloader
+
+    - name: 🎨 Build assets (optionnel)
+      run: |
+        if [ -f "package.json" ]; then
+          npm install && npm run build
+        fi
+
+    - name: 🚀 Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: ${{ secrets.FTP_REMOTE_DIR || './' }}
+        exclude: |
+          .git*
+          .github*
+          node_modules/**
+          tests/**
+          *.md
+          .env*
+          phpunit.xml
+          vite.config.js
+          package-lock.json
+
+    - name: 📞 Notify deployment
+      run: echo "✅ Déploiement terminé sur ${{ secrets.FTP_SERVER }}"
