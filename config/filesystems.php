@@ -38,7 +38,7 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'root' => public_path('storage'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
@@ -60,17 +60,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Symbolic Links
+    | Symbolic Links (Disabled for Hostinger)
     |--------------------------------------------------------------------------
     |
-    | Here you may configure the symbolic links that will be created when the
-    | `storage:link` Artisan command is executed. The array keys should be
-    | the locations of the links and the values should be their targets.
+    | Symbolic links are disabled on Hostinger shared hosting.
+    | Files are stored directly in public/storage instead.
     |
     */
 
     'links' => [
-        public_path('storage') => storage_path('app/public'),
+        // Disabled for Hostinger compatibility
     ],
 
 ];
