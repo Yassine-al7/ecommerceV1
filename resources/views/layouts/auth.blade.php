@@ -3,10 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Laravel App')</title>
+    <title>@yield('title', 'Affilook')</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        .affilook-logo {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            background: linear-gradient(45deg, #000000, #1e40af, #3b82f6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .affilook-logo:hover {
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
         :root {
             --brand-primary: {{ config('branding.primary') }};
             --brand-secondary: {{ config('branding.secondary') }};

@@ -16,7 +16,80 @@ class OrderController extends Controller
     public function create()
     {
         $sellers = \App\Models\User::where('role', 'seller')->get();
-        $products = \App\Models\Product::all();
+        $products = \App\Models\Product::select('id', 'name', 'tailles', 'image', 'prix_admin', 'couleur', 'stock_couleurs', 'hidden_colors', 'categorie_id', 'quantite_stock')
+            ->with('category:id,name,slug')
+            ->get();
+
+        // Traiter les produits pour filtrer les couleurs masquées
+        foreach ($products as $product) {
+            // Utiliser les couleurs visibles (excluant les couleurs masquées)
+            $visibleColors = $product->visible_colors ?? [];
+
+            // Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs visibles
+            if (empty($product->stock_couleurs) && !empty($visibleColors)) {
+                $stockCouleurs = [];
+
+                foreach ($visibleColors as $couleur) {
+                    $colorName = is_array($couleur) ? $couleur['name'] : $couleur;
+                    $stockCouleurs[] = [
+                        'name' => $colorName,
+                        'quantity' => $product->quantite_stock ?? 10 // Stock par défaut
+                    ];
+                }
+
+                $product->stock_couleurs = $stockCouleurs;
+            }
+
+            // Filtrer les couleurs avec stock ≤ 0 (en plus des couleurs masquées)
+            if (!empty($product->stock_couleurs)) {
+                $stockCouleurs = $product->stock_couleurs;
+                $visibleColors = $product->visible_colors ?? [];
+
+                if (is_array($stockCouleurs) && is_array($visibleColors)) {
+                    $couleursFiltrees = [];
+                    $stockCouleursFiltres = [];
+
+                    foreach ($stockCouleurs as $index => $stock) {
+                        // Vérifier si la couleur est visible ET a du stock
+                        $isVisible = false;
+                        foreach ($visibleColors as $visibleColor) {
+                            $visibleColorName = is_array($visibleColor) ? $visibleColor['name'] : $visibleColor;
+                            if ($visibleColorName === $stock['name']) {
+                                $isVisible = true;
+                                break;
+                            }
+                        }
+
+                        if ($isVisible && $stock['quantity'] > 0) {
+                            // Conserver la couleur et son stock
+                            $stockCouleursFiltres[] = $stock;
+
+                            // Trouver la couleur correspondante dans visible_colors
+                            foreach ($visibleColors as $visibleColor) {
+                                $visibleColorName = is_array($visibleColor) ? $visibleColor['name'] : $visibleColor;
+                                if ($visibleColorName === $stock['name']) {
+                                    $couleursFiltrees[] = $visibleColor;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Mettre à jour les attributs du produit pour l'affichage
+                    $product->couleur = $couleursFiltrees;
+                    $product->stock_couleurs = $stockCouleursFiltres;
+                }
+            }
+
+            // Si pas de couleurs après filtrage, créer une couleur par défaut
+            if (empty($product->couleur)) {
+                $product->couleur = ['Couleur unique'];
+                $product->stock_couleurs = [
+                    ['name' => 'Couleur unique', 'quantity' => $product->quantite_stock ?? 10]
+                ];
+            }
+        }
+
         return view('admin.order_form', compact('sellers', 'products'));
     }
 
@@ -115,7 +188,79 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $sellers = \App\Models\User::where('role', 'seller')->get();
-        $products = \App\Models\Product::all();
+        $products = \App\Models\Product::select('id', 'name', 'tailles', 'image', 'prix_admin', 'couleur', 'stock_couleurs', 'hidden_colors', 'categorie_id', 'quantite_stock')
+            ->with('category:id,name,slug')
+            ->get();
+
+        // Traiter les produits pour filtrer les couleurs masquées
+        foreach ($products as $product) {
+            // Utiliser les couleurs visibles (excluant les couleurs masquées)
+            $visibleColors = $product->visible_colors ?? [];
+
+            // Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs visibles
+            if (empty($product->stock_couleurs) && !empty($visibleColors)) {
+                $stockCouleurs = [];
+
+                foreach ($visibleColors as $couleur) {
+                    $colorName = is_array($couleur) ? $couleur['name'] : $couleur;
+                    $stockCouleurs[] = [
+                        'name' => $colorName,
+                        'quantity' => $product->quantite_stock ?? 10 // Stock par défaut
+                    ];
+                }
+
+                $product->stock_couleurs = $stockCouleurs;
+            }
+
+            // Filtrer les couleurs avec stock ≤ 0 (en plus des couleurs masquées)
+            if (!empty($product->stock_couleurs)) {
+                $stockCouleurs = $product->stock_couleurs;
+                $visibleColors = $product->visible_colors ?? [];
+
+                if (is_array($stockCouleurs) && is_array($visibleColors)) {
+                    $couleursFiltrees = [];
+                    $stockCouleursFiltres = [];
+
+                    foreach ($stockCouleurs as $index => $stock) {
+                        // Vérifier si la couleur est visible ET a du stock
+                        $isVisible = false;
+                        foreach ($visibleColors as $visibleColor) {
+                            $visibleColorName = is_array($visibleColor) ? $visibleColor['name'] : $visibleColor;
+                            if ($visibleColorName === $stock['name']) {
+                                $isVisible = true;
+                                break;
+                            }
+                        }
+
+                        if ($isVisible && $stock['quantity'] > 0) {
+                            // Conserver la couleur et son stock
+                            $stockCouleursFiltres[] = $stock;
+
+                            // Trouver la couleur correspondante dans visible_colors
+                            foreach ($visibleColors as $visibleColor) {
+                                $visibleColorName = is_array($visibleColor) ? $visibleColor['name'] : $visibleColor;
+                                if ($visibleColorName === $stock['name']) {
+                                    $couleursFiltrees[] = $visibleColor;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Mettre à jour les attributs du produit pour l'affichage
+                    $product->couleur = $couleursFiltrees;
+                    $product->stock_couleurs = $stockCouleursFiltres;
+                }
+            }
+
+            // Si pas de couleurs après filtrage, créer une couleur par défaut
+            if (empty($product->couleur)) {
+                $product->couleur = ['Couleur unique'];
+                $product->stock_couleurs = [
+                    ['name' => 'Couleur unique', 'quantity' => $product->quantite_stock ?? 10]
+                ];
+            }
+        }
 
         // Décoder les produits de la commande existante
         $orderProducts = json_decode($order->produits, true) ?: [];
@@ -273,7 +418,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:en attente,non confirmé,confirme,en livraison,livre,pas de réponse,annulé,retourné'
+            'status' => 'required|in:en attente,confirmé,pas de réponse,expédition,livré,annulé,reporté,retourné'
         ]);
 
         $order->update(['status' => $request->status]);

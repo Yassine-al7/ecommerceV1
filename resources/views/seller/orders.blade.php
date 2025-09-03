@@ -61,11 +61,24 @@
                     </div>
                 </div>
 
+                <!-- Expédition -->
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-400">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                            <i class="fas fa-shipping-fast text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Expédition</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['expedition'] ?? 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Livré -->
                 <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-400">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-green-100 text-green-600">
-                            <i class="fas fa-truck text-2xl"></i>
+                            <i class="fas fa-check-circle text-2xl"></i>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.delivered') }}</p>
@@ -209,70 +222,46 @@
 
     @php
     function getStatusColor($status) {
-        // Normaliser le statut pour la comparaison
-        $normalizedStatus = strtolower(trim($status));
-        $normalizedStatus = str_replace(['é', 'è', 'à', 'É', 'È', 'À'], ['e', 'e', 'a', 'e', 'e', 'a'], $normalizedStatus);
-
-        switch ($normalizedStatus) {
-            case 'en attente':
+        switch ($status) {
             case 'en attente':
                 return 'bg-yellow-100 text-yellow-800';
-            case 'confirme':
-            case 'confirme':
+            case 'confirmé':
                 return 'bg-blue-100 text-blue-800';
-            case 'en livraison':
-            case 'en livraison':
-                return 'bg-blue-100 text-blue-800';
-            case 'livre':
-            case 'livre':
-                return 'bg-green-100 text-green-800';
-            case 'annule':
-            case 'annule':
-                return 'bg-red-100 text-red-800';
-            case 'retourne':
-            case 'retourne':
-                return 'bg-red-100 text-red-800';
-            case 'pas de reponse':
-            case 'pas de reponse':
-                return 'bg-orange-100 text-orange-800';
-            case 'en cours':
-            case 'en cours':
+            case 'pas de réponse':
+                return 'bg-gray-100 text-gray-800';
+            case 'expédition':
                 return 'bg-purple-100 text-purple-800';
+            case 'livré':
+                return 'bg-green-100 text-green-800';
+            case 'annulé':
+                return 'bg-red-100 text-red-800';
+            case 'reporté':
+                return 'bg-orange-100 text-orange-800';
+            case 'retourné':
+                return 'bg-gray-100 text-gray-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
     }
 
     function getStatusLabel($status) {
-        // Normaliser le statut pour la comparaison
-        $normalizedStatus = strtolower(trim($status));
-        $normalizedStatus = str_replace(['é', 'è', 'à', 'É', 'È', 'À'], ['e', 'e', 'a', 'e', 'e', 'a'], $normalizedStatus);
-
-        switch ($normalizedStatus) {
-            case 'en attente':
+        switch ($status) {
             case 'en attente':
                 return 'En attente';
-            case 'confirme':
-            case 'confirme':
+            case 'confirmé':
                 return 'Confirmé';
-            case 'en livraison':
-            case 'en livraison':
-                return 'En livraison';
-            case 'livre':
-            case 'livre':
-                return 'Livré';
-            case 'annule':
-            case 'annule':
-                return 'Annulé';
-            case 'retourne':
-            case 'retourne':
-                return 'Retourné';
-            case 'pas de reponse':
-            case 'pas de reponse':
+            case 'pas de réponse':
                 return 'Pas de réponse';
-            case 'en cours':
-            case 'en cours':
-                return 'En cours';
+            case 'expédition':
+                return 'Expédition';
+            case 'livré':
+                return 'Livré';
+            case 'annulé':
+                return 'Annulé';
+            case 'reporté':
+                return 'Reporté';
+            case 'retourné':
+                return 'Retourné';
             default:
                 return ucfirst($status);
         }

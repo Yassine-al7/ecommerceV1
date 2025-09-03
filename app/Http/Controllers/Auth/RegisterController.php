@@ -26,7 +26,7 @@ class RegisterController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'numero_telephone' => 'required|string|max:20',
             'store_name' => 'required|string|max:255',
-            'rib' => 'required|string|max:255',
+            'rib' => 'required|string|max:25',
         ]);
 
         // Vérifier si l'email existe déjà
@@ -48,7 +48,7 @@ class RegisterController extends Controller
         ]);
 
         // Stocker les données utilisateur en session de manière plus robuste
-        session()->put('pending_user', [
+        $pendingUserData = [
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password,
@@ -56,10 +56,15 @@ class RegisterController extends Controller
             'store_name' => $request->store_name,
             'rib' => $request->rib,
             'role' => 'seller',
-        ]);
+        ];
+
+        session()->put('pending_user', $pendingUserData);
 
         // Forcer la sauvegarde de la session
         session()->save();
+
+        \Log::info('Session pending_user créée:', $pendingUserData);
+        \Log::info('Session ID:', ['session_id' => session()->getId()]);
 
         // Envoyer le code par email
         Mail::to($request->email)->send(new VerificationCodeMail($verificationCode));
@@ -79,12 +84,12 @@ class RegisterController extends Controller
         // Régénérer l'ID de session pour plus de sécurité
         if (session()->has('pending_user')) {
             session()->regenerate();
-            \Log::info('Session régénérée pour pending_user');
+            \Log::info('Session régénérée', ['action' => 'session_regenerated', 'reason' => 'pending_user']);
         }
 
         // Si l'utilisateur est connecté mais non vérifié, gérer le code
         if (Auth::check() && !Auth::user()->email_verified_at) {
-            \Log::info('Utilisateur connecté mais non vérifié');
+            \Log::info('Utilisateur connecté non vérifié', ['user_id' => Auth::id(), 'email_verified_at' => Auth::user()->email_verified_at]);
             $user = Auth::user();
 
             // Nettoyer d'abord les codes expirés
@@ -134,6 +139,12 @@ class RegisterController extends Controller
 
             $verificationCode = $request->verification_code;
 
+            // Debug: vérifier l'état initial
+            \Log::info('Début verifyCode', ['action' => 'start_verification']);
+            \Log::info('Code soumis:', [$verificationCode]);
+            \Log::info('Session has pending_user:', ['has_pending_user' => session()->has('pending_user')]);
+            \Log::info('Auth check:', ['auth_check' => Auth::check()]);
+
             // Debug: vérifier l'état de la session
             \Log::info('Vérification du code - État de la session:', [
                 'has_pending_user' => session()->has('pending_user'),
@@ -144,7 +155,7 @@ class RegisterController extends Controller
 
             // Si l'utilisateur est connecté mais non vérifié
             if (Auth::check() && !Auth::user()->email_verified_at) {
-                \Log::info('Utilisateur connecté mais non vérifié');
+                \Log::info('Utilisateur connecté non vérifié', ['user_id' => Auth::id(), 'email_verified_at' => Auth::user()->email_verified_at]);
                 $user = Auth::user();
 
                 // Chercher le code dans pending_registrations
@@ -164,26 +175,41 @@ class RegisterController extends Controller
                 // Supprimer le code temporaire
                 $pendingRegistration->delete();
 
-                return redirect()->route('seller.dashboard')->with('success', 'Votre email a été vérifié avec succès !');
+                return redirect()->route('login')->with('success', 'Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.');
             }
 
             // Si c'est une nouvelle inscription (session pending_user)
             if (session('pending_user')) {
-                \Log::info('Nouvelle inscription - session pending_user trouvée');
+                \Log::info('Nouvelle inscription trouvée', ['action' => 'new_registration_found']);
+                \Log::info('Contenu de pending_user:', session('pending_user'));
                 $pendingUser = session('pending_user');
 
+                // Vérifier d'abord si l'utilisateur n'existe pas déjà (au cas où il revient en arrière)
+                $existingUser = User::where('email', $pendingUser['email'])->first();
+                if ($existingUser) {
+                    \Log::info('Utilisateur existe déjà', ['action' => 'user_already_exists', 'email' => $pendingUser['email']]);
+                    session()->forget('pending_user'); // Nettoyer la session
+                    return redirect()->route('login')->with('success', 'Votre compte a déjà été créé avec succès ! Vous pouvez maintenant vous connecter.');
+                }
+
                 // Vérifier le code
+                \Log::info('Recherche PendingRegistration', [
+            'email' => $pendingUser['email'],
+            'verification_code' => $verificationCode
+        ]);
                 $pendingRegistration = PendingRegistration::where('email', $pendingUser['email'])
                     ->where('verification_code', $verificationCode)
                     ->where('expires_at', '>', now())
                     ->first();
+
+                \Log::info('PendingRegistration trouvé:', $pendingRegistration ? ['id' => $pendingRegistration->id] : ['result' => 'null']);
 
                 if (!$pendingRegistration) {
                     \Log::warning('Code invalide pour nouvelle inscription');
                     return back()->withErrors(['verification_code' => 'Code invalide ou expiré.'])->withInput();
                 }
 
-                \Log::info('Code validé, création de l\'utilisateur');
+                \Log::info('Code validé', ['action' => 'code_validated', 'ready_for_creation' => true]);
 
                 // Créer l'utilisateur
                 $userData = [
@@ -209,7 +235,7 @@ class RegisterController extends Controller
                     $user->update(['email_verified_at' => now()]);
                 }
 
-                \Log::info('Utilisateur créé avec succès:', ['id' => $user->id, 'email_verified_at' => $user->email_verified_at]);
+                \Log::info('Utilisateur créé avec succès', ['id' => $user->id, 'email_verified_at' => $user->email_verified_at]);
 
                 // Supprimer l'enregistrement temporaire
                 $pendingRegistration->delete();
@@ -217,16 +243,34 @@ class RegisterController extends Controller
                 // Nettoyer la session
                 session()->forget('pending_user');
 
-                \Log::info('Redirection vers login après création réussie');
+                \Log::info('Redirection vers login', ['action' => 'redirect_to_login', 'reason' => 'creation_success']);
 
                 // Rediriger vers la page de connexion avec un message de succès
                 return redirect()->route('login')
                     ->with('success', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter avec vos identifiants.');
             }
 
-            // Si ni connecté ni session, rediriger vers inscription
-            \Log::warning('Aucune session pending_user trouvée, redirection vers register');
-            return redirect()->route('register')->with('error', 'Veuillez d\'abord vous inscrire ou vous connecter.');
+            // Si ni connecté ni session, vérifier s'il y a un code en attente pour ce code
+            $pendingRegistrationByCode = PendingRegistration::where('verification_code', $verificationCode)
+                ->where('expires_at', '>', now())
+                ->first();
+
+            if ($pendingRegistrationByCode) {
+                // Il y a un code valide, mais pas de session - probablement une ancienne session
+                \Log::info('Code valide trouvé sans session', ['action' => 'valid_code_no_session', 'code' => $verificationCode]);
+                return redirect()->route('login')->with('success', 'Votre compte a été créé avec succès ! Veuillez vous connecter.');
+            }
+
+            // Chercher par les derniers utilisateurs créés (au cas où l'utilisateur a été créé mais la session a expiré)
+            $recentUser = User::latest()->first();
+            if ($recentUser && $recentUser->created_at->diffInMinutes(now()) < 30) {
+                \Log::info('Utilisateur récent trouvé, redirection vers login', ['user_id' => $recentUser->id, 'email' => $recentUser->email]);
+                return redirect()->route('login')->with('success', 'Votre compte a été créé avec succès ! Veuillez vous connecter.');
+            }
+
+            // Vraiment aucune session et aucun code valide
+            \Log::warning('Aucune session pending_user trouvée et aucun code valide, redirection vers register');
+            return redirect()->route('register')->with('error', 'Votre session a expiré. Veuillez recommencer l\'inscription.');
 
         } catch (\Illuminate\Session\TokenMismatchException $e) {
             // Gérer l'expiration du token CSRF

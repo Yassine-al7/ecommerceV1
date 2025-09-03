@@ -46,39 +46,77 @@ class StatisticsController extends Controller
             });
         }
 
-        // Données réelles des ventes par mois (6 derniers mois)
-        $monthlySales = Order::where('status', 'livré')
-            ->where('created_at', '>=', now()->subMonths(6))
-            ->selectRaw('DATE_FORMAT(created_at, "%M %Y") as month_name, COUNT(*) as total_orders, SUM(prix_commande) as total_revenue')
-            ->groupBy('month_name')
-            ->orderBy('created_at')
-            ->get()
-            ->map(function($item) {
-                // S'assurer que total_orders est un entier
-                $item->total_orders = (int) $item->total_orders;
-                // S'assurer que total_revenue est un nombre
-                $item->total_revenue = (float) $item->total_revenue;
-                return $item;
-            });
+        // Données réelles des ventes par mois (6 derniers mois) - FORCER TOUS LES MOIS
+        $monthlySales = collect();
 
-        // Si aucune donnée mensuelle, créer des données de test
-        if ($monthlySales->count() == 0) {
-            $months = [];
-            for ($i = 5; $i >= 0; $i--) {
-                $date = now()->subMonths($i);
-                $months[] = [
-                    'month_name' => $date->format('M Y'),
-                    'total_orders' => (int) rand(5, 25), // Forcer les entiers
-                    'total_revenue' => (int) rand(5000, 25000) // Forcer les entiers
-                ];
-            }
-            $monthlySales = collect($months);
+        // Créer les 6 derniers mois même s'ils n'ont pas de données
+        for ($i = 5; $i >= 0; $i--) {
+            $startOfMonth = now()->subMonths($i)->startOfMonth();
+            $endOfMonth = now()->subMonths($i)->endOfMonth();
+
+            // Récupérer les données réelles pour ce mois
+            $monthData = Order::where('status', 'livré')
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->selectRaw('COUNT(*) as total_orders, SUM(prix_commande) as total_revenue')
+                ->first();
+
+            $monthlySales->push([
+                'month_name' => $startOfMonth->format('M Y'),
+                'total_orders' => (int) ($monthData->total_orders ?? 0),
+                'total_revenue' => (float) ($monthData->total_revenue ?? 0)
+            ]);
         }
+
+                // Statistiques des nouveaux vendeurs par mois (6 derniers mois)
+        $newSellersByMonth = collect();
+
+        for ($i = 5; $i >= 0; $i--) {
+            $startOfMonth = now()->subMonths($i)->startOfMonth();
+            $endOfMonth = now()->subMonths($i)->endOfMonth();
+
+            $newSellersCount = User::where('role', 'seller')
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->count();
+
+            $newSellersByMonth->push([
+                'month_name' => $startOfMonth->format('M Y'),
+                'new_sellers' => (int) $newSellersCount
+            ]);
+        }
+
+        // Statistiques globales des vendeurs
+        $totalSellers = User::where('role', 'seller')->count();
+        $activeSellers = User::where('role', 'seller')
+            ->whereHas('orders', function($query) {
+                $query->where('created_at', '>=', now()->subMonths(3));
+            })
+            ->count();
+        $newSellersThisMonth = User::where('role', 'seller')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        // Liste des vendeurs avec leurs statistiques
+        $allSellers = User::where('role', 'seller')
+            ->withCount(['orders as total_orders'])
+            ->withCount(['orders as delivered_orders' => function($query) {
+                $query->where('status', 'livré');
+            }])
+            ->selectRaw('users.*,
+                (SELECT SUM(prix_commande) FROM commandes WHERE seller_id = users.id AND status = "livré") as total_revenue,
+                (SELECT COUNT(*) FROM commandes WHERE seller_id = users.id AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as orders_last_30_days')
+            ->orderBy('total_revenue', 'desc')
+            ->get();
 
         return view('admin.statistics', compact(
             'topProducts',
             'topSellers',
-            'monthlySales'
+            'monthlySales',
+            'newSellersByMonth',
+            'totalSellers',
+            'activeSellers',
+            'newSellersThisMonth',
+            'allSellers'
         ));
     }
 

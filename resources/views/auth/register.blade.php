@@ -5,7 +5,7 @@
 @section('content')
 <div class="card-gradient card-frame rounded-2xl shadow-2xl p-8">
     <div class="text-center mb-6">
-        <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto mx-auto rounded-md bg-white/10 p-2">
+        <div class="affilook-logo text-4xl mx-auto">Affilook</div>
         <h2 class="mt-4 text-2xl font-bold text-white">{{ __('ui.register.title') }}</h2>
         <p class="mt-2 text-sm text-blue-200">{{ __('ui.register.subtitle') }}</p>
     </div>
@@ -52,7 +52,7 @@
 
                 <!-- RIB -->
                 <div class="form-field">
-                    <input id="rib" name="rib" type="text" required class="input-dark" placeholder="{{ __('ui.fields.rib') }}">
+                    <input id="rib" name="rib" type="text" maxlength="25" required class="input-dark" placeholder="{{ __('ui.fields.rib') }}" oninput="limitRibInput(this)">
                     <label for="rib" class="floating-label">{{ __('ui.fields.rib') }} *</label>
                     @error('rib')
                         <p class="error-text">{{ $message }}</p>
@@ -104,5 +104,17 @@
             </div>
         </form>
     </div>
-</div>
+    </div>
+
+    <script>
+    function limitRibInput(input) {
+        // Supprimer tous les caractères non numériques
+        input.value = input.value.replace(/[^0-9]/g, '');
+
+        // Limiter à 25 caractères maximum
+        if (input.value.length > 25) {
+            input.value = input.value.slice(0, 25);
+        }
+    }
+    </script>
 @endsection

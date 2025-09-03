@@ -136,10 +136,7 @@
                                     <input type="text" class="prix-achat-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold" readonly>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.margin_per_product') }}</label>
-                                    <input type="text" class="marge-produit-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-semibold text-center" readonly>
-                                </div>
+
                             </div>
 
                             <!-- Image du produit -->
@@ -379,7 +376,7 @@ function addProduct() {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Prix de vente au client (DH) *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">سعر البيع للزبون (DH) *</label>
                 <input type="number" name="products[${productCounter}][prix_vente_client]" class="prix-vente-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" step="0.01" min="0.01" required>
             </div>
 
@@ -388,10 +385,7 @@ function addProduct() {
                 <input type="text" class="prix-achat-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold" readonly>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Marge par produit (DH)</label>
-                <input type="text" class="marge-produit-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-semibold text-center" readonly>
-            </div>
+
         </div>
 
         <!-- Image du produit -->
@@ -496,6 +490,33 @@ function setupProductEvents(productItem) {
     const margeProduitDisplay = productItem.querySelector('.marge-produit-display');
     const productImage = productItem.querySelector('.product-image');
     const productImageImg = productItem.querySelector('.product-image img');
+    // Recalculer marge et totaux en temps réel quand le prix de vente change
+    if (prixVenteInput) {
+        prixVenteInput.addEventListener('input', function() {
+            calculateProductMargin(productItem);
+            safeCalculateTotals();
+        });
+        prixVenteInput.addEventListener('change', function() {
+            calculateProductMargin(productItem);
+            safeCalculateTotals();
+        });
+    }
+
+    // Recalculer achat/marge/totaux quand la quantité change
+    if (quantityInput) {
+        quantityInput.addEventListener('input', function() {
+            calculatePurchasePrice(productItem);
+            calculateProductMargin(productItem);
+            validateStockQuantity(productItem);
+            safeCalculateTotals();
+        });
+        quantityInput.addEventListener('change', function() {
+            calculatePurchasePrice(productItem);
+            calculateProductMargin(productItem);
+            validateStockQuantity(productItem);
+            safeCalculateTotals();
+        });
+    }
 
     // Identifier le produit
     const productTitle = productItem.querySelector('h4')?.textContent || 'Produit inconnu';
@@ -693,17 +714,14 @@ function setupProductEvents(productItem) {
                             const stockQuantity = parseInt(couleur.quantity) || 0;
 
                             if (stockQuantity <= 0) {
-                                // Couleur en rupture de stock
-                                option.textContent = `${couleur.name} (en stock : 0)`;
+                                // Couleur visible avec stock 0: sélectionnable et sans style spécial
+                                option.textContent = `${couleur.name}`;
                                 option.setAttribute('data-stock', stockQuantity);
-                                option.disabled = true;
-                                option.style.color = '#999';
-                                option.style.fontStyle = 'italic';
-                                console.log(`⚠️ Couleur en rupture affichée: ${couleur.name} (stock: ${stockQuantity})`);
+                                console.log(`ℹ️ Couleur visible avec stock 0: ${couleur.name}`);
                             } else {
                                 // Couleur disponible
                                 couleursDisponibles++;
-                                option.textContent = `${couleur.name} (en stock : ${stockQuantity})`;
+                                option.textContent = `${couleur.name}`;
                                 option.setAttribute('data-stock', stockQuantity);
                                 console.log(`🎨 Couleur disponible ajoutée: ${couleur.name} (stock: ${stockQuantity})`);
                             }
@@ -713,23 +731,25 @@ function setupProductEvents(productItem) {
 
                         console.log(`✅ Total couleurs: ${couleurs.length} (${couleursDisponibles} disponibles, ${couleurs.length - couleursDisponibles} en rupture)`);
 
-                        // Si aucune couleur disponible, afficher un message d'avertissement
+                        // Si aucune couleur disponible, ajouter un placeholder uniquement s'il n'existe pas déjà
                         if (couleursDisponibles === 0) {
-                            const warningOption = document.createElement('option');
-                            warningOption.value = '';
-                            warningOption.textContent = '⚠️ Toutes les couleurs sont en rupture de stock';
-                            warningOption.disabled = true;
-                            warningOption.style.color = '#ff6b6b';
-                            warningOption.style.fontWeight = 'bold';
-                            colorSelect.insertBefore(warningOption, colorSelect.firstChild);
-                            console.log('⚠️ Toutes les couleurs sont en rupture de stock');
+                            if (!colorSelect.querySelector('option[value=""]')) {
+                                const warningOption = document.createElement('option');
+                                warningOption.value = '';
+                                warningOption.textContent = 'Sélectionnez une couleur';
+                                warningOption.disabled = true;
+                                warningOption.style.color = '#666';
+                                warningOption.style.fontStyle = 'italic';
+                                colorSelect.insertBefore(warningOption, colorSelect.firstChild);
+                            }
+                            console.log('ℹ️ Aucune couleur disponible avec stock > 0');
                         }
                     } else {
                         console.log('⚠️ Aucune couleur trouvée pour ce produit');
                         // Ajouter une option par défaut
                         const option = document.createElement('option');
                         option.value = 'Couleur unique';
-                        option.textContent = 'Couleur unique (en stock : 10)';
+                        option.textContent = 'Couleur unique';
                         option.setAttribute('data-stock', 10);
                         colorSelect.appendChild(option);
                         console.log('🎨 Couleur par défaut ajoutée: Couleur unique');
@@ -933,6 +953,13 @@ function validateStockQuantity(productItem) {
     const availableStock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
 
     console.log(`🔍 Validation stock: Couleur=${selectedColor}, Quantité=${selectedQuantity}, Stock=${availableStock}`);
+
+    // Si l'admin masque les couleurs épuisées, ne pas afficher d'erreur pour stock 0
+    if (availableStock === 0) {
+        clearStockValidation(productItem);
+        quantityInput.setCustomValidity('');
+        return;
+    }
 
     if (selectedQuantity > availableStock) {
         // Quantité trop élevée
@@ -1347,8 +1374,17 @@ function validateForm() {
 }
 
 function validateFormBeforeSubmit() {
-    // Valider tous les produits avant l'envoi
+    // Nettoyer toutes les erreurs de validation existantes
     const productItems = document.querySelectorAll('.product-item');
+    productItems.forEach(productItem => {
+        clearStockValidation(productItem);
+        const quantityInput = productItem.querySelector('.quantity-input');
+        if (quantityInput) {
+            quantityInput.setCustomValidity('');
+        }
+    });
+
+    // Valider tous les produits avant l'envoi
     let isValid = true;
 
     productItems.forEach((productItem, index) => {
@@ -1367,14 +1403,16 @@ function validateFormBeforeSubmit() {
                 showStockError(productItem, 'La quantité doit être supérieure à 0');
                 isValid = false;
             } else {
-                // Vérifier le stock
+                // Vérifier le stock (ignorer si stock = 0 car l'admin masque ces couleurs)
                 const selectedOption = colorSelect.options[colorSelect.selectedIndex];
                 const availableStock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
 
-                if (selectedQuantity > availableStock) {
+                // Si stock > 0, vérifier que la quantité ne dépasse pas le stock
+                if (availableStock > 0 && selectedQuantity > availableStock) {
                     showStockError(productItem, `Quantité (${selectedQuantity}) dépasse le stock disponible (${availableStock}) pour la couleur ${selectedColor}`);
                     isValid = false;
                 }
+                // Si stock = 0, ne pas afficher d'erreur (couleur démasquée par l'admin)
             }
 
             // Validation de la taille (seulement si le champ est visible)
@@ -1604,34 +1642,53 @@ function populateExistingProducts() {
 
             // Pré-remplir les champs
             const productSelect = currentProductItem.querySelector('.product-select');
+            const colorSelect = currentProductItem.querySelector('.color-select');
             const sizeSelect = currentProductItem.querySelector('.size-select');
             const quantityInput = currentProductItem.querySelector('.quantity-input');
             const prixVenteInput = currentProductItem.querySelector('.prix-vente-input');
 
-            if (productSelect && sizeSelect && quantityInput && prixVenteInput) {
+            if (productSelect && colorSelect && sizeSelect && quantityInput && prixVenteInput) {
                 // Sélectionner le produit
                 productSelect.value = productData.product_id;
                 console.log(`✅ Produit sélectionné: ${productData.product_id}`);
 
-                // Déclencher l'événement change pour charger les tailles et autres données
+                // Déclencher l'événement change pour charger les couleurs, tailles et autres données
                 productSelect.dispatchEvent(new Event('change'));
 
-                // Attendre que les tailles soient chargées puis sélectionner la taille
+                // Attendre que les couleurs et tailles soient chargées puis les sélectionner
                 setTimeout(() => {
-                    if (sizeSelect) {
+                    // Sélectionner la couleur
+                    if (colorSelect && productData.couleur) {
+                        colorSelect.value = productData.couleur;
+                        console.log(`✅ Couleur sélectionnée: ${productData.couleur}`);
+                    }
+
+                    // Sélectionner la taille
+                    if (sizeSelect && productData.taille) {
                         sizeSelect.value = productData.taille;
                         console.log(`✅ Taille sélectionnée: ${productData.taille}`);
                     }
 
+                    // Définir la quantité
                     if (quantityInput) {
                         quantityInput.value = productData.qty;
                         console.log(`✅ Quantité définie: ${productData.qty}`);
                     }
 
+                    // Définir le prix de vente
                     if (prixVenteInput) {
                         prixVenteInput.value = productData.prix_vente_client;
                         console.log(`✅ Prix de vente défini: ${productData.prix_vente_client}`);
+
+                        // Déclencher l'événement change pour recalculer les totaux
+                        prixVenteInput.dispatchEvent(new Event('input'));
                     }
+
+                                        // Recalculer le prix d'achat pour ce produit
+                    calculatePurchasePrice(currentProductItem);
+
+                    // Recalculer la marge pour ce produit
+                    calculateProductMargin(currentProductItem);
 
                     // Recalculer les totaux avec protection
                     safeCalculateTotals();
@@ -1639,12 +1696,16 @@ function populateExistingProducts() {
             }
         });
 
-        // Calculer le prix d'achat pour tous les produits après le pré-remplissage
+                // Calculer le prix d'achat et la marge pour tous les produits après le pré-remplissage
         setTimeout(() => {
             const productItems = document.querySelectorAll('.product-item');
             productItems.forEach(item => {
                 calculatePurchasePrice(item);
+                calculateProductMargin(item);
             });
+
+            // Forcer le recalcul final des totaux
+            safeCalculateTotals();
         }, 1500);
 
         console.log('✅ Pré-remplissage terminé');
@@ -1874,17 +1935,14 @@ function updateColorOptions(productSelect, productData) {
             const stockQuantity = parseInt(couleur.quantity) || 0;
 
             if (stockQuantity <= 0) {
-                // Couleur en rupture de stock
-                option.textContent = `${couleur.name} (en stock : 0)`;
+                // Couleur visible avec stock 0: rester sélectionnable et sans style
+                option.textContent = `${couleur.name}`;
                 option.setAttribute('data-stock', stockQuantity);
-                option.disabled = true;
-                option.style.color = '#999';
-                option.style.fontStyle = 'italic';
-                console.log(`⚠️ Couleur en rupture mise à jour: ${couleur.name} (stock: ${stockQuantity})`);
+                console.log(`ℹ️ Couleur visible avec stock 0 (refresh): ${couleur.name}`);
             } else {
                 // Couleur disponible
                 couleursDisponibles++;
-                option.textContent = `${couleur.name} (en stock : ${stockQuantity})`;
+                option.textContent = `${couleur.name}`;
                 option.setAttribute('data-stock', stockQuantity);
                 console.log(`🎨 Couleur disponible mise à jour: ${couleur.name} (stock: ${stockQuantity})`);
             }
@@ -1894,15 +1952,17 @@ function updateColorOptions(productSelect, productData) {
 
         console.log(`✅ Stock rafraîchi: ${couleurs.length} couleurs (${couleursDisponibles} disponibles)`);
 
-        // Si aucune couleur disponible, afficher un message d'avertissement
+        // Si aucune couleur disponible, ajouter un placeholder uniquement s'il n'existe pas déjà
         if (couleursDisponibles === 0) {
-            const warningOption = document.createElement('option');
-            warningOption.value = '';
-            warningOption.textContent = '⚠️ Toutes les couleurs sont en rupture de stock';
-            warningOption.disabled = true;
-            warningOption.style.color = '#ff6b6b';
-            warningOption.style.fontWeight = 'bold';
-            colorSelect.insertBefore(warningOption, colorSelect.firstChild);
+            if (!colorSelect.querySelector('option[value=""]')) {
+                const warningOption = document.createElement('option');
+                warningOption.value = '';
+                warningOption.textContent = 'Sélectionnez une couleur';
+                warningOption.disabled = true;
+                warningOption.style.color = '#666';
+                warningOption.style.fontStyle = 'italic';
+                colorSelect.insertBefore(warningOption, colorSelect.firstChild);
+            }
         }
     }
 }

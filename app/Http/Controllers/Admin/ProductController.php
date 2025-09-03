@@ -11,10 +11,20 @@ use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // 🆕 FORCER LE RECHARGEMENT DES DONNÉES DEPUIS LA BASE
-        $products = Product::with(['category', 'assignedUsers'])->get()->fresh();
+        // 🆕 LISTE PRODUITS AVEC FILTRE CATÉGORIE (optionnel)
+        $query = Product::with(['category', 'assignedUsers']);
+
+        if ($request->filled('category')) {
+            $categoryName = $request->input('category');
+            $query->whereHas('category', function($q) use ($categoryName) {
+                $q->where('name', $categoryName);
+            });
+        }
+
+        // FORCER LE RECHARGEMENT DES DONNÉES DEPUIS LA BASE
+        $products = $query->get()->fresh();
 
         Log::info("🔄 Chargement de la liste des produits:", [
             'nombre_produits' => $products->count(),
@@ -76,13 +86,22 @@ class ProductController extends Controller
             }
         });
 
-        return view('admin.products', compact('products'));
+        // Récupérer les catégories pour le filtre
+        $categories = \App\Models\Category::orderBy('name')->get();
+
+        return view('admin.products', compact('products', 'categories'));
     }
 
     public function create()
     {
         $categories = \App\Models\Category::all();
         return view('admin.products.create', compact('categories'));
+    }
+
+    public function createModern()
+    {
+        $categories = \App\Models\Category::all();
+        return view('admin.products.create-modern', compact('categories'));
     }
 
     public function store(Request $request)
@@ -95,62 +114,47 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'couleurs' => 'required|array|min:1',
             'couleurs_hex' => 'array',
-            'stock_couleurs' => 'nullable|array',
+            'hidden_colors' => 'nullable|array',
             'tailles' => $isAccessoire ? 'nullable|array' : 'required|array|min:1',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'quantite_stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
             'categorie_id' => 'required|exists:categories,id',
             'prix_admin' => 'required|numeric|min:0',
             'prix_vente' => 'required|numeric|min:0',
+            'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
         ]);
 
         // Traiter les couleurs avec leurs valeurs hexadécimales et stocks
         $couleurs = $request->input('couleurs', []);
         $couleursHex = $request->input('couleurs_hex', []);
         $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
-        $stockCouleurs = [];
-
-        // Créer un mapping couleur-hex-stock pour la sauvegarde
+        // Créer un mapping couleur-hex pour la sauvegarde
         $couleursWithHex = [];
 
-        // Traiter d'abord les couleurs prédéfinies
+        // Traiter les couleurs prédéfinies
         foreach ($couleurs as $index => $couleur) {
-            $hex = $couleursHex[$index] ?? null;
-            $stock = $request->input("stock_couleur_{$index}", 0);
+            $hex = $couleursHex[$index] ?? '#cccccc';
 
-            if ($hex) {
-                $couleursWithHex[] = [
-                    'name' => $couleur,
-                    'hex' => $hex
-                ];
-            } else {
-                $couleursWithHex[] = $couleur;
-            }
-
-            // Stocker le stock par couleur
-            $stockCouleurs[] = [
+            $couleursWithHex[] = [
                 'name' => $couleur,
-                'quantity' => (int) $stock
+                'hex' => $hex
             ];
         }
 
-        // Traiter ensuite les couleurs personnalisées
+        // Traiter les couleurs personnalisées
         foreach ($couleursPersonnalisees as $index => $couleur) {
-            $stock = $request->input("stock_couleur_custom_{$index}", 0);
-
-            // Ajouter la couleur personnalisée sans hex (sera généré automatiquement)
-            $couleursWithHex[] = $couleur;
-
-            // Stocker le stock par couleur
-            $stockCouleurs[] = [
+            $couleursWithHex[] = [
                 'name' => $couleur,
-                'quantity' => (int) $stock
+                'hex' => '#cccccc' // Couleur par défaut pour les couleurs personnalisées
             ];
         }
 
         // Convertir les couleurs en JSON (pour stockage en base)
         $data['couleur'] = json_encode($couleursWithHex);
-        $data['stock_couleurs'] = json_encode($stockCouleurs);
+
+        // Traiter les couleurs masquées
+        $data['hidden_colors'] = json_encode($request->input('hidden_colors', []));
+
+        // Plus de stock_couleurs - on utilise quantite_stock global
 
         // Convertir les tailles en JSON - pour les accessoires, utiliser un tableau vide
         if ($isAccessoire) {
@@ -161,7 +165,7 @@ class ProductController extends Controller
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
 
-        // Gérer l'upload d'image
+        // Gérer l'upload d'image principale
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
             $data['image'] = '/storage/' . $imagePath;
@@ -169,6 +173,63 @@ class ProductController extends Controller
             // Si aucune image n'est fournie, utiliser une image par défaut
             $data['image'] = '/storage/products/default-product.svg';
         }
+
+        // Gérer les images par couleur
+        $colorImages = [];
+
+        // Traiter les images des couleurs prédéfinies
+        foreach ($couleurs as $index => $couleur) {
+            $colorImageKey = "color_images_{$index}";
+            if ($request->hasFile($colorImageKey)) {
+                $images = [];
+                foreach ($request->file($colorImageKey) as $file) {
+                    $imagePath = $file->store('products/colors', 'public');
+                    $images[] = '/storage/' . $imagePath;
+                }
+                if (!empty($images)) {
+                    // Extraire le nom de la couleur (peut être un string ou un array)
+                    $colorName = is_array($couleur) ? $couleur['name'] : $couleur;
+                    $colorImages[] = [
+                        'color' => $colorName,
+                        'images' => $images
+                    ];
+                }
+            }
+        }
+
+        // Traiter les images des couleurs personnalisées
+        $customColorIndex = 0;
+        foreach ($couleursPersonnalisees as $couleur) {
+            $customImageKey = "custom_color_images_{$customColorIndex}";
+            if ($request->hasFile($customImageKey)) {
+                $images = [];
+                foreach ($request->file($customImageKey) as $file) {
+                    $imagePath = $file->store('products/colors', 'public');
+                    $images[] = '/storage/' . $imagePath;
+                }
+                if (!empty($images)) {
+                    $colorImages[] = [
+                        'color' => $couleur,
+                        'images' => $images
+                    ];
+                }
+            }
+            $customColorIndex++;
+        }
+
+        $data['color_images'] = json_encode($colorImages);
+
+        // Si aucune image principale n'est fournie mais qu'il y a des images par couleur,
+        // utiliser la première image comme image principale
+        if ($data['image'] === '/storage/products/default-product.svg' && !empty($colorImages)) {
+            $firstColorImages = $colorImages[0]['images'] ?? [];
+            if (!empty($firstColorImages)) {
+                $data['image'] = $firstColorImages[0];
+            }
+        }
+
+        // Ne plus utiliser quantite_stock - le stock total sera calculé automatiquement
+        // Le stock total sera calculé via l'accessor dans le modèle Product
 
         Product::create($data);
 
@@ -179,6 +240,12 @@ class ProductController extends Controller
     {
         $categories = \App\Models\Category::all();
         return view('admin.products.edit', compact('product', 'categories'));
+    }
+
+    public function editModern(Product $product)
+    {
+        $categories = \App\Models\Category::all();
+        return view('admin.products.edit-modern', compact('product', 'categories'));
     }
 
     public function update(Request $request, Product $product)
@@ -204,9 +271,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'couleurs' => 'required|array|min:1',
             'couleurs_hex' => 'array',
-            'stock_couleurs' => 'nullable|array',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'quantite_stock' => 'required|integer|min:0',
+            'hidden_colors' => 'nullable|array',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
             'categorie_id' => 'required|exists:categories,id',
             'prix_admin' => 'required|numeric|min:0',
             'prix_vente' => 'required|numeric|min:0',
@@ -221,30 +287,57 @@ class ProductController extends Controller
 
         $data = $request->validate($validationRules);
 
-        // FUSION INTELLIGENTE : Préserver les couleurs existantes avec leurs hex
-        // Utiliser directement les attributs (déjà décodés par les casts/accesseurs)
-        $existingColors = $product->couleur ?: [];
+        // Traitement simplifié des couleurs et du stock
         $couleurs = $request->input('couleurs', []);
         $couleursHex = $request->input('couleurs_hex', []);
         $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
 
-        // Utiliser la méthode de fusion intelligente
-        $mergedData = $this->mergeColorsIntelligently($existingColors, $couleurs, $couleursHex, $couleursPersonnalisees);
+        // Construire les couleurs avec hex
+        $couleursWithHex = [];
+        $stockCouleurs = [];
 
-        $couleursWithHex = $mergedData['colors'];
-        $stockCouleurs = $mergedData['stock'];
+        // Traiter les couleurs prédéfinies
+        foreach ($couleurs as $index => $couleur) {
+            $hex = $couleursHex[$index] ?? '#cccccc';
+            $stock = $request->input("stock_couleur_{$index}", 0);
+
+            $couleursWithHex[] = [
+                'name' => $couleur,
+                'hex' => $hex
+            ];
+
+            $stockCouleurs[] = [
+                'name' => $couleur,
+                'quantity' => (int) $stock
+            ];
+        }
+
+        // Traiter les couleurs personnalisées
+        foreach ($couleursPersonnalisees as $index => $couleur) {
+            $stock = $request->input("stock_couleur_custom_{$index}", 0);
+
+            $couleursWithHex[] = [
+                'name' => $couleur,
+                'hex' => '#cccccc' // Couleur par défaut pour les couleurs personnalisées
+            ];
+
+            $stockCouleurs[] = [
+                'name' => $couleur,
+                'quantity' => (int) $stock
+            ];
+        }
 
         // Convertir les couleurs en JSON (pour stockage en base)
         $data['couleur'] = json_encode($couleursWithHex);
         $data['stock_couleurs'] = json_encode($stockCouleurs);
 
-        // 🆕 RECALCULER CORRECTEMENT LE STOCK TOTAL
-        $totalStock = array_sum(array_column($stockCouleurs, 'quantity'));
-        $data['quantite_stock'] = $totalStock;
+        // Traiter les couleurs masquées
+        $data['hidden_colors'] = json_encode($request->input('hidden_colors', []));
 
-        Log::info('Update Product - Stock recalculé:', [
-            'ancien_stock' => $product->quantite_stock,
-            'nouveau_stock' => $totalStock,
+        // Ne plus utiliser quantite_stock - le stock total sera calculé automatiquement
+        // Le stock total sera calculé via l'accessor dans le modèle Product
+
+        Log::info('Update Product - Stock par couleur mis à jour:', [
             'couleurs_traitees' => count($couleursWithHex),
             'stock_par_couleur' => $stockCouleurs
         ]);
@@ -258,7 +351,7 @@ class ProductController extends Controller
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
 
-        // Gérer l'upload d'image
+        // Gérer l'upload d'image principale
         if ($request->hasFile('image')) {
             // Supprimer l'ancienne image si elle existe
             if ($product->image && Storage::disk('public')->exists(str_replace('/storage/', '', $product->image))) {
@@ -271,6 +364,126 @@ class ProductController extends Controller
             // Si aucune nouvelle image n'est fournie, conserver l'image existante
             $data['image'] = $product->image ?? '/storage/products/default-product.svg';
         }
+
+        // Gérer les images par couleur
+        $existingColorImages = $product->color_images ?: [];
+        $colorImages = $existingColorImages;
+
+        // Traiter les images des couleurs prédéfinies
+        foreach ($couleurs as $index => $couleur) {
+            $colorImageKey = "color_images_{$index}";
+            if ($request->hasFile($colorImageKey)) {
+                $images = [];
+                foreach ($request->file($colorImageKey) as $file) {
+                    $imagePath = $file->store('products/colors', 'public');
+                    $images[] = '/storage/' . $imagePath;
+                }
+
+                // Chercher si cette couleur existe déjà dans les images
+                $colorIndex = -1;
+                foreach ($colorImages as $idx => $colorImage) {
+                    if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $couleur) {
+                        $colorIndex = $idx;
+                        break;
+                    }
+                }
+
+                if ($colorIndex >= 0) {
+                    // Ajouter les nouvelles images aux existantes
+                    if (!isset($colorImages[$colorIndex]['images'])) {
+                        $colorImages[$colorIndex]['images'] = [];
+                    }
+                    $colorImages[$colorIndex]['images'] = array_merge($colorImages[$colorIndex]['images'], $images);
+                } else {
+                    // Créer une nouvelle entrée pour cette couleur
+                    $colorImages[] = [
+                        'color' => $couleur,
+                        'images' => $images
+                    ];
+                }
+            }
+        }
+
+        // Traiter les images des couleurs personnalisées
+        $customColorIndex = 0;
+        foreach ($couleursPersonnalisees as $couleur) {
+            $customImageKey = "custom_color_images_{$customColorIndex}";
+            if ($request->hasFile($customImageKey)) {
+                $images = [];
+                foreach ($request->file($customImageKey) as $file) {
+                    $imagePath = $file->store('products/colors', 'public');
+                    $images[] = '/storage/' . $imagePath;
+                }
+
+                // Chercher si cette couleur existe déjà dans les images
+                $colorIndex = -1;
+                foreach ($colorImages as $idx => $colorImage) {
+                    if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $couleur) {
+                        $colorIndex = $idx;
+                        break;
+                    }
+                }
+
+                if ($colorIndex >= 0) {
+                    // Ajouter les nouvelles images aux existantes
+                    if (!isset($colorImages[$colorIndex]['images'])) {
+                        $colorImages[$colorIndex]['images'] = [];
+                    }
+                    $colorImages[$colorIndex]['images'] = array_merge($colorImages[$colorIndex]['images'], $images);
+                } else {
+                    // Créer une nouvelle entrée pour cette couleur
+                    $colorImages[] = [
+                        'color' => $couleur,
+                        'images' => $images
+                    ];
+                }
+            }
+            $customColorIndex++;
+        }
+
+        // Gérer la suppression d'images
+        if ($request->has('removed_images')) {
+            $removedImages = json_decode($request->input('removed_images'), true);
+            foreach ($removedImages as $removedImage) {
+                // Supprimer le fichier physique
+                if (isset($removedImage['image'])) {
+                    $imagePath = str_replace('/storage/', '', $removedImage['image']);
+                    if (Storage::disk('public')->exists($imagePath)) {
+                        Storage::disk('public')->delete($imagePath);
+                    }
+                }
+
+                // Supprimer de la structure des données
+                foreach ($colorImages as $idx => $colorImage) {
+                    if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $removedImage['color']) {
+                        if (isset($colorImage['images'])) {
+                            $colorImages[$idx]['images'] = array_filter($colorImage['images'], function($img) use ($removedImage) {
+                                return $img !== $removedImage['image'];
+                            });
+
+                            // Si plus d'images pour cette couleur, supprimer l'entrée
+                            if (empty($colorImages[$idx]['images'])) {
+                                unset($colorImages[$idx]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $data['color_images'] = json_encode(array_values($colorImages));
+
+        // Si aucune image principale n'est fournie mais qu'il y a des images par couleur,
+        // utiliser la première image comme image principale
+        if ($data['image'] === '/storage/products/default-product.svg' && !empty($colorImages)) {
+            $firstColorImages = $colorImages[0]['images'] ?? [];
+            if (!empty($firstColorImages)) {
+                $data['image'] = $firstColorImages[0];
+            }
+        }
+
+        // Ne plus utiliser quantite_stock - le stock total sera calculé automatiquement
+        // Le stock total sera calculé via l'accessor dans le modèle Product
 
         $product->update($data);
 

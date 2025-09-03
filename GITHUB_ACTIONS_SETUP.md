@@ -12,7 +12,7 @@ Ce guide explique comment configurer le déploiement automatique avec GitHub Act
 
 Allez dans votre repository GitHub → **Settings** → **Secrets and variables** → **Actions** et ajoutez ces secrets :
 
-### Secrets Obligatoires
+### Secrets Obligatoires pour SSH (Déploiement Traditionnel)
 
 | Secret | Description | Exemple |
 |--------|-------------|---------|
@@ -20,6 +20,15 @@ Allez dans votre repository GitHub → **Settings** → **Secrets and variables*
 | `SERVER_USER` | Nom d'utilisateur SSH | `root` ou `ubuntu` |
 | `SSH_PRIVATE_KEY` | Clé privée SSH (contenu complet) | Voir ci-dessous |
 | `PROJECT_PATH` | Chemin absolu vers votre projet | `/var/www/html/ecommerce` |
+
+### Secrets Obligatoires pour Hostinger (FTP/SCP)
+
+| Secret | Description | Exemple |
+|--------|-------------|---------|
+| `FTP_SERVER` | Adresse FTP Hostinger | `ftp.votre-domaine.com` |
+| `FTP_USERNAME` | Nom d'utilisateur FTP | `votre_username@domain.com` |
+| `FTP_PASSWORD` | Mot de passe FTP | `votre_mot_de_passe` |
+| `FTP_REMOTE_DIR` | Dossier distant (optionnel) | `/public_html` ou `./` |
 
 ### Secrets Optionnels
 
@@ -98,6 +107,39 @@ Assurez-vous que ces fichiers existent :
 .env.example           # Template pour .env.ci
 ```
 
+## 🌐 Configuration Spécifique Hostinger
+
+### Via FTP (Recommandé pour Hostinger)
+
+Pour déployer sur Hostinger via FTP, utilisez le workflow `deploy-simple.yml` qui est déjà configuré.
+
+**Informations Hostinger nécessaires :**
+- **Adresse FTP** : `ftp.votre-domaine.com`
+- **Nom d'utilisateur** : Généralement `votre_username@domain.com`
+- **Mot de passe** : Votre mot de passe FTP (différent du mot de passe cPanel)
+- **Dossier distant** : `/public_html` (racine du site web)
+
+### Étapes pour Hostinger :
+
+1. **Récupérez vos informations FTP :**
+   - Connectez-vous à votre cPanel Hostinger
+   - Allez dans **Fichiers** → **Gestionnaire de fichiers**
+   - Notez l'adresse FTP et vos credentials
+
+2. **Ajoutez les secrets dans GitHub :**
+   ```
+   FTP_SERVER = ftp.votre-domaine.com
+   FTP_USERNAME = votre_username@domain.com
+   FTP_PASSWORD = votre_mot_de_passe_ftp
+   FTP_REMOTE_DIR = /public_html
+   ```
+
+3. **Le workflow FTP exclut automatiquement :**
+   - `.git/` et `.github/`
+   - `node_modules/`
+   - Fichiers de test
+   - Fichiers de configuration locaux (`.env*`)
+
 ## 🚀 Comment Ça Marche
 
 ### Déclencheurs Automatiques
@@ -106,8 +148,23 @@ Le workflow se déclenche :
 - ✅ **Push** sur `main` ou `master`
 - ✅ **Pull Request** vers `main` ou `master`
 
+### Choix du Workflow de Déploiement
+
+Vous avez **deux workflows** disponibles :
+
+#### 🚀 Workflow SSH (`deploy.yml`) - Complet
+- **Avantages** : Tests automatiques, migrations DB, optimisations complètes
+- **Utilisation** : Serveurs dédiés/VPS avec accès SSH
+- **Configuration** : Nécessite clés SSH et accès serveur complet
+
+#### 📁 Workflow FTP (`deploy-simple.yml`) - Hostinger
+- **Avantages** : Simple, compatible Hostinger, déploiement rapide
+- **Utilisation** : Hébergement partagé comme Hostinger
+- **Configuration** : Seulement credentials FTP
+
 ### Processus de Déploiement
 
+#### Pour SSH (`deploy.yml`) :
 1. **Tests Automatiques** 🧪
    - Installation des dépendances PHP
    - Configuration de la base de données de test
@@ -122,6 +179,15 @@ Le workflow se déclenche :
    - Migrations de base de données
    - Optimisation du cache
    - Configuration des permissions
+
+#### Pour FTP (`deploy-simple.yml`) :
+1. **Installation Dépendances** 📦
+   - Installation de PHP et Composer
+   - Build des assets (si nécessaire)
+
+2. **Déploiement** 🚀
+   - Upload FTP vers Hostinger
+   - Exclusion automatique des fichiers inutiles
 
 3. **Notifications** 📢
    - Slack (si configuré)

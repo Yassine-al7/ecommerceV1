@@ -107,24 +107,24 @@ class DashboardController extends Controller
     private function getStockAlerts()
     {
         $alerts = [];
-        
+
         // Vérifier les produits avec stock faible (≤5)
         $lowStockProducts = Product::where('quantite_stock', '<=', 5)
             ->where('quantite_stock', '>', 0)
             ->with('category')
             ->get();
-            
+
         // Vérifier les produits en rupture (stock = 0)
         $outOfStockProducts = Product::where('quantite_stock', '<=', 0)
             ->with('category')
             ->get();
-            
+
         // Vérifier les stocks par couleur si disponible
         $colorStockAlerts = [];
         foreach (Product::whereNotNull('stock_couleurs')->get() as $product) {
             if ($product->stock_couleurs) {
                 $stockColors = is_array($product->stock_couleurs) ? $product->stock_couleurs : json_decode($product->stock_couleurs, true);
-                
+
                 if (is_array($stockColors)) {
                     foreach ($stockColors as $color => $quantity) {
                         if ($quantity <= 5 && $quantity > 0) {
@@ -146,7 +146,7 @@ class DashboardController extends Controller
                 }
             }
         }
-        
+
         if (count($lowStockProducts) > 0 || count($outOfStockProducts) > 0 || count($colorStockAlerts) > 0) {
             $alerts = [
                 'low_stock' => $lowStockProducts,
@@ -155,7 +155,7 @@ class DashboardController extends Controller
                 'total_alerts' => count($lowStockProducts) + count($outOfStockProducts) + count($colorStockAlerts)
             ];
         }
-        
+
         return $alerts;
     }
 

@@ -26,7 +26,7 @@ return [
     'select_color_after_product' => 'اختر منتجاً أولاً',
     'size_field' => 'المقاس *',
     'quantity' => 'الكمية *',
-    'sale_price_client' => 'سعر البيع للعميل (درهم) *',
+    'sale_price_client' => 'سعر البيع للزبون (درهم) *',
     'purchase_price' => 'سعر الشراء (درهم)',
     'margin_per_product' => 'هامش الربح لكل منتج (درهم)',
     'product_image_label' => 'صورة المنتج',

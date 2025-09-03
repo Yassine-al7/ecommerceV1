@@ -32,7 +32,20 @@ use App\Helpers\OrderHelper;
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.confirmed') }}</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['confirme'] ?? 0 }}</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['confirmé'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commande expédition -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-400">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-shipping-fast text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Expédition</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['expédition'] ?? 0 }}</p>
                     </div>
                 </div>
             </div>
@@ -41,11 +54,11 @@ use App\Helpers\OrderHelper;
             <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-400">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-green-100 text-green-600">
-                        <i class="fas fa-truck text-2xl"></i>
+                        <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.delivered') }}</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['livre'] ?? 0 }}</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['livré'] ?? 0 }}</p>
                     </div>
                 </div>
             </div>
@@ -63,7 +76,46 @@ use App\Helpers\OrderHelper;
                 </div>
             </div>
 
-            <!-- Commande problématique -->
+            <!-- Commande annulé -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-400">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-times-circle text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Annulé</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['annulé'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commande reporté -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-400">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Reporté</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['reporté'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commande retourné -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-gray-400">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-gray-100 text-gray-600">
+                        <i class="fas fa-undo text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Retourné</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['retourné'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commande problématique (total) -->
             <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-400">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-red-100 text-red-600">
@@ -86,10 +138,13 @@ use App\Helpers\OrderHelper;
                     <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">{{ __('admin_orders.filters.all_statuses') }}</option>
                         <option value="en attente">{{ __('admin_orders.stats.pending') }}</option>
-                        <option value="confirme">{{ __('admin_orders.stats.confirmed') }}</option>
-                        <option value="en livraison">En livraison</option>
-                        <option value="livre">{{ __('admin_orders.stats.delivered') }}</option>
+                        <option value="confirmé">{{ __('admin_orders.stats.confirmed') }}</option>
+                        <option value="expédition">Expédition</option>
+                        <option value="livré">{{ __('admin_orders.stats.delivered') }}</option>
                         <option value="pas de réponse">{{ __('admin_orders.stats.no_answer') }}</option>
+                        <option value="reporté">Reporté</option>
+                        <option value="retourné">Retourné</option>
+                        <option value="annulé">Annulé</option>
                         <option value="problematique">{{ __('admin_orders.stats.issue') }}</option>
                     </select>
                 </div>
@@ -245,12 +300,12 @@ use App\Helpers\OrderHelper;
                                         <select name="status" onchange="this.form.submit()"
                                                 class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full">
                                             <option value="en attente" @selected($order->status == 'en attente')>En attente</option>
-                                            <option value="non confirmé" @selected($order->status == 'non confirmé')>Non confirmé</option>
-                                            <option value="confirme" @selected($order->status == 'confirme')>Confirmé</option>
-                                            <option value="en livraison" @selected($order->status == 'en livraison')>En livraison</option>
-                                            <option value="livre" @selected($order->status == 'livre')>Livré</option>
+                                            <option value="confirmé" @selected($order->status == 'confirmé')>Confirmé</option>
                                             <option value="pas de réponse" @selected($order->status == 'pas de réponse')>Pas de réponse</option>
+                                            <option value="expédition" @selected($order->status == 'expédition')>Expédition</option>
+                                            <option value="livré" @selected($order->status == 'livré')>Livré</option>
                                             <option value="annulé" @selected($order->status == 'annulé')>Annulé</option>
+                                            <option value="reporté" @selected($order->status == 'reporté')>Reporté</option>
                                             <option value="retourné" @selected($order->status == 'retourné')>Retourné</option>
                                         </select>
                                     </form>
@@ -335,11 +390,11 @@ function applyFilters() {
         // Filtre par statut
         if (statusFilter && statusFilter !== '') {
             if (statusFilter === 'problematique') {
-                showRow = ['annulé', 'retourné'].includes(status); // Plus 'pas de réponse'
-            } else if (statusFilter === 'confirme') {
-                showRow = ['confirme', 'en livraison'].includes(status); // Inclut 'en livraison'
+                showRow = ['annulé', 'retourné', 'reporté', 'pas de réponse'].includes(status);
+            } else if (statusFilter === 'confirmé') {
+                showRow = ['confirmé', 'expédition'].includes(status);
             } else if (statusFilter === 'en attente') {
-                showRow = ['en attente', 'non confirmé'].includes(status); // Inclut 'non confirmé'
+                showRow = ['en attente'].includes(status);
             } else {
                 showRow = status === statusFilter;
             }

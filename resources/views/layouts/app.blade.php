@@ -4,10 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Laravel App')</title>
-    
+    <title>@yield('title', 'Affilook')</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .affilook-logo {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            background: linear-gradient(45deg, #000000, #1e40af, #3b82f6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .affilook-logo:hover {
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+    </style>
     <link href="{{ asset('css/sidebar-mobile.css') }}" rel="stylesheet">
     <style>
         :root {
@@ -38,6 +67,29 @@
             background: radial-gradient(120% 120% at 50% 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%);
             z-index: 0;
         }
+
+        /* Modern Product Card Styles */
+        .modern-product-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modern-product-card:hover {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="gradient-bg vignette-bg min-h-screen">
@@ -65,7 +117,7 @@
                         <div class="sidebar-header">
                             <div class="flex items-center justify-between w-full">
                                 <div class="flex items-center justify-start flex-1">
-                                    <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-14 w-auto rounded-md bg-white/10 p-1">
+                                    <div class="affilook-logo text-3xl">Affilook</div>
                                 </div>
                                 <button id="closeSidebarAdmin" class="text-white hover:text-gray-300 p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0">
                                     <i class="fas fa-times text-xl"></i>
@@ -107,7 +159,7 @@
                         <div class="sidebar-header">
                             <div class="flex items-center justify-between w-full">
                                 <div class="flex items-center justify-start flex-1">
-                                    <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-14 w-auto rounded-md bg-white/10 p-1">
+                                    <div class="affilook-logo text-3xl">Affilook</div>
                                 </div>
                                 <button id="closeSidebarSeller" class="text-white hover:text-gray-300 p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0">
                                     <i class="fas fa-times text-xl"></i>
@@ -133,14 +185,26 @@
                                     <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-clock text-yellow-400"></i><span>En attente</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-check text-blue-400"></i><span>Confirmé</span>
                                     </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-check-circle text-green-400"></i><span>Livré</span>
                                     </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-shipping-fast text-purple-400"></i><span>Expédition</span>
+                                    </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
                                         <i class="fas fa-times-circle text-red-400"></i><span>Annulé</span>
+                                    </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-exclamation-triangle text-orange-400"></i><span>Reporté</span>
+                                    </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-undo text-gray-400"></i><span>Retourné</span>
+                                    </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-question-circle text-gray-500"></i><span>Pas de réponse</span>
                                     </a>
                                 </div>
                             </div>
@@ -170,7 +234,7 @@
                 @auth
                     @if(auth()->user()->isAdmin())
                         <div class="flex items-center justify-center mb-4">
-                            <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto rounded-md bg-white/10 p-1">
+                            <div class="affilook-logo text-4xl">Affilook</div>
                         </div>
                         <nav class="space-y-1">
                             <a href="{{ route('admin.dashboard') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" style="color: var(--sidebar-link)">
@@ -217,7 +281,7 @@
                         </div>
                     @else
                         <div class="flex items-center justify-center mb-4">
-                            <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto rounded-md bg-white/10 p-1">
+                            <div class="affilook-logo text-4xl">Affilook</div>
                         </div>
                         <nav class="space-y-1">
                             <a href="{{ route('seller.dashboard') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.dashboard') ? 'active' : '' }}" style="color: var(--sidebar-link)">
@@ -241,14 +305,26 @@
                                     <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=en%20attente') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-clock text-yellow-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.pending') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'confirme']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=confirme') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=confirmé') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-check text-blue-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.confirmed') }}</span>
                                     </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=livré') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-check-circle text-green-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.delivered') }}</span>
                                     </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=expédition') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                        <i class="fas fa-shipping-fast text-purple-400 text-sm"></i><span class="text-xs md:text-sm">Expédition</span>
+                                    </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=annulé') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-times-circle text-red-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.cancelled') }}</span>
+                                    </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=reporté') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                        <i class="fas fa-exclamation-triangle text-orange-400 text-sm"></i><span class="text-xs md:text-sm">Reporté</span>
+                                    </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=retourné') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                        <i class="fas fa-undo text-gray-400 text-sm"></i><span class="text-xs md:text-sm">Retourné</span>
+                                    </a>
+                                    <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=pas%20de%20réponse') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                        <i class="fas fa-question-circle text-gray-500 text-sm"></i><span class="text-xs md:text-sm">Pas de réponse</span>
                                     </a>
                                 </div>
                             </div>

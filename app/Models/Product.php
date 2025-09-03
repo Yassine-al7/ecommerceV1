@@ -14,72 +14,27 @@ class Product extends Model
     protected $fillable = [
         'name',
         'couleur',
-        'stock_couleurs',
         'tailles',
         'image',
+        'color_images',
+        'hidden_colors',
+        'quantite_stock',
         'prix_admin',
         'prix_vente',
-        'quantite_stock',
         'categorie_id',
     ];
 
     protected $casts = [
         'tailles' => 'array',
         'couleur' => 'array',
+        'color_images' => 'array',
+        'hidden_colors' => 'array',
+        'quantite_stock' => 'integer',
         'prix_admin' => 'decimal:2',
         'prix_vente' => 'decimal:2',
     ];
 
-    /**
-     * Accesseur pour stock_couleurs - décode le JSON en tableau
-     */
-    public function getStockCouleursAttribute($value)
-    {
-        // Toujours récupérer la valeur brute pour éviter le cache
-        $rawValue = $this->getRawOriginal('stock_couleurs');
 
-        if (is_array($rawValue)) {
-            return $rawValue;
-        }
-
-        if (is_string($rawValue)) {
-            // Nettoyer la chaîne JSON des caractères échappés
-            // Remplacer les backslashes doubles par des backslashes simples
-            $cleanedValue = str_replace('\\"', '"', $rawValue);
-            $cleanedValue = str_replace('\\\\', '\\', $cleanedValue);
-
-            // Si la chaîne commence et se termine par des guillemets, les supprimer
-            if (strlen($cleanedValue) >= 2 && $cleanedValue[0] === '"' && $cleanedValue[-1] === '"') {
-                $cleanedValue = substr($cleanedValue, 1, -1);
-            }
-
-            $decoded = json_decode($cleanedValue, true);
-
-            // Debug: afficher les étapes de nettoyage
-            \Log::info("StockCouleurs Accesseur Debug", [
-                'raw' => $rawValue,
-                'cleaned' => $cleanedValue,
-                'decoded' => $decoded,
-                'json_error' => json_last_error_msg()
-            ]);
-
-            return is_array($decoded) ? $decoded : [];
-        }
-
-        return [];
-    }
-
-    /**
-     * Mutateur pour stock_couleurs - encode le tableau en JSON
-     */
-    public function setStockCouleursAttribute($value)
-    {
-        if (is_array($value)) {
-            $this->attributes['stock_couleurs'] = json_encode($value);
-        } else {
-            $this->attributes['stock_couleurs'] = $value;
-        }
-    }
 
     /**
      * Mutateur pour couleur - encode le tableau en JSON
@@ -91,6 +46,41 @@ class Product extends Model
         } else {
             $this->attributes['couleur'] = $value;
         }
+    }
+
+    /**
+     * Accesseur pour quantite_stock - retourne directement la valeur
+     */
+    public function getQuantiteStockAttribute($value)
+    {
+        return (int) $value;
+    }
+
+    /**
+     * Obtenir les couleurs visibles (non masquées)
+     */
+    public function getVisibleColorsAttribute()
+    {
+        // S'assurer que couleur est un tableau
+        $allColors = $this->couleur ?? [];
+        if (is_string($allColors)) {
+            $allColors = json_decode($allColors, true) ?? [];
+        }
+
+        $hiddenColors = $this->hidden_colors ?? [];
+        if (is_string($hiddenColors)) {
+            $hiddenColors = json_decode($hiddenColors, true) ?? [];
+        }
+
+        // S'assurer que allColors est un tableau avant array_filter
+        if (!is_array($allColors)) {
+            return [];
+        }
+
+        return array_filter($allColors, function($color) use ($hiddenColors) {
+            $colorName = is_array($color) ? $color['name'] : $color;
+            return !in_array($colorName, $hiddenColors);
+        });
     }
 
     /**
@@ -182,6 +172,56 @@ class Product extends Model
         });
     }
 
+    /**
+     * Accesseur pour color_images - décode le JSON en tableau
+     */
+    public function getColorImagesAttribute($value)
+    {
+        // Toujours récupérer la valeur brute pour éviter le cache
+        $rawValue = $this->getRawOriginal('color_images');
+
+        if (is_array($rawValue)) {
+            return $rawValue;
+        }
+
+        if (is_string($rawValue)) {
+            // Nettoyer la chaîne JSON des caractères échappés
+            $cleanedValue = str_replace('\\"', '"', $rawValue);
+            $cleanedValue = str_replace('\\\\', '\\', $cleanedValue);
+
+            // Si la chaîne commence et se termine par des guillemets, les supprimer
+            if (strlen($cleanedValue) >= 2 && $cleanedValue[0] === '"' && $cleanedValue[-1] === '"') {
+                $cleanedValue = substr($cleanedValue, 1, -1);
+            }
+
+            $decoded = json_decode($cleanedValue, true);
+
+            // Debug: afficher les étapes de nettoyage
+            \Log::info("ColorImages Accesseur Debug", [
+                'raw' => $rawValue,
+                'cleaned' => $cleanedValue,
+                'decoded' => $decoded,
+                'json_error' => json_last_error_msg()
+            ]);
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
+    /**
+     * Mutateur pour color_images - encode le tableau en JSON
+     */
+    public function setColorImagesAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['color_images'] = json_encode($value);
+        } else {
+            $this->attributes['color_images'] = $value;
+        }
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class, 'categorie_id');
@@ -255,6 +295,70 @@ class Product extends Model
             }
         }
         return 0;
+    }
+
+    /**
+     * Obtenir les images pour une couleur spécifique
+     */
+    public function getImagesForColor($colorName)
+    {
+        if (!$this->color_images || !is_array($this->color_images)) {
+            return [];
+        }
+
+        foreach ($this->color_images as $colorImage) {
+            if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $colorName) {
+                $images = $colorImage['images'] ?? [];
+                // Nettoyer les chemins d'images des backslashes
+                return array_map(function($image) {
+                    return str_replace('\\/', '/', $image);
+                }, $images);
+            }
+        }
+        return [];
+    }
+
+    /**
+     * Obtenir l'image principale pour une couleur spécifique
+     */
+    public function getMainImageForColor($colorName)
+    {
+        $images = $this->getImagesForColor($colorName);
+        return !empty($images) ? $images[0] : $this->image;
+    }
+
+    /**
+     * Ajouter une image pour une couleur spécifique
+     */
+    public function addImageForColor($colorName, $imagePath)
+    {
+        $colorImages = $this->color_images ?: [];
+
+        // Chercher si la couleur existe déjà
+        $colorIndex = -1;
+        foreach ($colorImages as $index => $colorImage) {
+            if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $colorName) {
+                $colorIndex = $index;
+                break;
+            }
+        }
+
+        if ($colorIndex >= 0) {
+            // Ajouter l'image à la couleur existante
+            if (!isset($colorImages[$colorIndex]['images'])) {
+                $colorImages[$colorIndex]['images'] = [];
+            }
+            $colorImages[$colorIndex]['images'][] = $imagePath;
+        } else {
+            // Créer une nouvelle entrée pour cette couleur
+            $colorImages[] = [
+                'color' => $colorName,
+                'images' => [$imagePath]
+            ];
+        }
+
+        $this->color_images = $colorImages;
+        return $this;
     }
 
     /**

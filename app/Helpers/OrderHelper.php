@@ -11,13 +11,12 @@ class OrderHelper
     {
         $labels = [
             'en attente' => 'En attente',
-            'non confirmé' => 'Non confirmé', // Ajout pour cohérence avec le formulaire
-            'confirme' => 'Confirmé',
-            'en livraison' => 'En livraison',
-            'livre' => 'Livré',
-            'livré' => 'Livré', // Ajout de la version avec accent
+            'confirmé' => 'Confirmé',
             'pas de réponse' => 'Pas de réponse',
+            'expédition' => 'Expédition',
+            'livré' => 'Livré',
             'annulé' => 'Annulé',
+            'reporté' => 'Reporté',
             'retourné' => 'Retourné',
             'problematique' => 'Problématique'
         ];
@@ -30,30 +29,33 @@ class OrderHelper
      */
     public static function getStatusCategory($status)
     {
-        // Traiter 'pas de réponse' comme une catégorie séparée (vendeur doit appeler)
-        if ($status === 'pas de réponse') {
-            return 'pas de réponse';
-        }
-
-        // Traiter les autres statuts problématiques
-        if (in_array($status, ['annulé', 'retourné'])) {
+        // Traiter les statuts problématiques
+        if (in_array($status, ['annulé', 'retourné', 'reporté', 'pas de réponse'])) {
             return 'problematique';
         }
 
-        // Normaliser les statuts avec/sans accents
-        $normalizedStatus = str_replace(['é', 'è', 'à'], ['e', 'e', 'a'], $status);
+        // Normaliser les anciens statuts vers les nouveaux
+        $statusMap = [
+            'confirme' => 'confirmé',
+            'en livraison' => 'confirmé',
+            'livre' => 'livré',
+            'annule' => 'annulé',
+            'retourne' => 'retourné',
+            'pas de reponse' => 'pas de réponse'
+        ];
 
-        // Traiter 'non confirmé' comme 'en attente'
-        if ($normalizedStatus === 'non confirme') {
-            return 'en attente';
+        if (isset($statusMap[$status])) {
+            return $statusMap[$status];
         }
 
-        // Traiter 'en livraison' comme 'confirme' (car si en livraison = confirmé)
-        if ($normalizedStatus === 'en livraison') {
-            return 'confirme';
+        // Retourner le statut tel quel s'il est valide
+        $validStatuses = ['en attente', 'confirmé', 'expédition', 'livré'];
+        if (in_array($status, $validStatuses)) {
+            return $status;
         }
 
-        return $normalizedStatus;
+        // Par défaut, traiter comme problématique
+        return 'problematique';
     }
 
     /**
@@ -63,15 +65,14 @@ class OrderHelper
     {
         $colors = [
             'en attente' => 'bg-yellow-100 text-yellow-800',
-            'non confirmé' => 'bg-yellow-100 text-yellow-800', // Même couleur que 'en attente'
-            'confirme' => 'bg-blue-100 text-blue-800',
-            'en livraison' => 'bg-blue-100 text-blue-800',
-            'livre' => 'bg-green-100 text-green-800',
-            'livré' => 'bg-green-100 text-green-800', // Ajout de la version avec accent
-            'problematique' => 'bg-red-100 text-red-800',
-            'pas de réponse' => 'bg-red-100 text-red-800',
+            'confirmé' => 'bg-blue-100 text-blue-800',
+            'pas de réponse' => 'bg-gray-100 text-gray-800',
+            'expédition' => 'bg-purple-100 text-purple-800',
+            'livré' => 'bg-green-100 text-green-800',
             'annulé' => 'bg-red-100 text-red-800',
-            'retourné' => 'bg-red-100 text-red-800'
+            'reporté' => 'bg-orange-100 text-orange-800',
+            'retourné' => 'bg-gray-100 text-gray-800',
+            'problematique' => 'bg-red-100 text-red-800'
         ];
 
         return $colors[$status] ?? 'bg-gray-100 text-gray-800';
@@ -84,15 +85,14 @@ class OrderHelper
     {
         $icons = [
             'en attente' => 'fas fa-clock',
-            'non confirmé' => 'fas fa-clock', // Même icône que 'en attente'
-            'confirme' => 'fas fa-check-circle',
-            'en livraison' => 'fas fa-truck',
-            'livre' => 'fas fa-check-double',
-            'livré' => 'fas fa-check-double', // Ajout de la version avec accent
-            'problematique' => 'fas fa-exclamation-triangle',
-            'pas de réponse' => 'fas fa-exclamation-triangle',
+            'confirmé' => 'fas fa-check',
+            'pas de réponse' => 'fas fa-question-circle',
+            'expédition' => 'fas fa-shipping-fast',
+            'livré' => 'fas fa-check-circle',
             'annulé' => 'fas fa-times-circle',
-            'retourné' => 'fas fa-undo'
+            'reporté' => 'fas fa-exclamation-triangle',
+            'retourné' => 'fas fa-undo',
+            'problematique' => 'fas fa-exclamation-triangle'
         ];
 
         return $icons[$status] ?? 'fas fa-question-circle';
@@ -105,10 +105,13 @@ class OrderHelper
     {
         $stats = [
             'en attente' => 0,
-            'confirme' => 0,
-            'en livraison' => 0,
-            'livre' => 0,
-            'pas de réponse' => 0, // Nouvelle catégorie séparée
+            'confirmé' => 0,
+            'expédition' => 0,
+            'livré' => 0,
+            'pas de réponse' => 0,
+            'annulé' => 0,
+            'reporté' => 0,
+            'retourné' => 0,
             'problematique' => 0,
             'total' => 0
         ];
@@ -116,14 +119,15 @@ class OrderHelper
         foreach ($orders as $order) {
             $stats['total']++;
 
-            $category = self::getStatusCategory($order->status);
+            // Compter chaque statut individuellement
+            if (isset($stats[$order->status])) {
+                $stats[$order->status]++;
+            }
 
+            // Compter aussi dans la catégorie problématique si applicable
+            $category = self::getStatusCategory($order->status);
             if ($category === 'problematique') {
                 $stats['problematique']++;
-            } elseif ($category === 'pas de réponse') {
-                $stats['pas de réponse']++;
-            } else {
-                $stats[$category]++;
             }
         }
 

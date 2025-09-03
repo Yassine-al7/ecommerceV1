@@ -30,7 +30,7 @@
                     <p class="text-blue-900">{{ $product->quantite_stock }} وحدة</p>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-blue-700">سعر المشرف:</span>
+                    <span class="text-sm font-medium text-blue-700">تمن البيع:</span>
                     <p class="text-blue-900">{{ number_format($product->prix_admin, 0) }} MAD</p>
                 </div>
             </div>
@@ -136,11 +136,11 @@
                                 <div class="mt-4 pl-9 border-l-2 border-blue-200 bg-blue-50 p-3 rounded">
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                         <div>
-                                            <span class="font-medium text-blue-700">سعر المشرف:</span>
+                                            <span class="font-medium text-blue-700">تمن البيع:</span>
                                             <p class="text-blue-900">{{ number_format($assignment->pivot->prix_admin ?? $product->prix_admin, 0) }} MAD</p>
                                         </div>
                                         <div>
-                                            <span class="font-medium text-blue-700">سعر البيع:</span>
+                                            <span class="font-medium text-blue-700">تمن:</span>
                                             <p class="text-blue-900">{{ number_format($assignment->pivot->prix_vente ?? $product->prix_vente, 0) }} MAD</p>
                                         </div>
                                         <div>
@@ -165,18 +165,18 @@
                     <h3 class="text-lg font-medium text-gray-800 mb-4">إعدادات التعيين</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">سعر المشرف (MAD)</label>
+                            <label class="block text-sm font-medium text-gray-700">تمن البيع (MAD)</label>
                             <input type="number" step="0.01" name="prix_admin"
                                    value="{{ old('prix_admin', $product->prix_admin) }}"
-                                   placeholder="سعر المشرف للمنتج"
+                                   placeholder="تمن البيع للمنتج"
                                    class="mt-1 w-full border rounded px-3 py-2">
                             <p class="text-xs text-gray-500 mt-1">اتركه فارغًا لاستخدام سعر المنتج</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">سعر البيع (MAD)</label>
+                            <label class="block text-sm font-medium text-gray-700">تمن (MAD)</label>
                             <input type="number" step="0.01" name="prix_vente"
                                    value="{{ old('prix_vente', $product->prix_vente) }}"
-                                   placeholder="سعر بيع المنتج"
+                                   placeholder="تمن المنتج"
                                    class="mt-1 w-full border rounded px-3 py-2">
                             <p class="text-xs text-gray-500 mt-1">اتركه فارغًا لاستخدام سعر المنتج</p>
                         </div>

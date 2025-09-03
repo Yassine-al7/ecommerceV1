@@ -83,7 +83,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">{{ config('app.name', 'E-commerce App') }}</div>
+            <div class="logo" style="font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900; letter-spacing: 0.1em; background: linear-gradient(45deg, #000000, #1e40af, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Affilook</div>
             <h1>Code de Vérification</h1>
         </div>
 

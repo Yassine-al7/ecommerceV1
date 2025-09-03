@@ -92,123 +92,18 @@
             </div>
         </form>
 
-        <!-- Grille des produits -->
+        <!-- Grille des produits modernes -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productsGrid">
-                        @forelse($products as $product)
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden product-card"
-                     data-category="{{ $product->category->name ?? __('seller_products.product.no_category') }}"
-                     data-name="{{ strtolower($product->name) }}">
-
-                                        <!-- Image du produit -->
-                    <div class="h-48 bg-gray-100 flex items-center justify-center overflow-hidden relative">
-                        @if($product->image)
-                            <img src="{{ $product->image }}"
-                                 alt="{{ $product->name }}"
-                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
-                                <i class="fas fa-image text-4xl mb-2"></i>
-                                <p class="text-sm">{{ __('seller_products.product.missing_image') }}</p>
-                                <p class="text-xs text-red-400 mt-1">{{ __('seller_products.product.file_not_found') }}</p>
-                            </div>
-                        @else
-                            <div class="text-gray-400 text-center">
-                                <i class="fas fa-image text-4xl mb-2"></i>
-                                <p class="text-sm">{{ __('seller_products.product.no_image') }}</p>
-                            </div>
-                        @endif
-    </div>
-
-                    <!-- Informations du produit -->
-                    <div class="p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">{{ $product->name }}</h3>
-                            <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full
-                                {{ $product->visible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $product->visible ? 'Visible' : 'Masqué' }}
-                            </span>
-                                        </div>
-
-                        @if($product->category)
-                            <p class="text-sm text-gray-600 mb-2">
-                                <i class="fas fa-tag mr-1"></i>{{ $product->category->name }}
-                            </p>
-                        @endif
-
-
-
-                        <div class="space-y-2 mb-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">{{ __('seller_products.product.admin_price') }}</span>
-                                <span class="font-semibold text-gray-800">{{ $product->prix_admin ?? 0 }} MAD</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">{{ __('seller_products.product.sale_price') }}</span>
-                                <span class="font-semibold text-blue-600 text-lg">{{ $product->prix_vente ?? 0 }} MAD</span>
-                            </div>
-                        </div>
-
-
-
-                        @if($product->couleur)
-                            <div class="flex items-center mb-2">
-                                <span class="text-sm text-gray-600 mr-2">{{ __('seller_products.product.color') }}</span>
-                                @php
-                                    // Gérer le nouveau format des couleurs (objets avec name et hex)
-                                    $couleurs = is_array($product->couleur) ? $product->couleur : json_decode($product->couleur, true) ?? [];
-                                    $couleurNames = [];
-                                    $backgroundColor = '#cccccc';
-
-                                    if (!empty($couleurs)) {
-                                        foreach ($couleurs as $couleur) {
-                                            if (is_array($couleur) && isset($couleur['name'])) {
-                                                $couleurNames[] = $couleur['name'];
-                                                $backgroundColor = $couleur['hex'] ?? $backgroundColor;
-                                            } else {
-                                                $couleurNames[] = is_string($couleur) ? $couleur : '';
-                                            }
-                                        }
-                                    }
-
-                                    $displayText = implode(', ', array_filter($couleurNames));
-                                @endphp
-
-                                <div class="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm flex items-center justify-center"
-                                     style="background-color: {{ $backgroundColor }}">
-                                    <div class="w-2 h-2 rounded-full bg-white opacity-80"></div>
-                                </div>
-                                <span class="ml-3 text-sm font-medium text-gray-800">{{ ucfirst($displayText) }}</span>
-                            </div>
-                        @endif
-
-                        @php $sizes = is_array($product->tailles_parsed ?? null) ? $product->tailles_parsed : []; @endphp
-                        @if(!empty($sizes))
-                            <div class="mb-2">
-                                <span class="text-sm text-gray-600">{{ __('seller_products.product.sizes') }}</span>
-                                <div class="flex flex-wrap gap-1 mt-1">
-                                    @foreach($sizes as $taille)
-                                        <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ $taille }}</span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-
-                        @if(!empty($product->pivot_created_at))
-                            <div class="text-xs text-gray-500 text-center pt-2 border-t border-gray-100">
-                                <i class="fas fa-calendar mr-1"></i>
-                                {{ __('seller_products.product.assigned_on', ['date' => \Carbon\Carbon::parse($product->pivot_created_at)->format('d/m')]) }}
-                            </div>
-                        @endif
-                    </div>
-                </div>
-                    @empty
+            @forelse($products as $product)
+                <x-modern-product-card :product="$product" user-type="seller" />
+            @empty
                 <div class="col-span-full text-center py-12">
                     <div class="text-gray-500">
-                                    <i class="fas fa-box-open text-6xl mb-4 opacity-50"></i>
+                        <i class="fas fa-box-open text-6xl mb-4 opacity-50"></i>
                         <h3 class="text-xl font-medium mb-2">{{ __('seller_products.empty.title') }}</h3>
                         <p class="text-gray-600">{{ __('seller_products.empty.subtitle') }}</p>
-        </div>
-    </div>
+                    </div>
+                </div>
             @endforelse
         </div>
     </div>

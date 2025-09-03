@@ -8,6 +8,7 @@ use App\Traits\GeneratesOrderReferences;
 use App\Services\StockService;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -15,7 +16,7 @@ class OrderController extends Controller
 
 	public function index()
 	{
-		$allowedStatuses = ['en attente', 'en cours', 'livré', 'annulé', 'confirme', 'en livraison', 'retourné', 'pas de réponse'];
+		$allowedStatuses = ['en attente', 'confirmé', 'pas de réponse', 'expédition', 'livré', 'annulé', 'reporté', 'retourné'];
 
 		$ordersQuery = Order::where('seller_id', auth()->id());
 
@@ -37,29 +38,23 @@ class OrderController extends Controller
 
 		$stats = [
 			'total' => $allOrders->count(),
-			'en_attente' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['en attente', 'en attente']);
+			'en_attente' => $allOrders->filter(function($order) {
+				return $order->status === 'en attente';
 			})->count(),
-			'en_cours' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['en cours', 'en cours']);
+			'confirme' => $allOrders->filter(function($order) {
+				return $order->status === 'confirmé';
 			})->count(),
-			'livre' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['livre', 'livre']);
+			'expedition' => $allOrders->filter(function($order) {
+				return $order->status === 'expédition';
 			})->count(),
-			'annule' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['annule', 'annule']);
+			'livre' => $allOrders->filter(function($order) {
+				return $order->status === 'livré';
 			})->count(),
-			'confirme' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['confirme', 'confirme']);
+			'problematique' => $allOrders->filter(function($order) {
+				return in_array($order->status, ['annulé', 'retourné', 'reporté', 'pas de réponse']);
 			})->count(),
-			'en_livraison' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['en livraison', 'en livraison']);
-			})->count(),
-			'problematique' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['annule', 'annule', 'retourne', 'retourne']);
-			})->count(),
-			'pas_de_reponse' => $allOrders->filter(function($order) use ($normalizeStatus) {
-				return in_array($normalizeStatus($order->status), ['pas de reponse', 'pas de reponse']);
+			'pas_de_reponse' => $allOrders->filter(function($order) {
+				return $order->status === 'pas de réponse';
 			})->count(),
 		];
 
@@ -70,19 +65,20 @@ class OrderController extends Controller
     {
         // Produits assignés au vendeur avec plus d'informations
         $products = auth()->user()->assignedProducts()
-            ->select('produits.id', 'produits.name', 'produits.tailles', 'produits.image', 'produits.prix_admin', 'produits.couleur', 'produits.stock_couleurs', 'produits.categorie_id', 'produits.quantite_stock')
+            ->select('produits.id', 'produits.name', 'produits.tailles', 'produits.image', 'produits.prix_admin', 'produits.couleur', 'produits.stock_couleurs', 'produits.hidden_colors', 'produits.categorie_id', 'produits.quantite_stock')
             ->with('category:id,name,slug')
             ->get();
 
-                // 🆕 FILTRER LES COULEURS AVEC STOCK = 0 POUR LES VENDEURS
+                // 🆕 FILTRER LES COULEURS MASQUÉES ET AVEC STOCK = 0 POUR LES VENDEURS
         foreach ($products as $product) {
-            // Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs
-            if (empty($product->stock_couleurs) && !empty($product->couleur)) {
-                // Les accesseurs du modèle ont déjà décodé les données en tableaux
-                $couleurs = $product->couleur;
+            // Utiliser les couleurs visibles (excluant les couleurs masquées)
+            $visibleColors = $product->visible_colors ?? [];
+
+            // Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs visibles
+            if (empty($product->stock_couleurs) && !empty($visibleColors)) {
                 $stockCouleurs = [];
 
-                foreach ($couleurs as $couleur) {
+                foreach ($visibleColors as $couleur) {
                     $colorName = is_array($couleur) ? $couleur['name'] : $couleur;
                     $stockCouleurs[] = [
                         'name' => $colorName,
@@ -94,27 +90,41 @@ class OrderController extends Controller
                 \Log::info("Stock par défaut créé pour {$product->name}: " . json_encode($stockCouleurs));
             }
 
-            // 🆕 FILTRER LES COULEURS AVEC STOCK ≤ 0
+            // 🆕 FILTRER LES COULEURS AVEC STOCK ≤ 0 (en plus des couleurs masquées)
             if (!empty($product->stock_couleurs)) {
                 // Les accesseurs du modèle ont déjà décodé les données en tableaux
                 $stockCouleurs = $product->stock_couleurs;
-                $couleurs = $product->couleur;
+                $visibleColors = $product->visible_colors ?? [];
 
-                if (is_array($stockCouleurs) && is_array($couleurs)) {
+                if (is_array($stockCouleurs) && is_array($visibleColors)) {
                     $couleursFiltrees = [];
                     $stockCouleursFiltres = [];
 
                     foreach ($stockCouleurs as $index => $stock) {
-                        if ($stock['quantity'] > 0) {
+                        // Vérifier si la couleur est visible ET a du stock
+                        $isVisible = false;
+                        foreach ($visibleColors as $visibleColor) {
+                            $visibleColorName = is_array($visibleColor) ? $visibleColor['name'] : $visibleColor;
+                            if ($visibleColorName === $stock['name']) {
+                                $isVisible = true;
+                                break;
+                            }
+                        }
+
+                        if ($isVisible && $stock['quantity'] > 0) {
                             // Conserver la couleur et son stock
                             $stockCouleursFiltres[] = $stock;
 
-                            // Trouver la couleur correspondante
-                            if (isset($couleurs[$index])) {
-                                $couleursFiltrees[] = $couleurs[$index];
+                            // Trouver la couleur correspondante dans visible_colors
+                            foreach ($visibleColors as $visibleColor) {
+                                $visibleColorName = is_array($visibleColor) ? $visibleColor['name'] : $visibleColor;
+                                if ($visibleColorName === $stock['name']) {
+                                    $couleursFiltrees[] = $visibleColor;
+                                    break;
+                                }
                             }
                         } else {
-                            \Log::info("🗑️ Couleur filtrée pour {$product->name}: {$stock['name']} (stock: {$stock['quantity']})");
+                            \Log::info("🗑️ Couleur filtrée pour {$product->name}: {$stock['name']} (visible: " . ($isVisible ? 'oui' : 'non') . ", stock: {$stock['quantity']})");
                         }
                     }
 
@@ -123,7 +133,7 @@ class OrderController extends Controller
                     $product->stock_couleurs = $stockCouleursFiltres;
 
                     \Log::info("🎨 Filtrage des couleurs pour {$product->name}:", [
-                        'couleurs_originales' => count($couleurs),
+                        'couleurs_visibles' => count($visibleColors),
                         'couleurs_filtrees' => count($couleursFiltrees),
                         'stock_original' => count($stockCouleurs),
                         'stock_filtre' => count($stockCouleursFiltres)
@@ -237,39 +247,65 @@ class OrderController extends Controller
                 \Log::info("Produit {$product->name} - Utilisation des tailles par défaut: " . json_encode($tailles));
             }
 
-			// Vérifier la disponibilité de la couleur sélectionnée
+			// Vérifier la disponibilité de la couleur sélectionnée en respectant l'état masqué/démasqué
 			$couleurSelectionnee = $productData['couleur_produit'];
 			$couleurDisponible = false;
 			$stockCouleur = 0;
 
-			foreach ($stockCouleurs as $stockColor) {
-				if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleurSelectionnee) {
-					$stockCouleur = (int) ($stockColor['quantity'] ?? 0);
+			// Normaliser une couleur (pour comparer sans casse/espaces)
+			$normalizeColor = function ($value) {
+				$name = is_array($value) ? ($value['name'] ?? '') : (string) $value;
+				return strtolower(trim($name));
+			};
 
-					// Utiliser le stock réel de la couleur (pas de fallback automatique)
-					\Log::info("Stock utilisé pour {$couleurSelectionnee}: {$stockCouleur} (stock réel de la couleur)");
+			$normSelected = $normalizeColor($couleurSelectionnee);
 
-					// La couleur est disponible même avec stock 0 (permet la commande en rupture)
-					$couleurDisponible = true;
-					break;
+			// Listes utiles
+			$visibleColors = $product->visible_colors ?? [];
+			$hiddenColors = $product->hidden_colors ?? [];
+
+			// 0) Si explicitement masquée, refuser
+			$isHidden = false;
+			if (is_array($hiddenColors)) {
+				foreach ($hiddenColors as $hidden) {
+					if ($normalizeColor($hidden) === $normSelected) {
+						$isHidden = true;
+						break;
+					}
+				}
+			}
+			if ($isHidden) {
+				return back()->withErrors(['couleur_produit' => "La couleur '{$couleurSelectionnee}' est masquée pour le produit '{$product->name}'"])->withInput();
+			}
+
+			// 1) Autoriser toute couleur présente dans visible_colors (démasquée), même si absente de stock_couleurs
+			if (is_array($visibleColors)) {
+				foreach ($visibleColors as $visibleColor) {
+					if ($normalizeColor($visibleColor) === $normSelected) {
+						$couleurDisponible = true;
+						break;
+					}
 				}
 			}
 
-			// Vérifier que la couleur existe (pas de vérification de stock > 0)
+			// 2) Si une entrée existe dans stock_couleurs, récupérer le stock réel et considérer comme existante
+			if (is_array($stockCouleurs)) {
+				foreach ($stockCouleurs as $stockColor) {
+					if (is_array($stockColor) && isset($stockColor['name']) && $normalizeColor($stockColor['name']) === $normSelected) {
+						$stockCouleur = (int) ($stockColor['quantity'] ?? 0);
+						$couleurDisponible = true; // Couleur connue via stock
+						\Log::info("Stock détecté pour {$couleurSelectionnee}: {$stockCouleur}");
+						break;
+					}
+				}
+			}
+
+			// 3) Si la couleur n'est trouvée nulle part (et pas masquée), la refuser
 			if (!$couleurDisponible) {
 				return back()->withErrors(['couleur_produit' => "La couleur '{$couleurSelectionnee}' n'existe pas pour le produit '{$product->name}'"])->withInput();
 			}
 
-			// Vérifier la disponibilité de la couleur et de la taille
-			if (!$product->isColorAndSizeAvailable($couleurSelectionnee, $productData['taille_produit'] ?? null)) {
-				$errorMessage = "La couleur '{$couleurSelectionnee}'";
-				if (!$product->isAccessory() && !empty($productData['taille_produit'])) {
-					$errorMessage .= " avec la taille '{$productData['taille_produit']}'";
-				}
-				$errorMessage .= " n'est pas disponible pour le produit '{$product->name}'";
-
-				return back()->withErrors(['couleur_produit' => $errorMessage])->withInput();
-			}
+			// La vérification de taille reste gérée plus bas par le bloc existant
 
 			// Avertissement si stock insuffisant (mais permet la commande)
 			if ($stockCouleur < (int) $productData['quantite_produit']) {
@@ -403,40 +439,88 @@ class OrderController extends Controller
 
 		// Produits assignés au vendeur avec plus d'informations
 		$products = auth()->user()->assignedProducts()
-			->select('produits.id', 'produits.name', 'produits.tailles', 'produits.image', 'produits.prix_admin', 'produits.couleur', 'produits.stock_couleurs', 'produits.categorie_id')
+			->select('produits.id', 'produits.name', 'produits.tailles', 'produits.image', 'produits.prix_admin', 'produits.couleur', 'produits.stock_couleurs', 'produits.hidden_colors', 'produits.categorie_id')
 			->with('category:id,name,slug')
 			->get();
 
-		// Traiter les produits pour s'assurer qu'ils ont des données de stock
-		foreach ($products as $product) {
-			// Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs
-			if (empty($product->stock_couleurs) && !empty($product->couleur)) {
-				// Les accesseurs du modèle ont déjà décodé les données en tableaux
-				$couleurs = $product->couleur;
-				$stockCouleurs = [];
+		// Décoder les produits de la commande existante pour restaurer le stock temporairement
+		$orderProducts = json_decode($order->produits, true) ?: [];
 
-				foreach ($couleurs as $couleur) {
+		// Créer un mapping des quantités de la commande par produit/couleur
+		$orderQuantities = [];
+		foreach ($orderProducts as $orderProduct) {
+			$key = $orderProduct['product_id'] . '_' . ($orderProduct['couleur'] ?? 'default');
+			$orderQuantities[$key] = (int) ($orderProduct['qty'] ?? 0);
+		}
+
+		// Traiter les produits pour l'édition : afficher toutes les couleurs visibles + restaurer le stock temporairement
+		foreach ($products as $product) {
+			// Utiliser les couleurs visibles (excluant les couleurs masquées)
+			$visibleColors = $product->visible_colors ?? [];
+
+			// Pour l'édition, on affiche toutes les couleurs visibles, même avec stock 0
+			if (!empty($visibleColors)) {
+				// Mettre à jour les couleurs du produit avec les couleurs visibles
+				$product->couleur = $visibleColors;
+
+				// S'assurer que stock_couleurs contient toutes les couleurs visibles
+				$stockCouleurs = $product->stock_couleurs ?? [];
+				$stockCouleursArray = is_array($stockCouleurs) ? $stockCouleurs : [];
+
+				// Créer un mapping des stocks existants
+				$existingStocks = [];
+				foreach ($stockCouleursArray as $stock) {
+					if (is_array($stock) && isset($stock['name'])) {
+						$existingStocks[$stock['name']] = (int) ($stock['quantity'] ?? 0);
+					}
+				}
+
+								// Créer le stock_couleurs final avec toutes les couleurs visibles
+				$finalStockCouleurs = [];
+				foreach ($visibleColors as $couleur) {
 					$colorName = is_array($couleur) ? $couleur['name'] : $couleur;
-					$stockCouleurs[] = [
+					$currentStock = $existingStocks[$colorName] ?? 0;
+
+					// 🆕 LOGIQUE INTELLIGENTE DE RESTAURATION DU STOCK
+					$key = $product->id . '_' . $colorName;
+					$orderQuantity = $orderQuantities[$key] ?? 0;
+
+					$displayStock = $currentStock;
+
+					if ($orderQuantity > 0) {
+						// Cas 1: Stock actuel < quantité commandée → Erreur (ne pas restaurer)
+						if ($currentStock < $orderQuantity) {
+							\Log::warning("Édition - Produit {$product->name}, Couleur {$colorName}: ERREUR - Stock actuel ({$currentStock}) < quantité commandée ({$orderQuantity})");
+							$displayStock = $currentStock; // Garder le stock réel pour montrer l'erreur
+						}
+						// Cas 2: Stock actuel = quantité commandée → Garder le stock actuel (10)
+						elseif ($currentStock == $orderQuantity) {
+							\Log::info("Édition - Produit {$product->name}, Couleur {$colorName}: Stock égal à la commande ({$currentStock}), pas de restauration");
+							$displayStock = $currentStock; // Garder le stock actuel
+						}
+						// Cas 3: Stock actuel > quantité commandée → Restaurer temporairement
+						else {
+							$displayStock = $currentStock + $orderQuantity;
+							\Log::info("Édition - Produit {$product->name}, Couleur {$colorName}: Stock restauré de {$currentStock} à {$displayStock} (+{$orderQuantity})");
+						}
+					}
+
+					$finalStockCouleurs[] = [
 						'name' => $colorName,
-						'quantity' => $product->quantite_stock ?? 10 // Stock par défaut
+						'quantity' => $displayStock
 					];
 				}
 
-				$product->stock_couleurs = $stockCouleurs;
-			}
-
-			// Si pas de couleurs, créer une couleur par défaut
-			if (empty($product->couleur)) {
+				$product->stock_couleurs = $finalStockCouleurs;
+				\Log::info("Édition - Produit {$product->name}: Couleurs visibles affichées avec stock temporairement restauré");
+			} else {
+				// Si pas de couleurs visibles, créer une couleur par défaut
 				$product->couleur = ['Couleur unique'];
 				$product->stock_couleurs = [
 					['name' => 'Couleur unique', 'quantity' => $product->quantite_stock ?? 10]
 				];
 			}
 		}
-
-		// Décoder les produits de la commande existante
-		$orderProducts = json_decode($order->produits, true) ?: [];
 
 		return view('seller.order_form', compact('order', 'products', 'orderProducts'));
 	}
@@ -445,8 +529,8 @@ class OrderController extends Controller
 	{
 		$order = Order::where('id', $id)->where('seller_id', auth()->id())->firstOrFail();
 
-		// Vérifier que la commande peut être modifiée (pas encore livrée)
-		if (in_array($order->status, ['livré', 'annulé'])) {
+		// Vérifier que la commande peut être modifiée (pas encore livrée ou dans un statut problématique)
+		if (in_array($order->status, ['livré', 'annulé', 'reporté', 'retourné'])) {
 			return back()->withErrors(['status' => 'Cette commande ne peut plus être modifiée.']);
 		}
 
@@ -552,6 +636,7 @@ class OrderController extends Controller
 			$produits[] = [
 				'product_id' => $productData['product_id'],
 				'qty' => (int) $productData['quantite_produit'],
+				'couleur' => $productData['couleur_produit'],
 				'taille' => $tailleSelectionnee,
 				'prix_vente_client' => $prixVenteClient,
 				'prix_achat_vendeur' => $prixVenteVendeur,
@@ -561,6 +646,46 @@ class OrderController extends Controller
 		}
 
 		$margeBenefice = $margeTotaleProduits - $prixLivraison;
+
+		// 🆕 GESTION DU STOCK POUR L'ÉDITION : Comparer anciennes vs nouvelles quantités
+		$oldProducts = json_decode($order->produits, true) ?: [];
+
+		// Créer un mapping des anciennes quantités par produit/couleur
+		$oldQuantities = [];
+		foreach ($oldProducts as $oldProduct) {
+			$key = $oldProduct['product_id'] . '_' . ($oldProduct['couleur'] ?? 'default');
+			$oldQuantities[$key] = (int) ($oldProduct['qty'] ?? 0);
+		}
+
+		// Ajuster le stock selon les différences
+		foreach ($produits as $newProduct) {
+			$productId = $newProduct['product_id'];
+			$couleur = $newProduct['couleur'] ?? 'default';
+			$newQty = (int) $newProduct['qty'];
+			$key = $productId . '_' . $couleur;
+
+			$oldQty = $oldQuantities[$key] ?? 0;
+			$difference = $newQty - $oldQty;
+
+			if ($difference != 0) {
+				// Ajuster le stock selon la différence
+				if ($difference > 0) {
+					// Quantité augmentée : diminuer le stock
+					$success = StockService::decreaseStock($productId, $couleur, $difference);
+					Log::info("Stock diminué pour édition: Produit {$productId}, Couleur {$couleur}, Différence: -{$difference}");
+				} else {
+					// Quantité diminuée : augmenter le stock
+					$success = StockService::increaseStock($productId, $couleur, abs($difference));
+					Log::info("Stock augmenté pour édition: Produit {$productId}, Couleur {$couleur}, Différence: +" . abs($difference));
+				}
+
+				if (!$success) {
+					Log::error("Échec de l'ajustement du stock pour l'édition - Produit ID: {$productId}, Couleur: {$couleur}");
+				}
+			} else {
+				Log::info("Aucun ajustement de stock nécessaire pour Produit {$productId}, Couleur {$couleur} (quantité inchangée)");
+			}
+		}
 
 		// Mettre à jour la commande
 		$order->update([

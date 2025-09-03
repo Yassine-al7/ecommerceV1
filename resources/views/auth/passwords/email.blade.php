@@ -7,7 +7,7 @@
     <!-- Logo/Header -->
     <div class="text-center mb-8">
         <div class="mx-auto mb-4">
-            <img src="{{ asset(config('branding.logo_path')) }}" alt="Logo" class="h-16 w-auto mx-auto rounded-md bg-white/10 p-2">
+            <div class="affilook-logo text-4xl mx-auto">Affilook</div>
         </div>
         <h2 class="text-3xl font-bold text-white">Reset Password</h2>
         <p class="text-blue-200 mt-2">Enter your email to receive a reset link</p>

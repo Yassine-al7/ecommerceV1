@@ -25,8 +25,10 @@ class DashboardController extends Controller
         // === STATISTIQUES COMMANDES ===
         $totalSellerOrders = Order::where('seller_id', $sellerId)->count();
         $ordersEnAttente = Order::where('seller_id', $sellerId)->where('status', 'en attente')->count();
+        $ordersConfirme = Order::where('seller_id', $sellerId)->where('status', 'confirmé')->count();
+        $ordersExpedition = Order::where('seller_id', $sellerId)->where('status', 'expédition')->count();
         $ordersLivrees = Order::where('seller_id', $sellerId)->where('status', 'livré')->count();
-        $ordersCancelled = Order::where('seller_id', $sellerId)->where('status', 'annulé')->count();
+        $ordersCancelled = Order::where('seller_id', $sellerId)->whereIn('status', ['annulé', 'retourné', 'reporté', 'pas de réponse'])->count();
 
         // === STATISTIQUES FINANCIÈRES ===
         // Chiffre d'affaires (commandes livrées)
@@ -59,8 +61,10 @@ class DashboardController extends Controller
         // === COMMANDES PAR STATUT (pour le graphique) ===
         $ordersByStatus = [
             'en_attente' => $ordersEnAttente,
+            'confirme' => $ordersConfirme,
+            'expedition' => $ordersExpedition,
             'livre' => $ordersLivrees,
-            'annule' => $ordersCancelled
+            'problematique' => $ordersCancelled
         ];
 
         // === MESSAGES ADMIN ===
@@ -76,6 +80,8 @@ class DashboardController extends Controller
             'totalAssignedProducts',
             'totalSellerOrders',
             'ordersEnAttente',
+            'ordersConfirme',
+            'ordersExpedition',
             'ordersLivrees',
             'ordersCancelled',
             'totalRevenue',

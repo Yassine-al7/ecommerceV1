@@ -128,7 +128,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">الحالة</label>
                         <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            @foreach(['en attente', 'non confirmé', 'confirme', 'en livraison', 'livre', 'pas de réponse', 'annulé', 'retourné'] as $status)
+                            @foreach(['en attente', 'confirmé', 'pas de réponse', 'expédition', 'livré', 'annulé', 'reporté', 'retourné'] as $status)
                                 <option value="{{ $status }}" @selected(old('status', $order->status ?? 'en attente') == $status)>
                                     {{ ucfirst($status) }}
                                 </option>
@@ -479,6 +479,8 @@ function updateProductInfo(index) {
         const prixInput = row.querySelector('.prix-input');
         if (prixInput) {
             prixInput.value = prix;
+            // Calculer le total après mise à jour du prix
+            updateProductTotal(index);
         } else {
             console.error(`❌ Input prix non trouvé pour l'index ${index}`);
         }
