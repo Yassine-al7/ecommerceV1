@@ -1,0 +1,115 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_run:
+    workflows: ["🧪 Test Suite"]
+    types: [completed]
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: pdo, pdo_mysql, bcmath, ctype, fileinfo, json, mbstring, openssl, tokenizer, xml, gd, zip
+
+    - name: 📦 Install dependencies
+      run: composer install --no-dev --optimize-autoloader
+
+    - name: 🎨 Build assets
+      run: |
+        if [ -f "package.json" ]; then
+          npm install
+          npm run build
+        else
+          echo "No package.json found, skipping asset build"
+        fi
+
+    - name: 🚀 Deploy via FTP (Hostinger)
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      if: ${{ secrets.FTP_SERVER != '' }}
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: ${{ secrets.FTP_REMOTE_DIR || './' }}
+        exclude: |
+          .git*
+          .github*
+          node_modules/**
+          tests/**
+          *.md
+          .env*
+          phpunit.xml
+          vite.config.js
+          package-lock.json
+          composer.lock
+          storage/logs/*
+          storage/framework/cache/*
+          storage/framework/sessions/*
+          storage/framework/views/*
+
+    - name: 🚀 Deploy via SSH (VPS/Dedicated)
+      uses: appleboy/ssh-action@v1.0.0
+      if: ${{ secrets.SERVER_HOST != '' }}
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SERVER_PORT || 22 }}
+        script: |
+          cd ${{ secrets.PROJECT_PATH }}
+          
+          echo "🔄 Starting deployment..."
+          
+          # Backup current .env
+          if [ -f ".env" ]; then
+            cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
+          fi
+          
+          # Pull latest changes
+          git pull origin main || git pull origin master
+          
+          # Install dependencies
+          composer install --no-dev --optimize-autoloader
+          
+          # Clear caches
+          php artisan config:clear
+          php artisan cache:clear
+          php artisan view:clear
+          php artisan route:clear
+          
+          # Run migrations
+          php artisan migrate --force
+          
+          # Optimize
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          
+          # Set permissions
+          chmod -R 755 storage bootstrap/cache
+          chown -R www-data:www-data storage bootstrap/cache || chown -R apache:apache storage bootstrap/cache || echo "Permissions not changed"
+          
+          echo "✅ Deployment completed successfully!"
+
+    - name: 📞 Notify deployment
+      run: |
+        if [ "${{ secrets.FTP_SERVER }}" != "" ]; then
+          echo "✅ Deployed to FTP server: ${{ secrets.FTP_SERVER }}"
+        fi
+        if [ "${{ secrets.SERVER_HOST }}" != "" ]; then
+          echo "✅ Deployed to SSH server: ${{ secrets.SERVER_HOST }}"
+        fi
+        echo "🚀 Deployment completed successfully!"

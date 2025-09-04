@@ -1,0 +1,104 @@
+name: 🧪 Test Suite
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: pdo, pdo_mysql, bcmath, ctype, fileinfo, json, mbstring, openssl, tokenizer, xml, gd, zip
+        coverage: xdebug
+
+    - name: 📦 Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: 📦 Install PHP dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: 🗂️ Create environment file
+      run: |
+        echo "APP_NAME=Laravel
+APP_ENV=testing
+APP_KEY=base64:test-key-for-ci-testing-only
+APP_DEBUG=true
+APP_URL=http://localhost
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=test_db
+DB_USERNAME=root
+DB_PASSWORD=root
+CACHE_DRIVER=array
+SESSION_DRIVER=array
+QUEUE_CONNECTION=sync
+MAIL_MAILER=array" > .env
+
+    - name: 🔑 Generate application key
+      run: php artisan key:generate --force
+
+    - name: ⏳ Wait for MySQL
+      run: |
+        echo "Waiting for MySQL to be ready..."
+        for i in {1..30}; do
+          if mysql -h 127.0.0.1 -P 3306 -u root -proot -e "SELECT 1" >/dev/null 2>&1; then
+            echo "MySQL is ready!"
+            break
+          fi
+          echo "Waiting for MySQL... ($i/30)"
+          sleep 2
+        done
+
+    - name: 🗃️ Run database migrations
+      run: php artisan migrate --force
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: test_db
+        DB_USERNAME: root
+        DB_PASSWORD: root
+
+    - name: 🧪 Run tests
+      run: php artisan test --verbose
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: test_db
+        DB_USERNAME: root
+        DB_PASSWORD: root
+
+    - name: 📊 Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: success()
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella

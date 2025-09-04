@@ -118,7 +118,7 @@ class ProductController extends Controller
             'tailles' => $isAccessoire ? 'nullable|array' : 'required|array|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
             'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'required|numeric|min:0',
+            'prix_admin' => 'required|string|min:1|regex:/^[\d\s,.-]+$/', // Accepte nombres, virgules, espaces, points, tirets
             'prix_vente' => 'required|numeric|min:0',
             'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
         ]);
@@ -164,6 +164,33 @@ class ProductController extends Controller
         }
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
+
+        // Traiter les prix multiples pour prix_admin
+        $prixAdminInput = $data['prix_admin'];
+        $prixAdminArray = [];
+
+        // Nettoyer et séparer les prix
+        $prixCleaned = preg_replace('/[^\d,.\s-]/', '', $prixAdminInput); // Garder seulement chiffres, virgules, points, espaces, tirets
+        $prixParts = preg_split('/[,;|\s-]+/', $prixCleaned); // Séparer par virgules, points-virgules, pipes, espaces, ou tirets
+
+        foreach ($prixParts as $prix) {
+            $prix = trim($prix);
+            if (is_numeric($prix) && $prix > 0) {
+                $prixAdminArray[] = (float) $prix;
+            }
+        }
+
+        // Si aucun prix valide trouvé, utiliser le prix de vente
+        if (empty($prixAdminArray)) {
+            $prixAdminArray = [(float) $data['prix_vente']];
+        }
+
+        // Calculer le prix moyen pour l'assignation aux vendeurs
+        $prixAdminMoyen = array_sum($prixAdminArray) / count($prixAdminArray);
+
+        // Stocker les prix multiples en JSON
+        $data['prix_admin'] = json_encode($prixAdminArray);
+        $data['prix_admin_moyen'] = $prixAdminMoyen; // Prix moyen pour les assignations
 
         // Gérer l'upload d'image principale
         if ($request->hasFile('image')) {
@@ -231,9 +258,25 @@ class ProductController extends Controller
         // Ne plus utiliser quantite_stock - le stock total sera calculé automatiquement
         // Le stock total sera calculé via l'accessor dans le modèle Product
 
-        Product::create($data);
+        $product = Product::create($data);
 
-        return redirect()->route('admin.products.index')->with('success', 'Produit créé avec succès!');
+        // Assigner automatiquement le produit à tous les vendeurs
+        $sellers = \App\Models\User::where('role', 'seller')->get();
+        if ($sellers->count() > 0) {
+            $pivotData = [];
+            foreach ($sellers as $seller) {
+                $pivotData[$seller->id] = [
+                    'prix_admin' => $prixAdminMoyen, // Utiliser le prix moyen calculé
+                    'prix_vente' => $product->prix_vente,
+                    'visible' => true,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+            }
+            $product->assignedUsers()->attach($pivotData);
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Produit créé avec succès et assigné à tous les vendeurs!');
     }
 
     public function edit(Product $product)
@@ -274,7 +317,7 @@ class ProductController extends Controller
             'hidden_colors' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
             'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'required|numeric|min:0',
+            'prix_admin' => 'required|string|min:1|regex:/^[\d\s,.-]+$/', // Accepte nombres, virgules, espaces, points, tirets
             'prix_vente' => 'required|numeric|min:0',
         ];
 
@@ -350,6 +393,33 @@ class ProductController extends Controller
         }
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
+
+        // Traiter les prix multiples pour prix_admin
+        $prixAdminInput = $data['prix_admin'];
+        $prixAdminArray = [];
+
+        // Nettoyer et séparer les prix
+        $prixCleaned = preg_replace('/[^\d,.\s-]/', '', $prixAdminInput); // Garder seulement chiffres, virgules, points, espaces, tirets
+        $prixParts = preg_split('/[,;|\s-]+/', $prixCleaned); // Séparer par virgules, points-virgules, pipes, espaces, ou tirets
+
+        foreach ($prixParts as $prix) {
+            $prix = trim($prix);
+            if (is_numeric($prix) && $prix > 0) {
+                $prixAdminArray[] = (float) $prix;
+            }
+        }
+
+        // Si aucun prix valide trouvé, utiliser le prix de vente
+        if (empty($prixAdminArray)) {
+            $prixAdminArray = [(float) $data['prix_vente']];
+        }
+
+        // Calculer le prix moyen pour l'assignation aux vendeurs
+        $prixAdminMoyen = array_sum($prixAdminArray) / count($prixAdminArray);
+
+        // Stocker les prix multiples en JSON
+        $data['prix_admin'] = json_encode($prixAdminArray);
+        $data['prix_admin_moyen'] = $prixAdminMoyen; // Prix moyen pour les assignations
 
         // Gérer l'upload d'image principale
         if ($request->hasFile('image')) {
@@ -486,6 +556,9 @@ class ProductController extends Controller
         // Le stock total sera calculé via l'accessor dans le modèle Product
 
         $product->update($data);
+
+        // Synchroniser les assignations avec tous les vendeurs existants
+        $this->syncProductWithAllSellers($product);
 
         return redirect()->route('admin.products.index')->with('success', 'Produit mis à jour avec succès!');
     }
@@ -683,7 +756,11 @@ class ProductController extends Controller
         }
 
         // 🆕 4. VÉRIFICATION ET LOGS DE DEBUG FINAUX
-        $totalStock = array_sum(array_column($mergedStock, 'quantity'));
+        $quantities = array_column($mergedStock, 'quantity');
+        $numericQuantities = array_filter($quantities, function($q) {
+            return is_numeric($q);
+        });
+        $totalStock = array_sum(array_map('intval', $numericQuantities));
 
         Log::info('Fusion intelligente des couleurs - Debug final:', [
             'existing_colors_count' => count($existingColors),
@@ -736,5 +813,32 @@ class ProductController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Synchroniser un produit avec tous les vendeurs existants
+     * Assigne le produit aux vendeurs qui ne l'ont pas encore
+     */
+    private function syncProductWithAllSellers(Product $product)
+    {
+        $sellers = \App\Models\User::where('role', 'seller')->get();
+        $assignedSellerIds = $product->assignedUsers()->pluck('user_id')->toArray();
+
+        $newAssignments = [];
+        foreach ($sellers as $seller) {
+            if (!in_array($seller->id, $assignedSellerIds)) {
+                $newAssignments[$seller->id] = [
+                    'prix_admin' => $product->prix_admin_moyen, // Utiliser l'accessor pour le prix moyen
+                    'prix_vente' => $product->prix_vente,
+                    'visible' => true,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+            }
+        }
+
+        if (!empty($newAssignments)) {
+            $product->assignedUsers()->attach($newAssignments);
+        }
     }
 }

@@ -24,38 +24,34 @@ class StockService
                 return false;
             }
 
-            // Vérifier que le stock est suffisant
-            if ($product->quantite_stock < $quantite) {
-                Log::warning("Stock insuffisant pour {$product->name} (ID: {$productId}) - Demande: {$quantite}, Disponible: {$product->quantite_stock}");
+            // Vérifier le stock disponible pour cette couleur spécifique
+            $stockCouleur = $product->getStockForColor($couleur);
+            if ($stockCouleur < $quantite) {
+                Log::warning("Stock insuffisant pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Demande: {$quantite}, Disponible: {$stockCouleur}");
                 // Note: On permet la commande même en rupture de stock
             }
 
-            // Diminuer le stock total du produit
-            $product->quantite_stock = max(0, $product->quantite_stock - $quantite);
-
-            // Diminuer le stock de la couleur spécifique
-            // Les accesseurs du modèle ont déjà décodé les données en tableaux
-            $stockCouleurs = $product->stock_couleurs;
-            $stockUpdated = false;
-
-            foreach ($stockCouleurs as &$stockColor) {
-                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleur) {
-                    $stockColor['quantity'] = max(0, ($stockColor['quantity'] ?? 0) - $quantite);
-                    $stockUpdated = true;
-                    break;
-                }
+            // Si pas de stock_couleurs défini, créer une entrée basée sur le stock total
+            if (!$product->stock_couleurs || !is_array($product->stock_couleurs) || empty($product->stock_couleurs)) {
+                $product->stock_couleurs = [
+                    [
+                        'name' => $couleur,
+                        'quantity' => $product->quantite_stock
+                    ]
+                ];
+                $product->save();
+                Log::info("Stock_couleurs initialisé pour {$product->name} (ID: {$productId}) avec couleur: {$couleur}, quantité: {$product->quantite_stock}");
             }
 
-            // Sauvegarder les modifications
-            // Les mutateurs du modèle encodent automatiquement les tableaux en JSON
-            $product->stock_couleurs = $stockCouleurs;
-            $product->save();
+            // Utiliser la méthode du modèle Product pour diminuer le stock par couleur
+            $nouveauStock = $product->decreaseColorStock($couleur, $quantite);
 
-            Log::info("Stock diminué pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock total: {$product->quantite_stock}");
+            Log::info("Stock diminué pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock couleur: {$nouveauStock} - Nouveau stock total: {$product->quantite_stock}");
 
             return true;
         } catch (\Exception $e) {
             Log::error("Erreur lors de la diminution du stock: " . $e->getMessage());
+            Log::error("Trace: " . $e->getTraceAsString());
             return false;
         }
     }
@@ -77,28 +73,10 @@ class StockService
                 return false;
             }
 
-            // Augmenter le stock total du produit
-            $product->quantite_stock += $quantite;
+            // Utiliser la méthode du modèle Product pour augmenter le stock par couleur
+            $nouveauStock = $product->increaseColorStock($couleur, $quantite);
 
-            // Augmenter le stock de la couleur spécifique
-            // Les accesseurs du modèle ont déjà décodé les données en tableaux
-            $stockCouleurs = $product->stock_couleurs;
-            $stockUpdated = false;
-
-            foreach ($stockCouleurs as &$stockColor) {
-                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleur) {
-                    $stockColor['quantity'] = ($stockColor['quantity'] ?? 0) + $quantite;
-                    $stockUpdated = true;
-                    break;
-                }
-            }
-
-            // Sauvegarder les modifications
-            // Les mutateurs du modèle encodent automatiquement les tableaux en JSON
-            $product->stock_couleurs = $stockCouleurs;
-            $product->save();
-
-            Log::info("Stock augmenté pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock total: {$product->quantite_stock}");
+            Log::info("Stock augmenté pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock couleur: {$nouveauStock} - Nouveau stock total: {$product->quantite_stock}");
 
             return true;
         } catch (\Exception $e) {
@@ -165,17 +143,7 @@ class StockService
             }
 
             $stockTotal = $product->quantite_stock;
-            $stockCouleur = 0;
-
-            // Récupérer le stock de la couleur spécifique
-            // Les accesseurs du modèle ont déjà décodé les données en tableaux
-            $stockCouleurs = $product->stock_couleurs;
-            foreach ($stockCouleurs as $stockColor) {
-                if (is_array($stockColor) && isset($stockColor['name']) && $stockColor['name'] === $couleur) {
-                    $stockCouleur = (int) ($stockColor['quantity'] ?? 0);
-                    break;
-                }
-            }
+            $stockCouleur = $product->getStockForColor($couleur);
 
             $sufficientStock = $stockCouleur >= $quantite;
             $sufficientTotalStock = $stockTotal >= $quantite;

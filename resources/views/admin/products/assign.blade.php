@@ -165,12 +165,12 @@
                     <h3 class="text-lg font-medium text-gray-800 mb-4">إعدادات التعيين</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">تمن البيع (MAD)</label>
-                            <input type="number" step="0.01" name="prix_admin"
+                            <label class="block text-sm font-medium text-gray-700">تمن المقترح للبيع (MAD)</label>
+                            <input type="text" name="prix_admin"
                                    value="{{ old('prix_admin', $product->prix_admin) }}"
-                                   placeholder="تمن البيع للمنتج"
+                                   placeholder="مثال: 150-200 أو 150,200,250"
                                    class="mt-1 w-full border rounded px-3 py-2">
-                            <p class="text-xs text-gray-500 mt-1">اتركه فارغًا لاستخدام سعر المنتج</p>
+                            <p class="text-xs text-gray-500 mt-1">يمكنك إدخال سعر واحد أو عدة أسعار مفصولة بفاصلة</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">تمن (MAD)</label>

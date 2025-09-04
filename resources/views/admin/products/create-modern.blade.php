@@ -245,12 +245,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Prix Admin -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">تمن البيع (MAD) *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تمن المقترح للبيع (MAD) *</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-3 text-gray-500">MAD</span>
-                                <input type="number" name="prix_admin" value="{{ old('prix_admin') }}" step="0.01" min="0" required
-                                       placeholder="0.00" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                                <input type="text" name="prix_admin" value="{{ old('prix_admin') }}" required
+                                       placeholder="مثال: 150-200 أو 150,200,250" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
                             </div>
+                            <p class="text-xs text-gray-500 mt-1">يمكنك إدخال سعر واحد أو عدة أسعار مفصولة بفاصلة</p>
                             @error('prix_admin')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror

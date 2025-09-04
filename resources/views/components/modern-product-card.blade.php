@@ -100,18 +100,48 @@
                 </div>
                 <div class="text-center flex-1">
                     <p class="text-gray-600 text-xs">الموزع</p>
-                    <p class="font-bold text-base text-blue-600">{{ $product->prix_admin ?? 0 }} درهم</p>
+                    @php
+                        $prixAdminArray = $product->prix_admin_array ?? [];
+                        $prixAdminDisplay = '';
+                        if (count($prixAdminArray) > 1) {
+                            $prixAdminDisplay = implode(' - ', $prixAdminArray);
+                        } elseif (count($prixAdminArray) == 1) {
+                            $prixAdminDisplay = $prixAdminArray[0];
+                        } else {
+                            $prixAdminDisplay = '0';
+                        }
+                    @endphp
+                    <p class="font-bold text-base text-blue-600">{{ $prixAdminDisplay }} درهم</p>
                 </div>
             </div>
 
             <!-- Marge compacte -->
             @php
-                $marge = ($product->prix_vente ?? 0) - ($product->prix_admin ?? 0);
+                $prixAdminArray = $product->prix_admin_array ?? [];
+                $prixVente = $product->prix_vente ?? 0;
+
+                if (!empty($prixAdminArray)) {
+                    $margeMin = $prixVente - max($prixAdminArray);
+                    $margeMax = $prixVente - min($prixAdminArray);
+
+                    if (count($prixAdminArray) > 1) {
+                        $margeDisplay = $margeMin > 0 ? "+{$margeMin}" : "{$margeMin}";
+                        if ($margeMin != $margeMax) {
+                            $margeDisplay .= " à " . ($margeMax > 0 ? "+{$margeMax}" : "{$margeMax}");
+                        }
+                        $margeDisplay .= " درهم ربح";
+                    } else {
+                        $marge = $prixVente - $prixAdminArray[0];
+                        $margeDisplay = $marge > 0 ? "+{$marge} درهم ربح" : "{$marge} درهم ربح";
+                    }
+                } else {
+                    $margeDisplay = "0 درهم ربح";
+                }
             @endphp
-            @if($marge > 0)
+            @if(!empty($prixAdminArray))
                 <div class="text-center mb-2">
                     <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                        +{{ $marge }} درهم ربح
+                        {{ $margeDisplay }}
                     </span>
                 </div>
             @endif

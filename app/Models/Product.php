@@ -19,6 +19,7 @@ class Product extends Model
         'color_images',
         'hidden_colors',
         'quantite_stock',
+        'stock_couleurs',
         'prix_admin',
         'prix_vente',
         'categorie_id',
@@ -29,8 +30,9 @@ class Product extends Model
         'couleur' => 'array',
         'color_images' => 'array',
         'hidden_colors' => 'array',
+        'stock_couleurs' => 'array',
         'quantite_stock' => 'integer',
-        'prix_admin' => 'decimal:2',
+        'prix_admin' => 'string', // Stocké en JSON mais casté en string
         'prix_vente' => 'decimal:2',
     ];
 
@@ -46,6 +48,59 @@ class Product extends Model
         } else {
             $this->attributes['couleur'] = $value;
         }
+    }
+
+            /**
+     * Accessor pour obtenir le prix moyen des prix admin multiples
+     */
+    public function getPrixAdminMoyenAttribute()
+    {
+        // Décoder le JSON stocké
+        $prixAdminArray = json_decode($this->prix_admin, true);
+
+        if (is_array($prixAdminArray) && !empty($prixAdminArray)) {
+            // Vérifier que tous les éléments sont numériques
+            $numericArray = array_filter($prixAdminArray, function($value) {
+                return is_numeric($value);
+            });
+
+            if (!empty($numericArray)) {
+                return array_sum($numericArray) / count($numericArray);
+            }
+        }
+
+        // Fallback pour les anciens produits avec prix_admin numérique
+        if (is_numeric($this->prix_admin)) {
+            return (float) $this->prix_admin;
+        }
+
+        return (float) $this->prix_vente; // Fallback final
+    }
+
+        /**
+     * Accessor pour obtenir les prix admin sous forme de tableau
+     */
+    public function getPrixAdminArrayAttribute()
+    {
+        $prixAdminArray = json_decode($this->prix_admin, true);
+
+        if (is_array($prixAdminArray) && !empty($prixAdminArray)) {
+            // Filtrer et convertir en nombres
+            $numericArray = array_filter($prixAdminArray, function($value) {
+                return is_numeric($value);
+            });
+
+            if (!empty($numericArray)) {
+                return array_map('floatval', $numericArray);
+            }
+        }
+
+        // Fallback pour les anciens produits avec prix_admin numérique
+        if (is_numeric($this->prix_admin)) {
+            return [(float) $this->prix_admin];
+        }
+
+        return [(float) $this->prix_vente]; // Fallback final
     }
 
     /**
@@ -286,7 +341,8 @@ class Product extends Model
     public function getStockForColor($colorName)
     {
         if (!$this->stock_couleurs || !is_array($this->stock_couleurs)) {
-            return 0;
+            // Si pas de stock_couleurs défini, retourner le stock total
+            return $this->quantite_stock ?? 0;
         }
 
         foreach ($this->stock_couleurs as $colorStock) {
@@ -294,6 +350,8 @@ class Product extends Model
                 return (int) ($colorStock['quantity'] ?? 0);
             }
         }
+
+        // Si la couleur n'est pas trouvée dans stock_couleurs, retourner 0
         return 0;
     }
 
@@ -454,31 +512,41 @@ class Product extends Model
     /**
      * Mettre à jour le stock d'une couleur
      */
-    public function updateColorStock($colorName, $quantity)
+    public function updateColorStock($colorName, $quantity, $save = true)
     {
-        if (!$this->stock_couleurs) {
-            $this->stock_couleurs = [];
+        // Initialiser stock_couleurs si vide
+        if (!$this->stock_couleurs || !is_array($this->stock_couleurs)) {
+            $stockCouleurs = [];
+        } else {
+            // Créer une copie du tableau pour éviter l'erreur de modification indirecte
+            $stockCouleurs = $this->stock_couleurs;
         }
 
         $found = false;
-        foreach ($this->stock_couleurs as &$colorStock) {
+        foreach ($stockCouleurs as $index => $colorStock) {
             if (is_array($colorStock) && isset($colorStock['name']) && $colorStock['name'] === $colorName) {
-                $colorStock['quantity'] = $quantity;
+                $stockCouleurs[$index]['quantity'] = $quantity;
                 $found = true;
                 break;
             }
         }
 
         if (!$found) {
-            $this->stock_couleurs[] = [
+            $stockCouleurs[] = [
                 'name' => $colorName,
                 'quantity' => $quantity
             ];
         }
 
+        // Assigner le nouveau tableau
+        $this->stock_couleurs = $stockCouleurs;
+
         // Mettre à jour le stock total
         $this->quantite_stock = $this->getTotalStockAttribute();
-        $this->save();
+
+        if ($save) {
+            $this->save();
+        }
     }
 
     /**
@@ -486,9 +554,20 @@ class Product extends Model
      */
     public function decreaseColorStock($colorName, $quantity)
     {
+        // Si pas de stock_couleurs défini, créer une entrée basée sur le stock total
+        if (!$this->stock_couleurs || !is_array($this->stock_couleurs) || empty($this->stock_couleurs)) {
+            // Créer une entrée par défaut avec le stock total
+            $this->stock_couleurs = [
+                [
+                    'name' => $colorName,
+                    'quantity' => $this->quantite_stock
+                ]
+            ];
+        }
+
         $currentStock = $this->getStockForColor($colorName);
         $newStock = max(0, $currentStock - $quantity);
-        $this->updateColorStock($colorName, $newStock);
+        $this->updateColorStock($colorName, $newStock, true);
         return $newStock;
     }
 
