@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --brand-primary: #6366f1;
@@ -158,6 +159,73 @@
             color: white;
             font-size: 16px;
         }
+
+        /* Affilook Logo Styles */
+        .affilook-logo {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            background: linear-gradient(45deg, #000000, #1e40af, #3b82f6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .affilook-logo:hover {
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+
+        /* Mobile Menu Animation */
+        .mobile-menu-enter {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .mobile-menu-exit {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .affilook-logo {
+                font-size: 1.5rem;
+            }
+
+            .hero-pattern {
+                padding-top: 80px;
+            }
+        }
     </style>
 </head>
 <body class="dark-mode-bg scroll-smooth">
@@ -165,11 +233,14 @@
     <nav class="fixed top-0 w-full z-50 glass-effect">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <h1 class="text-2xl font-bold text-white">منصة التجارة الإلكترونية</h1>
+                        <div class="affilook-logo text-2xl font-bold text-white">Affilook</div>
                     </div>
                 </div>
+
+                <!-- Desktop Navigation -->
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
                         <a href="#features" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">المميزات</a>
@@ -177,7 +248,9 @@
                         <a href="#contact" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">اتصل بنا</a>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+
+                <!-- Desktop Actions -->
+                <div class="hidden md:flex items-center space-x-4">
                     <!-- Theme Toggle Button -->
                     <div class="theme-toggle" onclick="toggleTheme()">
                         <i id="theme-icon" class="fas fa-moon"></i>
@@ -188,6 +261,34 @@
                     <a href="{{ route('register') }}" class="btn-primary text-white px-6 py-2 rounded-lg text-sm font-medium">
                         إنشاء حساب
                     </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center space-x-2">
+                    <!-- Theme Toggle Button -->
+                    <div class="theme-toggle" onclick="toggleTheme()">
+                        <i id="theme-icon-mobile" class="fas fa-moon"></i>
+                    </div>
+                    <button id="mobile-menu-button" class="text-white hover:text-gray-200 p-2 rounded-md transition-colors">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="md:hidden hidden bg-black/20 backdrop-blur-lg rounded-lg mt-2 p-4">
+                <div class="flex flex-col space-y-3">
+                    <a href="#features" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">المميزات</a>
+                    <a href="#about" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">حولنا</a>
+                    <a href="#contact" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">اتصل بنا</a>
+                    <div class="border-t border-white/20 pt-3 mt-3">
+                        <a href="{{ route('login') }}" class="block text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors mb-2">
+                            تسجيل الدخول
+                        </a>
+                        <a href="{{ route('register') }}" class="block btn-primary text-white px-6 py-2 rounded-lg text-sm font-medium text-center">
+                            إنشاء حساب
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -248,16 +349,39 @@
         function toggleTheme() {
             const body = document.body;
             const themeIcon = document.getElementById('theme-icon');
+            const themeIconMobile = document.getElementById('theme-icon-mobile');
             const currentTheme = body.getAttribute('data-theme');
 
             if (currentTheme === 'dark') {
                 body.removeAttribute('data-theme');
                 themeIcon.className = 'fas fa-moon';
+                themeIconMobile.className = 'fas fa-moon';
                 localStorage.setItem('theme', 'light');
             } else {
                 body.setAttribute('data-theme', 'dark');
                 themeIcon.className = 'fas fa-sun';
+                themeIconMobile.className = 'fas fa-sun';
                 localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuButton = document.getElementById('mobile-menu-button');
+            const icon = menuButton.querySelector('i');
+
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('mobile-menu-enter');
+                icon.className = 'fas fa-times text-xl';
+            } else {
+                mobileMenu.classList.add('mobile-menu-exit');
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('mobile-menu-enter', 'mobile-menu-exit');
+                }, 300);
+                icon.className = 'fas fa-bars text-xl';
             }
         }
 
@@ -265,20 +389,43 @@
         document.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('theme');
             const themeIcon = document.getElementById('theme-icon');
+            const themeIconMobile = document.getElementById('theme-icon-mobile');
 
             // If no theme is saved, default to dark mode
             if (savedTheme === 'light') {
                 document.body.removeAttribute('data-theme');
                 themeIcon.className = 'fas fa-moon';
+                themeIconMobile.className = 'fas fa-moon';
             } else {
                 // Default to dark mode
                 document.body.setAttribute('data-theme', 'dark');
                 themeIcon.className = 'fas fa-sun';
+                themeIconMobile.className = 'fas fa-sun';
                 // Save dark theme as default if no theme was saved
                 if (!savedTheme) {
                     localStorage.setItem('theme', 'dark');
                 }
             }
+
+            // Add event listener to mobile menu button
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', toggleMobileMenu);
+            }
+
+            // Close mobile menu when clicking on a link
+            const mobileMenuLinks = document.querySelectorAll('#mobile-menu a');
+            mobileMenuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    const menuButton = document.getElementById('mobile-menu-button');
+                    const icon = menuButton.querySelector('i');
+
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('mobile-menu-enter', 'mobile-menu-exit');
+                    icon.className = 'fas fa-bars text-xl';
+                });
+            });
         });
 
         // Smooth scrolling for anchor links
@@ -302,6 +449,18 @@
                 nav.classList.add('bg-opacity-95');
             } else {
                 nav.classList.remove('bg-opacity-95');
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuButton = document.getElementById('mobile-menu-button');
+
+            if (!mobileMenu.classList.contains('hidden') &&
+                !mobileMenu.contains(event.target) &&
+                !menuButton.contains(event.target)) {
+                toggleMobileMenu();
             }
         });
     </script>

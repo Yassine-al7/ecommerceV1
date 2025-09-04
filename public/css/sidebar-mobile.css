@@ -20,26 +20,31 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Bouton hamburger corrigé */
+/* Bouton hamburger optimisé pour le header mobile */
 .hamburger-button {
-    position: fixed !important;
-    top: 1rem !important;
-    left: 1rem !important;
-    z-index: 10000 !important;
-    background-color: var(--brand-primary) !important;
+    position: relative !important;
+    z-index: 10001 !important; /* Toujours au-dessus de l'overlay */
+    background-color: rgba(37, 99, 235, 0.8) !important; /* Background bleu */
     color: white !important;
-    padding: 0.75rem !important;
-    border-radius: 0.75rem !important;
+    padding: 0.625rem !important; /* p-2.5 */
+    border-radius: 0.5rem !important;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
     transition: all 0.2s ease !important;
     border: none !important;
     cursor: pointer !important;
+    backdrop-filter: blur(10px) !important;
+    flex-shrink: 0 !important; /* Empêche la compression */
+    min-width: 2.75rem !important; /* Largeur ajustée */
+    height: 2.75rem !important; /* Hauteur ajustée */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .hamburger-button:hover {
-    background-color: var(--brand-secondary) !important;
+    background-color: rgba(29, 78, 216, 0.9) !important; /* Bleu plus foncé au hover */
     transform: scale(1.05) !important;
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4) !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5) !important;
 }
 
 .hamburger-button.sidebar-open {
@@ -74,21 +79,21 @@
     transform: rotate(-45deg) translate(0.3125rem, -0.3125rem) !important;
 }
 
-/* Sidebar Mobile - Position et visibilité corrigées */
+/* Sidebar Mobile - Position et visibilité optimisées */
 #sidebar {
     position: fixed !important;
-    top: 0 !important;
+    top: 4rem !important; /* Ajusté pour le header mobile */
     left: 0 !important;
     right: 0 !important;
     z-index: 9999 !important;
     /* Background gradient handled inline in layout for Option B */
     background-color: transparent !important;
     color: white !important;
-    padding: 1rem !important;
     transition: transform 0.3s ease-in-out !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
-    max-height: 100vh !important;
-    overflow-y: auto !important;
+    max-height: calc(100vh - 4rem) !important; /* Ajusté pour le header */
+    display: flex !important;
+    flex-direction: column !important;
     /* No background image for Option B */
 }
 
@@ -212,6 +217,22 @@
     border-color: rgba(255, 255, 255, 0.2) !important; /* Bordure légèrement plus visible */
 }
 
+/* Contenu principal de la sidebar mobile - Scrollable */
+#sidebar .flex-1 {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+}
+
+/* Section de déconnexion fixe en bas */
+#sidebar .flex-shrink-0 {
+    flex-shrink: 0 !important;
+    padding: 1rem !important;
+    border-top: 1px solid rgba(75, 85, 99, 0.5) !important;
+    background-color: rgba(31, 41, 55, 0.5) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
 /* Navigation du sidebar */
 #sidebar nav {
     margin-top: 1rem !important;
@@ -224,6 +245,7 @@
     transition: background-color 0.2s ease !important;
     display: flex !important;
     align-items: center !important;
+    justify-content: flex-start !important; /* Forcer alignement à gauche */
     text-decoration: none !important;
     position: relative !important;
     border-right: 3px solid transparent !important;
@@ -355,8 +377,63 @@ tr.hover\:bg-gray-50:hover {
     color: #0f172a !important; /* Texte de tableau bien contrasté */
 }
 
-/* Responsive - Cacher sur desktop */
-@media (min-width: 768px) {
+/* Header Mobile Styles */
+header.md\\:hidden {
+    backdrop-filter: blur(10px) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Container du header mobile - Layout optimisé */
+header.md\\:hidden > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    height: 4rem !important; /* h-16 */
+    padding: 0 1rem !important;
+}
+
+/* Logo centré dans le header mobile */
+header.md\\:hidden .flex-1 {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+}
+
+/* Container du bouton hamburger à gauche - Aligné en haut */
+header.md\\:hidden > div > div:first-child {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    height: 100% !important;
+    padding-top: 0.25rem !important; /* pt-1 */
+}
+
+/* Espace vide à droite pour équilibrer */
+header.md\\:hidden > div > div:last-child {
+    width: 3rem !important; /* w-12 */
+    flex-shrink: 0 !important;
+}
+
+/* Logo Mobile dans le header */
+header .affilook-logo {
+    font-size: 1.25rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.1em !important;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5) !important;
+    background: linear-gradient(45deg, #000000, #1e40af, #3b82f6) !important;
+    background-size: 200% 200% !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: gradientShift 3s ease-in-out infinite !important;
+}
+
+/* Responsive - Cacher à partir de grands écrans (>= 1024px) */
+@media (min-width: 1024px) {
     #sidebar {
         display: none !important;
     }
@@ -366,6 +443,10 @@ tr.hover\:bg-gray-50:hover {
     }
 
     .hamburger-button {
+        display: none !important;
+    }
+
+    header.md\\:hidden {
         display: none !important;
     }
 }
@@ -385,22 +466,63 @@ tr.hover\:bg-gray-50:hover {
     }
 }
 
-/* Responsive pour très petits écrans - Bouton parfaitement unifié */
+/* Responsive pour très petits écrans - Optimisation du header */
 @media (max-width: 360px) {
+    /* Header mobile pour très petits écrans */
+    header.md\\:hidden > div {
+        padding: 0 0.75rem !important;
+        height: 3.5rem !important;
+    }
+
+    /* Logo plus petit sur très petits écrans */
+    header .affilook-logo {
+        font-size: 1rem !important;
+    }
+
+    /* Bouton hamburger plus compact */
     .hamburger-button {
-        top: 0.75rem !important;
-        left: 0.75rem !important;
         padding: 0.5rem !important;
-        background-color: #e2e8f0 !important; /* Même couleur unifiée */
-        backdrop-filter: blur(1px) !important; /* Flou minimal */
-        border: 1px solid #cbd5e1 !important; /* Bordure unifiée */
+        min-width: 2.25rem !important;
+        height: 2.25rem !important;
     }
 
-    .hamburger-button:hover {
-        background-color: #cbd5e1 !important; /* Couleur unifiée au survol */
-    }
-
+    /* Lignes du hamburger plus petites */
     .hamburger-line {
-        background-color: #64748b !important; /* Lignes unifiées */
+        width: 1rem !important;
+        height: 0.125rem !important;
+    }
+
+    /* Container du bouton hamburger ajusté */
+    header.md\\:hidden > div > div:first-child {
+        padding-top: 0.125rem !important; /* Ajusté pour très petits écrans */
+    }
+
+    /* Espace vide ajusté pour très petits écrans */
+    header.md\\:hidden > div > div:last-child {
+        width: 2.25rem !important;
+    }
+}
+
+/* Responsive pour écrans moyens - Optimisation du header */
+@media (max-width: 480px) {
+    /* Espacement réduit sur écrans moyens */
+    header.md\\:hidden > div {
+        padding: 0 0.75rem !important;
+        height: 3.75rem !important;
+    }
+
+    /* Logo adaptatif */
+    header .affilook-logo {
+        font-size: 1.125rem !important;
+    }
+
+    /* Container du bouton hamburger ajusté */
+    header.md\\:hidden > div > div:first-child {
+        padding-top: 0.25rem !important; /* Maintenu pour écrans moyens */
+    }
+
+    /* Espace vide ajusté */
+    header.md\\:hidden > div > div:last-child {
+        width: 2.75rem !important;
     }
 }

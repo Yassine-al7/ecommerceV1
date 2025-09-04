@@ -95,139 +95,82 @@
 <body class="gradient-bg vignette-bg min-h-screen">
     <div class="min-h-screen">
         <div class="flex flex-col min-h-screen">
-            <!-- Bouton toggle sidebar mobile -->
-            <button id="sidebarToggle" class="hamburger-button fixed top-4 left-4 z-50 md:hidden brand-bg text-white p-3 rounded-xl shadow-lg hover:scale-105 transition-all duration-200 group">
-                <div class="flex flex-col items-center justify-center w-6 h-6">
-                    <span class="hamburger-line w-6 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100"></span>
-                    <span class="hamburger-line w-6 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
-                    <span class="hamburger-line w-6 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
+                                                <!-- Header Mobile avec Menu à gauche et Logo centré -->
+            <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-lg border-b border-white/20">
+                                <div class="flex items-center justify-between px-4 py-3 h-16">
+                    <!-- Bouton toggle sidebar mobile - À gauche, aligné en haut -->
+                    <div class="flex items-start pt-1">
+                        <button id="sidebarToggle" class="hamburger-button bg-blue-600/80 text-white p-2.5 rounded-lg shadow-lg hover:bg-blue-700/80 transition-all duration-200 group">
+                            <div class="flex flex-col items-center justify-center w-5 h-5">
+                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Logo Mobile - Centré -->
+                    <div class="flex items-center justify-center flex-1">
+                        <div class="affilook-logo text-xl text-white">Affilook</div>
+                    </div>
+
+                    <!-- Espace vide pour équilibrer le layout -->
+                    <div class="w-12"></div>
                 </div>
-            </button>
+            </header>
 
-            <!-- Sidebar Overlay for Mobile -->
-            <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[9998] md:hidden hidden"></div>
-
-
-
-            <!-- Sidebar Mobile (en haut) - UNIQUEMENT sur mobile -->
-            <aside id="sidebar" class="md:hidden fixed top-0 left-0 right-0 z-[9999] text-white p-4 space-y-4 transform -translate-y-full transition-transform duration-300 ease-in-out shadow-2xl max-h-screen overflow-y-auto" style="background: linear-gradient(180deg, #0f172a, #1e293b);">
+            <!-- Menu mobile (style landing) -->
+            <div id="mobileAppMenu" class="lg:hidden hidden bg-black/20 backdrop-blur-lg rounded-lg mt-2 mx-4 p-4 z-[9999]">
                 @auth
                     @if(auth()->user()->isAdmin())
-                        <!-- Navigation Admin Mobile -->
-                        <div class="sidebar-header">
-                            <div class="flex items-center justify-between w-full">
-                                <div class="flex items-center justify-start flex-1">
-                                    <div class="affilook-logo text-3xl">Affilook</div>
-                                </div>
-                                <button id="closeSidebarAdmin" class="text-white hover:text-gray-300 p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0">
-                                    <i class="fas fa-times text-xl"></i>
-                                </button>
-                            </div>
+                        <div class="flex flex-col space-y-2">
+                            <a href="{{ route('admin.dashboard') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
+                            <a href="{{ route('admin.products.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Produits</a>
+                            <a href="{{ route('admin.categories.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Catégories</a>
+                            <a href="{{ route('admin.orders.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Commandes</a>
+                            <a href="{{ route('admin.statistics.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Statistiques</a>
+                            <a href="{{ route('admin.stock.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Stock</a>
+                            <a href="{{ route('admin.invoices.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Facturation</a>
+                            <a href="{{ route('admin.users.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Vendeurs</a>
+                            <a href="{{ route('admin.admins.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Administrateurs</a>
+                            <form method="POST" action="{{ route('logout') }}" class="pt-2 border-t border-white/20">
+                                @csrf
+                                <button type="submit" class="w-full text-left text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.logout') }}</button>
+                            </form>
                         </div>
-                        <nav class="space-y-1">
-                            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-gauge text-lg"></i><span>Dashboard</span>
-                            </a>
-                            <a href="{{ route('admin.products.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-box text-lg"></i><span>Produits</span>
-                            </a>
-                            <a href="{{ route('admin.categories.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-tags text-lg"></i><span>Catégories</span>
-                            </a>
-                            <a href="{{ route('admin.orders.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-list-check text-lg"></i><span>Commandes</span>
-                            </a>
-
-                            <a href="{{ route('admin.statistics.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-chart-bar text-lg"></i><span>Statistiques</span>
-                            </a>
-                            <a href="{{ route('admin.stock.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-boxes text-lg"></i><span>Stock</span>
-                            </a>
-                            <a href="{{ route('admin.invoices.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-file-invoice text-lg"></i><span>Facturation</span>
-                            </a>
-                            <a href="{{ route('admin.users.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-store text-lg"></i><span>Vendeurs</span>
-                            </a>
-                            <a href="{{ route('admin.admins.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-user-shield text-lg"></i><span>Administrateurs</span>
-                            </a>
-                        </nav>
                     @else
-                        <!-- Navigation Vendeur Mobile -->
-                        <div class="sidebar-header">
-                            <div class="flex items-center justify-between w-full">
-                                <div class="flex items-center justify-start flex-1">
-                                    <div class="affilook-logo text-3xl">Affilook</div>
-                                </div>
-                                <button id="closeSidebarSeller" class="text-white hover:text-gray-300 p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0">
-                                    <i class="fas fa-times text-xl"></i>
-                                </button>
-                            </div>
+                        <div class="flex flex-col space-y-2">
+                            <a href="{{ route('seller.dashboard') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
+                            <a href="{{ route('seller.products.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Mes Produits</a>
+                            <div class="border-t border-white/20 my-2"></div>
+                            <a href="{{ route('seller.orders.create') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Nouvelle commande</a>
+                            <a href="{{ route('seller.orders.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Toutes les commandes</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">En attente</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Confirmé</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Livré</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Expédition</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Annulé</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Reporté</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Retourné</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Pas de réponse</a>
+                            <div class="border-t border-white/20 my-2"></div>
+                            <a href="{{ route('seller.invoices.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Facturation</a>
+                            <form method="POST" action="{{ route('logout') }}" class="pt-2 border-t border-white/20">
+                                @csrf
+                                <button type="submit" class="w-full text-left text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.logout') }}</button>
+                            </form>
                         </div>
-                        <nav class="space-y-1">
-                            <a href="{{ route('seller.dashboard') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-gauge text-lg"></i><span>Dashboard</span>
-                            </a>
-                            <a href="{{ route('seller.products.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-box text-lg"></i><span>Mes Produits</span>
-                            </a>
-                            <div class="pt-2">
-                                <h4 class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Commandes</h4>
-                                <div class="space-y-1 ml-2">
-                                    <a href="{{ route('seller.orders.create') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-plus text-blue-400"></i><span>Nouvelle commande</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-list text-gray-400"></i><span>Toutes les commandes</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-clock text-yellow-400"></i><span>En attente</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-check text-blue-400"></i><span>Confirmé</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-check-circle text-green-400"></i><span>Livré</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-shipping-fast text-purple-400"></i><span>Expédition</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-times-circle text-red-400"></i><span>Annulé</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-exclamation-triangle text-orange-400"></i><span>Reporté</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-undo text-gray-400"></i><span>Retourné</span>
-                                    </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                        <i class="fas fa-question-circle text-gray-500"></i><span>Pas de réponse</span>
-                                    </a>
-                                </div>
-                            </div>
-                            <a href="{{ route('seller.invoices.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-file-invoice text-purple-400"></i><span>Facturation</span>
-                            </a>
-                        </nav>
                     @endif
-
-                    <!-- Déconnexion séparé -->
-                    <div class="pt-4 border-t border-gray-700">
-                        <form method="POST" action="{{ route('logout') }}" class="w-full">
-                            @csrf
-                            <button type="submit" class="flex items-center space-x-3 hover:underline w-full text-left text-gray-300 hover:text-white p-3 rounded-lg hover:bg-white/10 transition-colors">
-                                <i class="fas fa-sign-out-alt"></i><span>{{ auth()->check() && auth()->user()->isAdmin() ? __('nav.admin.logout') : __('nav.seller.logout') }}</span>
-                            </button>
-                        </form>
+                @else
+                    <div class="flex flex-col space-y-2">
+                        <a href="{{ route('login') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Login</a>
+                        <a href="{{ route('register') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Register</a>
                     </div>
                 @endauth
-            </aside>
+            </div>
 
             <!-- Sidebar Desktop (à gauche) - UNIQUEMENT sur desktop -->
-            <aside id="sidebarDesktop" class="hidden md:block fixed inset-y-0 left-0 z-40 w-72 p-6 space-y-6 glass-effect overflow-y-auto" style="
+            <aside id="sidebarDesktop" class="hidden lg:block fixed inset-y-0 left-0 z-40 w-72 p-6 space-y-6 glass-effect overflow-y-auto" style="
                 background: linear-gradient(180deg, #0f172a, #1e293b);
                 color: {{ config('branding.sidebar.theme') === 'light' ? '#0a0a0a' : '#ffffff' }};
             ">
@@ -357,7 +300,7 @@
                     </nav>
                 @endauth
             </aside>
-            <main class="flex-1 py-6 px-4 sm:px-6 lg:px-8 transition-all duration-300 md:ml-72">
+            <main class="flex-1 py-6 px-4 sm:px-6 lg:px-8 transition-all duration-300 md:ml-72 pt-20 md:pt-6">
                 <div class="max-w-7xl mx-auto">
                     @yield('content')
                 </div>
@@ -542,125 +485,43 @@
             }
         }, 3000);
 
-        // Sidebar responsive functionality
+        // Mobile dropdown menu (inspired by landing page)
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarDesktop = document.getElementById('sidebarDesktop');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const closeSidebarAdmin = document.getElementById('closeSidebarAdmin');
-            const closeSidebarSeller = document.getElementById('closeSidebarSeller');
+            const mobileAppMenu = document.getElementById('mobileAppMenu');
 
-            // Fonction pour fermer le sidebar
-            function closeSidebarFunction() {
-                sidebar.classList.add('-translate-y-full');
-                sidebarOverlay.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-                sidebarToggle.classList.remove('sidebar-open');
-                // Permettre de cliquer sur le fond
-                document.body.style.pointerEvents = 'auto';
-                sidebarOverlay.style.pointerEvents = 'none';
-            }
+            if (!sidebarToggle || !mobileAppMenu) return;
 
-            // Fonction pour ouvrir le sidebar
-            function openSidebarFunction() {
-                sidebar.classList.remove('-translate-y-full');
-                sidebarOverlay.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-                sidebarToggle.classList.add('sidebar-open');
-                // Permettre de cliquer sur le sidebar mais pas sur le fond
-                document.body.style.pointerEvents = 'auto';
-                sidebarOverlay.style.pointerEvents = 'auto';
-            }
-
-            // Toggle sidebar mobile (slide down from top)
-            sidebarToggle.addEventListener('click', function() {
-                const isOpen = !sidebar.classList.contains('-translate-y-full');
-
-                if (isOpen) {
-                    // Fermer le sidebar
-                    closeSidebarFunction();
+            function toggleMobileMenu() {
+                if (mobileAppMenu.classList.contains('hidden')) {
+                    mobileAppMenu.classList.remove('hidden');
+                    sidebarToggle.classList.add('sidebar-open');
                 } else {
-                    // Ouvrir le sidebar
-                    openSidebarFunction();
-                }
-            });
-
-            // Close sidebar with close button
-            if (closeSidebarAdmin) {
-                closeSidebarAdmin.addEventListener('click', function() {
-                    closeSidebarFunction();
-                });
-            }
-            if (closeSidebarSeller) {
-                closeSidebarSeller.addEventListener('click', function() {
-                    closeSidebarFunction();
-                });
-            }
-
-            // Close sidebar when clicking overlay
-            sidebarOverlay.addEventListener('click', function(e) {
-                // Fermer seulement si on clique sur l'overlay lui-même, pas sur le sidebar
-                if (e.target === sidebarOverlay) {
-                    closeSidebarFunction();
-                }
-            });
-
-            // Close sidebar on escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeSidebarFunction();
-                }
-            });
-
-            // Close sidebar on window resize (if going from mobile to desktop)
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 768) { // md breakpoint
-                    closeSidebarFunction();
-                } else {
-                    sidebar.classList.add('-translate-y-full');
-                }
-            });
-
-            // Auto-close sidebar when clicking on a link (mobile)
-            const sidebarLinks = sidebar.querySelectorAll('a');
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 768) {
-                        // Fermer le sidebar après un court délai pour permettre la navigation
-                        setTimeout(() => {
-                            closeSidebarFunction();
-                        }, 100);
-                    }
-                });
-            });
-
-            // Permettre de cliquer sur le fond quand le sidebar est fermé
-            function enableBackgroundClicks() {
-                if (sidebar.classList.contains('-translate-y-full')) {
-                    document.body.style.pointerEvents = 'auto';
-                    sidebarOverlay.style.pointerEvents = 'none';
-                } else {
-                    document.body.style.pointerEvents = 'auto';
-                    sidebarOverlay.style.pointerEvents = 'auto';
+                    mobileAppMenu.classList.add('hidden');
+                    sidebarToggle.classList.remove('sidebar-open');
                 }
             }
 
-            // Vérifier l'état initial
-            enableBackgroundClicks();
-
-            // Observer les changements de classe pour le sidebar
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        enableBackgroundClicks();
-                    }
-                });
+            sidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMobileMenu();
             });
 
-            observer.observe(sidebar, {
-                attributes: true,
-                attributeFilter: ['class']
+            // Close on outside click
+            document.addEventListener('click', function(event) {
+                const clickedInside = mobileAppMenu.contains(event.target) || sidebarToggle.contains(event.target);
+                if (!clickedInside && !mobileAppMenu.classList.contains('hidden')) {
+                    mobileAppMenu.classList.add('hidden');
+                    sidebarToggle.classList.remove('sidebar-open');
+                }
+            });
+
+            // Close on link click
+            mobileAppMenu.querySelectorAll('a, button[type="submit"]').forEach(el => {
+                el.addEventListener('click', function() {
+                    mobileAppMenu.classList.add('hidden');
+                    sidebarToggle.classList.remove('sidebar-open');
+                });
             });
         });
     </script>
