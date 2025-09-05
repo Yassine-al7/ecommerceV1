@@ -12,11 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pending_registrations', function (Blueprint $table) {
-            // Supprimer les anciennes colonnes
-            $table->dropColumn(['name', 'password_hash', 'code']);
+            // Supprimer les anciennes colonnes si elles existent
+            if (Schema::hasColumn('pending_registrations', 'name')) {
+                $table->dropColumn('name');
+            }
+            if (Schema::hasColumn('pending_registrations', 'password_hash')) {
+                $table->dropColumn('password_hash');
+            }
+            if (Schema::hasColumn('pending_registrations', 'code')) {
+                $table->dropColumn('code');
+            }
 
-            // Ajouter la nouvelle colonne verification_code
-            $table->string('verification_code', 6)->after('email');
+            // Ajouter la nouvelle colonne verification_code si elle n'existe pas
+            if (!Schema::hasColumn('pending_registrations', 'verification_code')) {
+                $table->string('verification_code', 6)->after('email');
+            }
         });
     }
 
