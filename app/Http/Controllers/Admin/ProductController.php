@@ -51,18 +51,23 @@ class ProductController extends Controller
 
                 // Log détaillé de chaque couleur et son stock
                 foreach ($stockCouleurs as $index => $stock) {
-                    Log::info("  📊 Couleur {$index}: {$stock['name']} = {$stock['quantity']} unités");
+                    // Vérifier que $stock est un array avec les bonnes clés
+                    if (is_array($stock) && isset($stock['name']) && isset($stock['quantity'])) {
+                        Log::info("  📊 Couleur {$index}: {$stock['name']} = {$stock['quantity']} unités");
 
-                    if ($stock['quantity'] > 0) {
-                        // Conserver la couleur et son stock
-                        $stockCouleursFiltres[] = $stock;
+                        if ($stock['quantity'] > 0) {
+                            // Conserver la couleur et son stock
+                            $stockCouleursFiltres[] = $stock;
 
-                        // Trouver la couleur correspondante
-                        if (isset($couleurs[$index])) {
-                            $couleursFiltrees[] = $couleurs[$index];
+                            // Trouver la couleur correspondante
+                            if (isset($couleurs[$index])) {
+                                $couleursFiltrees[] = $couleurs[$index];
+                            }
+                        } else {
+                            Log::info("  ❌ Couleur {$stock['name']} filtrée (stock ≤ 0)");
                         }
                     } else {
-                        Log::info("  ❌ Couleur {$stock['name']} filtrée (stock ≤ 0)");
+                        Log::warning("  ⚠️ Structure de stock invalide pour l'index {$index}: " . json_encode($stock));
                     }
                 }
 

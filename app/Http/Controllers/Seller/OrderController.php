@@ -124,7 +124,11 @@ class OrderController extends Controller
                                 }
                             }
                         } else {
-                            \Log::info("🗑️ Couleur filtrée pour {$product->name}: {$stock['name']} (visible: " . ($isVisible ? 'oui' : 'non') . ", stock: {$stock['quantity']})");
+                            if (is_array($stock) && isset($stock['name']) && isset($stock['quantity'])) {
+                                \Log::info("🗑️ Couleur filtrée pour {$product->name}: {$stock['name']} (visible: " . ($isVisible ? 'oui' : 'non') . ", stock: {$stock['quantity']})");
+                            } else {
+                                \Log::warning("⚠️ Structure de stock invalide pour {$product->name}: " . json_encode($stock));
+                            }
                         }
                     }
 
