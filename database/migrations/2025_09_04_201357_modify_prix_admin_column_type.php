@@ -15,7 +15,9 @@ return new class extends Migration
     public function up()
     {
         // Changer le type de colonne de decimal à text pour stocker du JSON
-        DB::statement('ALTER TABLE produits MODIFY COLUMN prix_admin TEXT');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->text('prix_admin')->change();
+        });
     }
 
     /**
@@ -26,6 +28,8 @@ return new class extends Migration
     public function down()
     {
         // Revenir au type decimal (attention: peut causer des erreurs si des données JSON existent)
-        DB::statement('ALTER TABLE produits MODIFY COLUMN prix_admin DECIMAL(8,2)');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->decimal('prix_admin', 8, 2)->change();
+        });
     }
 };

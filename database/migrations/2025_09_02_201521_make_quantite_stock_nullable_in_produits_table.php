@@ -15,7 +15,9 @@ return new class extends Migration
     public function up()
     {
         // Rendre quantite_stock nullable car il sera calculé automatiquement
-        DB::statement('ALTER TABLE produits MODIFY COLUMN quantite_stock INT NULL');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->integer('quantite_stock')->nullable()->change();
+        });
     }
 
     /**
@@ -26,6 +28,8 @@ return new class extends Migration
     public function down()
     {
         // Revenir à la version précédente (non nullable)
-        DB::statement('ALTER TABLE produits MODIFY COLUMN quantite_stock INT NOT NULL');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->integer('quantite_stock')->nullable(false)->change();
+        });
     }
 };
