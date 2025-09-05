@@ -18,6 +18,7 @@ class ProductTest extends TestCase
             'quantite_stock' => 100,
             'prix_vente' => 50.00,
             'categorie_id' => 1,
+            'image' => 'test-image.jpg',
         ]);
 
         $this->assertInstanceOf(Product::class, $product);
@@ -34,6 +35,7 @@ class ProductTest extends TestCase
             'quantite_stock' => 50,
             'prix_vente' => 50.00,
             'categorie_id' => 1,
+            'image' => 'test-image.jpg',
         ]);
 
         $stock = $product->getStockForColor('Red');
@@ -49,6 +51,7 @@ class ProductTest extends TestCase
             'quantite_stock' => 50,
             'prix_vente' => 50.00,
             'categorie_id' => 1,
+            'image' => 'test-image.jpg',
         ]);
 
         $newStock = $product->decreaseColorStock('Red', 10);
@@ -67,6 +70,7 @@ class ProductTest extends TestCase
             'quantite_stock' => 30,
             'prix_vente' => 40.00,
             'categorie_id' => 1,
+            'image' => 'test-image.jpg',
         ]);
 
         $newStock = $product->increaseColorStock('Blue', 5);

@@ -27,6 +27,7 @@ class StockServiceTest extends TestCase
             'quantite_stock' => 100,
             'prix_vente' => 50.00,
             'categorie_id' => $category->id,
+            'image' => 'test-image.jpg',
         ]);
 
         // Test stock decrease
@@ -57,6 +58,7 @@ class StockServiceTest extends TestCase
             'quantite_stock' => 50,
             'prix_vente' => 30.00,
             'categorie_id' => $category->id,
+            'image' => 'test-image.jpg',
         ]);
 
         // Test stock increase
@@ -87,6 +89,7 @@ class StockServiceTest extends TestCase
             'quantite_stock' => 20,
             'prix_vente' => 25.00,
             'categorie_id' => $category->id,
+            'image' => 'test-image.jpg',
         ]);
 
         // Test stock availability
