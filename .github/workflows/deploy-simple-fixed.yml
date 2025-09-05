@@ -40,7 +40,7 @@ jobs:
       if: ${{ secrets.FTP_SERVER != '' }}
       with:
         server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
+        username: ${{ secrets.FTP_USERNAME }} 
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
         server-dir: ${{ secrets.FTP_REMOTE_DIR || './' }}
@@ -59,6 +59,10 @@ jobs:
           storage/framework/cache/*
           storage/framework/sessions/*
           storage/framework/views/*
+      env:
+        COMPOSER_PROCESS_TIMEOUT: 0
+        COMPOSER_NO_INTERACTION: 1
+        COMPOSER_NO_AUDIT: 1
 
     - name: 🚀 Deploy via SSH (VPS/Dedicated)
       uses: appleboy/ssh-action@v1.0.0
@@ -70,38 +74,38 @@ jobs:
         port: ${{ secrets.SERVER_PORT || 22 }}
         script: |
           cd ${{ secrets.PROJECT_PATH }}
-          
+
           echo "🔄 Starting deployment..."
-          
+
           # Backup current .env
           if [ -f ".env" ]; then
             cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
           fi
-          
+
           # Pull latest changes
           git pull origin main || git pull origin master
-          
+
           # Install dependencies
           composer install --no-dev --optimize-autoloader
-          
+
           # Clear caches
           php artisan config:clear
           php artisan cache:clear
           php artisan view:clear
           php artisan route:clear
-          
+
           # Run migrations
           php artisan migrate --force
-          
+
           # Optimize
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
-          
+
           # Set permissions
           chmod -R 755 storage bootstrap/cache
           chown -R www-data:www-data storage bootstrap/cache || chown -R apache:apache storage bootstrap/cache || echo "Permissions not changed"
-          
+
           echo "✅ Deployment completed successfully!"
 
     - name: 📞 Notify deployment
