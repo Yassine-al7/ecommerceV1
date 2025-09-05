@@ -1,0 +1,40 @@
+/* App CSS - Fallback styles */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-link.active {
+    background-color: rgba(59, 130, 246, 0.2);
+    border-left: 4px solid #3b82f6;
+}
+
+.hamburger-button {
+    transition: all 0.3s ease;
+}
+
+.hamburger-button.sidebar-open .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger-button.sidebar-open .hamburger-line:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-button.sidebar-open .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .sidebar-desktop {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .mobile-only {
+        display: none !important;
+    }
+}

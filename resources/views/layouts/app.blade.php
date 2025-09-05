@@ -37,7 +37,9 @@
             transition: all 0.3s ease;
         }
     </style>
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/sidebar-mobile.css') }}" rel="stylesheet">
+    <link href="{{ asset('build/assets/app-tn0RQdqM.css') }}" rel="stylesheet">
     <style>
         :root {
             --brand-primary: {{ config('branding.primary') }};
@@ -322,7 +324,8 @@
     @endif
 
     <!-- Scripts -->
-    {{-- Script app.js supprimé car non nécessaire --}}
+    <script src="{{ asset('build/assets/app-CFKfjhs2.js') }}"></script>
+    <script src="{{ asset('js/admin-messages.js') }}"></script>
 
     <!-- Gestion des Messages Admin -->
     <script>
