@@ -1061,9 +1061,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateOrderTotal();
 });
 
-// =========================
 // Add-on: Safe new-row init + sum-based stock checks (non-intrusive)
-// =========================
 
 function getRowIndexFromEl(el) {
     const row = el.closest('tr.product-row');
