@@ -37,9 +37,8 @@
             transition: all 0.3s ease;
         }
     </style>
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="{{ asset('css/sidebar-mobile.css') }}" rel="stylesheet">
-    <link href="{{ asset('build/assets/app.css') }}" rel="stylesheet">
 
     <!-- Fallback CSS inline -->
     <style>
