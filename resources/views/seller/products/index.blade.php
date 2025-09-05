@@ -40,7 +40,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('seller_products.stats.value') }}</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($products->sum('prix_vente'), 2) }} MAD</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$products->sum('prix_vente'), 2) }} MAD</p>
                     </div>
                 </div>
             </div>

@@ -12,7 +12,7 @@
         <div><strong>Adresse:</strong> {{ $order->adresse_client }}</div>
         <div><strong>Téléphone:</strong> {{ $order->numero_telephone_client }}</div>
         <div><strong>Statut:</strong> {{ $order->status }}</div>
-        <div><strong>Prix commande:</strong> {{ number_format($order->prix_commande, 2) }} €</div>
+        <div><strong>Prix commande:</strong> {{ number_format((float)$order->prix_commande, 2) }} €</div>
         <div><strong>Produits:</strong>
             <div class="bg-gray-50 p-4 rounded border mt-2">
                 @php
@@ -35,12 +35,12 @@
                                     <div>
                                         <h4 class="font-medium text-gray-900">{{ $productName }}</h4>
                                         <p class="text-sm text-gray-500">Catégorie: {{ $category }}</p>
-                                        <p class="text-sm text-gray-500">Prix unitaire: {{ number_format($price, 0) }} MAD</p>
+                                        <p class="text-sm text-gray-500">Prix unitaire: {{ number_format((float)$price, 0) }} MAD</p>
                                         <p class="text-sm text-gray-500">Taille: {{ $order->taille_produit }}</p>
                                     </div>
                                     <div class="text-right">
                                         <p class="font-medium text-gray-900">Quantité: {{ $produit['qty'] }}</p>
-                                        <p class="text-sm text-green-600 font-medium">Total: {{ number_format($totalPrice, 0) }} MAD</p>
+                                        <p class="text-sm text-green-600 font-medium">Total: {{ number_format((float)$totalPrice, 0) }} MAD</p>
                                     </div>
                                 </div>
                             @endif

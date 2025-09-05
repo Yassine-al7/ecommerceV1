@@ -32,7 +32,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Chiffre d'Affaires</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalRevenue, 2) }} MAD</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalRevenue, 2) }} MAD</p>
                     </div>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Bénéfices Payés</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalBeneficesPayes, 2) }} MAD</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalBeneficesPayes, 2) }} MAD</p>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Bénéfices à Recevoir</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalBeneficesNonPayes, 2) }} MAD</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalBeneficesNonPayes, 2) }} MAD</p>
                     </div>
                 </div>
             </div>
@@ -110,10 +110,10 @@
                                         {{ \Carbon\Carbon::parse($order->updated_at)->format('d/m/Y H:i') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                        {{ number_format($order->prix_commande, 2) }} MAD
+                                        {{ number_format((float)$order->prix_commande, 2) }} MAD
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">
-                                        {{ number_format($order->marge_benefice, 2) }} MAD
+                                        {{ number_format((float)$order->marge_benefice, 2) }} MAD
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($order->facturation_status == 'payé')

@@ -266,7 +266,7 @@
                                         </span>
                                     </td>
                                     <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ number_format($order->prix_commande, 2) }} MAD
+                                        {{ number_format((float)$order->prix_commande, 2) }} MAD
                                     </td>
                                     <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $order->created_at->format('d/m/Y H:i') }}

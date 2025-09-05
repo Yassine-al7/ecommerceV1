@@ -31,7 +31,7 @@
                         <tr>
                             <td class="py-2 px-4 border-b">{{ $invoice->id }}</td>
                             <td class="py-2 px-4 border-b">{{ $invoice->created_at->format('d/m/Y') }}</td>
-                            <td class="py-2 px-4 border-b">{{ number_format($invoice->amount, 2, ',', ' ') }} €</td>
+                            <td class="py-2 px-4 border-b">{{ number_format((float)$invoice->amount, 2, ',', ' ') }} €</td>
                             <td class="py-2 px-4 border-b">{{ $invoice->status }}</td>
                             <td class="py-2 px-4 border-b">
                                 <a href="{{ route('seller.invoices.show', $invoice->id) }}" class="text-blue-500">Voir</a>

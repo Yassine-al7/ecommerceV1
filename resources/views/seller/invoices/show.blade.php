@@ -57,7 +57,7 @@
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p class="font-semibold text-gray-900">{{ number_format($produit['prix_vente_client'] ?? 0, 2) }} MAD</p>
+                                <p class="font-semibold text-gray-900">{{ number_format((float)($produit['prix_vente_client'] ?? 0), 2) }} MAD</p>
                             </div>
                         </div>
                     @endforeach
@@ -73,11 +73,11 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center py-2 border-b border-gray-100">
                     <span class="text-gray-600">Prix Total Commande:</span>
-                    <span class="font-semibold text-gray-900">{{ number_format($order->prix_commande, 2) }} MAD</span>
+                    <span class="font-semibold text-gray-900">{{ number_format((float)$order->prix_commande, 2) }} MAD</span>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-gray-100">
                     <span class="text-gray-600">Marge Bénéfice:</span>
-                    <span class="font-semibold text-emerald-600">{{ number_format($order->marge_benefice, 2) }} MAD</span>
+                    <span class="font-semibold text-emerald-600">{{ number_format((float)$order->marge_benefice, 2) }} MAD</span>
                 </div>
                 <div class="flex justify-between items-center py-2">
                     <span class="text-gray-600">Statut Paiement:</span>
