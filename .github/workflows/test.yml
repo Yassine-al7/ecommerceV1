@@ -10,15 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test_db
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - name: 📥 Checkout code
@@ -49,12 +40,8 @@ jobs:
         APP_KEY=base64:$(openssl rand -base64 32)
         APP_DEBUG=true
         APP_URL=http://localhost
-        DB_CONNECTION=mysql
-        DB_HOST=127.0.0.1
-        DB_PORT=3306
-        DB_DATABASE=test_db
-        DB_USERNAME=root
-        DB_PASSWORD=root
+        DB_CONNECTION=sqlite
+        DB_DATABASE=database/testing.sqlite
         CACHE_DRIVER=array
         SESSION_DRIVER=array
         QUEUE_CONNECTION=sync
@@ -63,37 +50,14 @@ jobs:
     - name: 🔑 Generate application key
       run: php artisan key:generate --force
 
-    - name: ⏳ Wait for MySQL
-      run: |
-        echo "Waiting for MySQL to be ready..."
-        for i in {1..30}; do
-          if mysql -h 127.0.0.1 -P 3306 -u root -proot -e "SELECT 1" >/dev/null 2>&1; then
-            echo "MySQL is ready!"
-            break
-          fi
-          echo "Waiting for MySQL... ($i/30)"
-          sleep 2
-        done
+    - name: 🗃️ Create SQLite database
+      run: touch database/testing.sqlite
 
     - name: 🗃️ Run database migrations
       run: php artisan migrate --force
-      env:
-        DB_CONNECTION: mysql
-        DB_HOST: 127.0.0.1
-        DB_PORT: 3306
-        DB_DATABASE: test_db
-        DB_USERNAME: root
-        DB_PASSWORD: root
 
     - name: 🧪 Run tests
       run: php artisan test --verbose
-      env:
-        DB_CONNECTION: mysql
-        DB_HOST: 127.0.0.1
-        DB_PORT: 3306
-        DB_DATABASE: test_db
-        DB_USERNAME: root
-        DB_PASSWORD: root
 
     - name: 📊 Upload coverage reports
       uses: codecov/codecov-action@v3
