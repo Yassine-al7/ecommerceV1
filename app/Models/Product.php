@@ -356,6 +356,47 @@ class Product extends Model
     }
 
     /**
+     * Obtenir les couleurs visibles (excluant les couleurs masquées)
+     */
+    public function getVisibleColorsAttribute()
+    {
+        $couleurs = $this->couleur;
+        $hiddenColors = $this->hidden_colors ?? [];
+        
+        if (empty($couleurs)) {
+            return [];
+        }
+        
+        // Décoder les couleurs si c'est un JSON
+        if (is_string($couleurs)) {
+            $couleurs = json_decode($couleurs, true) ?? [];
+        }
+        
+        if (!is_array($couleurs)) {
+            return [];
+        }
+        
+        // Filtrer les couleurs masquées
+        $visibleColors = [];
+        foreach ($couleurs as $couleur) {
+            if (is_array($couleur) && isset($couleur['name'])) {
+                $colorName = $couleur['name'];
+            } elseif (is_string($couleur)) {
+                $colorName = $couleur;
+            } else {
+                continue;
+            }
+            
+            // Vérifier si la couleur n'est pas masquée
+            if (!in_array($colorName, $hiddenColors)) {
+                $visibleColors[] = $couleur;
+            }
+        }
+        
+        return $visibleColors;
+    }
+
+    /**
      * Obtenir les images pour une couleur spécifique
      */
     public function getImagesForColor($colorName)

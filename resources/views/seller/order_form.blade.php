@@ -614,50 +614,41 @@ function setupProductEvents(productItem) {
             if (colorSelect) {
                 colorSelect.innerHTML = '<option value="">Sélectionnez une couleur</option>';
 
-                // Récupérer les couleurs du produit depuis la base de données
+                                    // Récupérer les couleurs du produit depuis la base de données
                 const productId = selectedOption.value;
                 const product = productsData.find(p => p.id == productId);
 
                 if (product) {
                     console.log('🔍 Données complètes du produit:', product);
                     console.log('🔍 Champ quantite_stock:', product.quantite_stock);
-                    console.log('🔍 Champ stock_couleurs:', product.stock_couleurs);
-                    console.log('🔍 Champ couleur:', product.couleur);
+                    console.log('🔍 Champ stock_couleurs_filtre:', product.stock_couleurs_filtre);
+                    console.log('🔍 Champ couleur_filtree:', product.couleur_filtree);
 
                     let couleurs = [];
 
-                                        // Essayer d'abord stock_couleurs
-                    if (product.stock_couleurs) {
+                    // Utiliser les couleurs filtrées (sans les couleurs masquées)
+                    if (product.stock_couleurs_filtre && product.stock_couleurs_filtre.length > 0) {
+                        console.log('✅ Utilisation des couleurs filtrées (sans couleurs masquées)');
+                        couleurs = product.stock_couleurs_filtre.map(sc => ({
+                            name: sc.name,
+                            quantity: sc.quantity || 0
+                        }));
+                        console.log('✅ Couleurs filtrées:', couleurs);
+                    } else if (product.stock_couleurs) {
+                        // Fallback sur stock_couleurs si pas de filtrage
                         try {
                             const stockCouleurs = typeof product.stock_couleurs === 'string'
                                 ? JSON.parse(product.stock_couleurs)
                                 : product.stock_couleurs;
 
-                            console.log('🔍 Debug stock_couleurs:', stockCouleurs);
-                            console.log('🔍 Type stock_couleurs:', typeof stockCouleurs);
-                            console.log('🔍 Est un tableau:', Array.isArray(stockCouleurs));
-                            console.log('🔍 Contenu brut stock_couleurs:', JSON.stringify(product.stock_couleurs));
-                            console.log('🔍 Contenu parsé stock_couleurs:', JSON.stringify(stockCouleurs));
+                            console.log('🔍 Debug stock_couleurs (fallback):', stockCouleurs);
 
                             if (Array.isArray(stockCouleurs)) {
-                                // Récupérer le stock total du produit
-                                const stockTotal = product.quantite_stock || 0;
-                                console.log('🔍 Stock total du produit:', stockTotal);
-                                console.log('🔍 Champ quantite_stock:', product.quantite_stock);
-
-                                couleurs = stockCouleurs.map(sc => {
-                                    let quantity = sc.quantity || 0;
-                                    console.log(`🔍 Couleur ${sc.name}: stock original = ${sc.quantity}, stock total = ${stockTotal}`);
-
-                                    // Utiliser le stock réel de la couleur (pas de fallback)
-                                    console.log(`✅ Stock utilisé pour ${sc.name}: ${quantity} (stock réel)`);
-
-                                    return {
-                                        name: sc.name,
-                                        quantity: quantity
-                                    };
-                                });
-                                console.log(`✅ Couleurs trouvées dans stock_couleurs:`, couleurs);
+                                couleurs = stockCouleurs.map(sc => ({
+                                    name: sc.name,
+                                    quantity: sc.quantity || 0
+                                }));
+                                console.log(`✅ Couleurs trouvées dans stock_couleurs (fallback):`, couleurs);
                             }
                         } catch (error) {
                             console.error('❌ Erreur lors du parsing de stock_couleurs:', error);
