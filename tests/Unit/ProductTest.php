@@ -10,6 +10,18 @@ class ProductTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create a test category
+        \App\Models\Category::create([
+            'name' => 'Test Category',
+            'description' => 'Test category for testing',
+            'is_active' => true,
+        ]);
+    }
+
     public function test_can_create_product()
     {
         $product = Product::create([
