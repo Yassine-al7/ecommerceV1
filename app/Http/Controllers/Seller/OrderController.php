@@ -71,8 +71,14 @@ class OrderController extends Controller
 
                 // 🆕 FILTRER LES COULEURS MASQUÉES ET AVEC STOCK = 0 POUR LES VENDEURS
         foreach ($products as $product) {
+            // Initialiser les propriétés de filtrage
+            $product->couleur_filtree = [];
+            $product->stock_couleurs_filtre = [];
+
             // Utiliser les couleurs visibles (excluant les couleurs masquées)
-            $visibleColors = $product->visible_colors ?? [];
+            $visibleColors = $product->visible_colors;
+
+
 
             // Si pas de stock_couleurs, créer des données par défaut basées sur les couleurs visibles
             if (empty($product->stock_couleurs) && !empty($visibleColors)) {
@@ -87,14 +93,14 @@ class OrderController extends Controller
                 }
 
                 $product->stock_couleurs = $stockCouleurs;
-                \Log::info("Stock par défaut créé pour {$product->name}: " . json_encode($stockCouleurs));
+                // \Log::info("Stock par défaut créé pour {$product->name}: " . json_encode($stockCouleurs));
             }
 
             // 🆕 FILTRER LES COULEURS AVEC STOCK ≤ 0 (en plus des couleurs masquées)
             if (!empty($product->stock_couleurs)) {
                 // Les accesseurs du modèle ont déjà décodé les données en tableaux
                 $stockCouleurs = $product->stock_couleurs;
-                $visibleColors = $product->visible_colors ?? [];
+                $visibleColors = $product->visible_colors;
 
                 if (is_array($stockCouleurs) && is_array($visibleColors)) {
                     $couleursFiltrees = [];
@@ -111,7 +117,7 @@ class OrderController extends Controller
                             }
                         }
 
-                        if ($isVisible && $stock['quantity'] > 0) {
+                        if ($isVisible) {
                             // Conserver la couleur et son stock
                             $stockCouleursFiltres[] = $stock;
 
@@ -125,7 +131,7 @@ class OrderController extends Controller
                             }
                         } else {
                             if (is_array($stock) && isset($stock['name']) && isset($stock['quantity'])) {
-                                \Log::info("🗑️ Couleur filtrée pour {$product->name}: {$stock['name']} (visible: " . ($isVisible ? 'oui' : 'non') . ", stock: {$stock['quantity']})");
+                                // \Log::info("🗑️ Couleur filtrée pour {$product->name}: {$stock['name']} (visible: " . ($isVisible ? 'oui' : 'non') . ", stock: {$stock['quantity']})");
                             } else {
                                 \Log::warning("⚠️ Structure de stock invalide pour {$product->name}: " . json_encode($stock));
                             }
@@ -135,6 +141,8 @@ class OrderController extends Controller
                     // Mettre à jour les attributs du produit pour l'affichage
                     $product->couleur = $couleursFiltrees;
                     $product->stock_couleurs = $stockCouleursFiltres;
+                    $product->couleur_filtree = $couleursFiltrees;
+                    $product->stock_couleurs_filtre = $stockCouleursFiltres;
 
                     \Log::info("🎨 Filtrage des couleurs pour {$product->name}:", [
                         'couleurs_visibles' => count($visibleColors),
@@ -151,25 +159,29 @@ class OrderController extends Controller
                 $product->stock_couleurs = [
                     ['name' => 'Couleur unique', 'quantity' => $product->quantite_stock ?? 10]
                 ];
-                \Log::info("Couleur par défaut créée pour {$product->name}: Couleur unique");
+                $product->couleur_filtree = ['Couleur unique'];
+                $product->stock_couleurs_filtre = [
+                    ['name' => 'Couleur unique', 'quantity' => $product->quantite_stock ?? 10]
+                ];
+                // \Log::info("Couleur par défaut créée pour {$product->name}: Couleur unique");
             }
 
-            // Debug des données finales
-            \Log::info("Produit {$product->name} - Données finales:");
-            \Log::info("  - Couleur: " . json_encode($product->couleur));
-            \Log::info("  - Stock couleurs: " . json_encode($product->stock_couleurs));
-            \Log::info("  - Tailles: " . json_encode($product->tailles));
+            // Debug des données finales (désactivé en production)
+            // \Log::info("Produit {$product->name} - Données finales:");
+            // \Log::info("  - Couleur: " . json_encode($product->couleur));
+            // \Log::info("  - Stock couleurs: " . json_encode($product->stock_couleurs));
+            // \Log::info("  - Tailles: " . json_encode($product->tailles));
         }
 
-        // Debug des tailles et catégories pour vérifier ce qui est récupéré
-        foreach ($products as $product) {
-            \Log::info("Produit {$product->name} (ID: {$product->id}) - Tailles dans create(): " . json_encode($product->tailles));
-            \Log::info("Produit {$product->name} (ID: {$product->id}) - Couleurs dans create(): " . json_encode($product->couleur));
-            \Log::info("Produit {$product->name} (ID: {$product->id}) - Stock couleurs dans create(): " . json_encode($product->stock_couleurs));
-            \Log::info("Produit {$product->name} (ID: {$product->id}) - Quantité stock: " . ($product->quantite_stock ?? 'Aucune'));
-            \Log::info("Produit {$product->name} (ID: {$product->id}) - Catégorie ID: " . ($product->categorie_id ?? 'Aucune'));
-            \Log::info("Produit {$product->name} (ID: {$product->id}) - Relation Category: " . json_encode($product->category ?? 'Aucune'));
-        }
+        // Debug des tailles et catégories pour vérifier ce qui est récupéré (désactivé en production)
+        // foreach ($products as $product) {
+        //     \Log::info("Produit {$product->name} (ID: {$product->id}) - Tailles dans create(): " . json_encode($product->tailles));
+        //     \Log::info("Produit {$product->name} (ID: {$product->id}) - Couleurs dans create(): " . json_encode($product->couleur));
+        //     \Log::info("Produit {$product->name} (ID: {$product->id}) - Stock couleurs dans create(): " . json_encode($product->stock_couleurs));
+        //     \Log::info("Produit {$product->name} (ID: {$product->id}) - Quantité stock: " . ($product->quantite_stock ?? 'Aucune'));
+        //     \Log::info("Produit {$product->name} (ID: {$product->id}) - Catégorie ID: " . ($product->categorie_id ?? 'Aucune'));
+        //     \Log::info("Produit {$product->name} (ID: {$product->id}) - Relation Category: " . json_encode($product->category ?? 'Aucune'));
+        // }
 
         return view('seller.order_form', compact('products'));
     }
@@ -265,7 +277,7 @@ class OrderController extends Controller
 			$normSelected = $normalizeColor($couleurSelectionnee);
 
 			// Listes utiles
-			$visibleColors = $product->visible_colors ?? [];
+			$visibleColors = $product->visible_colors;
 			$hiddenColors = $product->hidden_colors ?? [];
 
 			// 0) Si explicitement masquée, refuser

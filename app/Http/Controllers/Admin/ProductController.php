@@ -115,7 +115,11 @@ class ProductController extends Controller
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
 
-        $data = $request->validate([
+        // Récupérer les couleurs pour la validation dynamique
+        $couleurs = $request->input('couleurs', []);
+        $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
+
+        $validationRules = [
             'name' => 'required|string|max:255',
             'couleurs' => 'required|array|min:1',
             'couleurs_hex' => 'array',
@@ -126,46 +130,73 @@ class ProductController extends Controller
             'prix_admin' => 'required|string|min:1|regex:/^[\d\s,.-]+$/', // Accepte nombres, virgules, espaces, points, tirets
             'prix_vente' => 'required|numeric|min:0',
             'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
-        ]);
+        ];
+
+        // Ajouter la validation des stocks par couleur
+        foreach ($couleurs as $index => $couleur) {
+            $validationRules["stock_couleur_{$index}"] = 'required|integer|min:1';
+        }
+
+        foreach ($couleursPersonnalisees as $index => $couleur) {
+            $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:1';
+        }
+
+        $data = $request->validate($validationRules);
 
         // Traiter les couleurs avec leurs valeurs hexadécimales et stocks
-        $couleurs = $request->input('couleurs', []);
         $couleursHex = $request->input('couleurs_hex', []);
-        $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
+
         // Créer un mapping couleur-hex pour la sauvegarde
         $couleursWithHex = [];
+        $stockCouleurs = [];
 
         // Traiter les couleurs prédéfinies
         foreach ($couleurs as $index => $couleur) {
             $hex = $couleursHex[$index] ?? '#cccccc';
+            $stock = $request->input("stock_couleur_{$index}", 0);
 
             $couleursWithHex[] = [
                 'name' => $couleur,
                 'hex' => $hex
             ];
+
+            $stockCouleurs[] = [
+                'name' => $couleur,
+                'quantity' => (int) $stock
+            ];
         }
 
         // Traiter les couleurs personnalisées
         foreach ($couleursPersonnalisees as $index => $couleur) {
+            $stock = $request->input("stock_couleur_custom_{$index}", 0);
+
             $couleursWithHex[] = [
                 'name' => $couleur,
                 'hex' => '#cccccc' // Couleur par défaut pour les couleurs personnalisées
             ];
+
+            $stockCouleurs[] = [
+                'name' => $couleur,
+                'quantity' => (int) $stock
+            ];
         }
 
         // Convertir les couleurs en JSON (pour stockage en base)
-        $data['couleur'] = json_encode($couleursWithHex);
+        $data['couleur'] = $couleursWithHex; // Laravel cast automatiquement en JSON
+        $data['stock_couleurs'] = $stockCouleurs; // Laravel cast automatiquement en JSON
 
         // Traiter les couleurs masquées
         $data['hidden_colors'] = json_encode($request->input('hidden_colors', []));
 
-        // Plus de stock_couleurs - on utilise quantite_stock global
+        // Calculer le stock total à partir des stocks par couleur
+        $totalStock = array_sum(array_column($stockCouleurs, 'quantity'));
+        $data['quantite_stock'] = $totalStock;
 
         // Convertir les tailles en JSON - pour les accessoires, utiliser un tableau vide
         if ($isAccessoire) {
-            $data['tailles'] = json_encode([]);
+            $data['tailles'] = []; // Laravel cast automatiquement en JSON
         } else {
-            $data['tailles'] = json_encode($data['tailles'] ?? []);
+            $data['tailles'] = $data['tailles'] ?? []; // Laravel cast automatiquement en JSON
         }
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
@@ -345,77 +376,154 @@ class ProductController extends Controller
             'categorie_id' => 'required|exists:categories,id',
             'prix_admin' => 'required|string|min:1|regex:/^[\d\s,.-]+$/', // Accepte nombres, virgules, espaces, points, tirets
             'prix_vente' => 'required|numeric|min:0',
+            'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
         ];
+
+        // Ajouter la validation des stocks par couleur seulement s'ils sont présents
+        $couleurs = $request->input('couleurs', []);
+        $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
+
+        // Vérifier si des champs de stock par couleur sont présents
+        $hasStockFields = false;
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, 'stock_couleur_')) {
+                $hasStockFields = true;
+                break;
+            }
+        }
+
+        // Ajouter la validation des stocks par couleur seulement s'ils sont présents
+        if ($hasStockFields) {
+            foreach ($couleurs as $index => $couleur) {
+                if ($request->has("stock_couleur_{$index}")) {
+                    $validationRules["stock_couleur_{$index}"] = 'required|integer|min:1';
+                }
+            }
+
+            foreach ($couleursPersonnalisees as $index => $couleur) {
+                if ($request->has("stock_couleur_custom_{$index}")) {
+                    $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:1';
+                }
+            }
+        }
 
         // Ajouter la validation des tailles conditionnellement
         if (!$isAccessoire) {
-            $validationRules['tailles'] = 'required|array|min:1';
+            // Si c'est une modification et que le produit a déjà des tailles, permettre un tableau vide
+            if ($product->tailles && !empty($product->tailles)) {
+                $validationRules['tailles'] = 'nullable|array';
+            } else {
+                $validationRules['tailles'] = 'required|array|min:1';
+            }
         } else {
             $validationRules['tailles'] = 'nullable|array';
         }
 
-        $data = $request->validate($validationRules);
+        // Debug: afficher les règles de validation et les données reçues
+        Log::info('Validation rules:', $validationRules);
+        Log::info('Request data:', $request->all());
+
+        try {
+            $data = $request->validate($validationRules);
+            Log::info('Validation successful');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed:', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            throw $e;
+        }
 
         // Traitement simplifié des couleurs et du stock
-        $couleurs = $request->input('couleurs', []);
         $couleursHex = $request->input('couleurs_hex', []);
-        $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
 
         // Construire les couleurs avec hex
         $couleursWithHex = [];
         $stockCouleurs = [];
 
-        // Traiter les couleurs prédéfinies
-        foreach ($couleurs as $index => $couleur) {
-            $hex = $couleursHex[$index] ?? '#cccccc';
-            $stock = $request->input("stock_couleur_{$index}", 0);
+        // Si des champs de stock par couleur sont présents, les traiter
+        if ($hasStockFields) {
+            // Traiter les couleurs prédéfinies
+            foreach ($couleurs as $index => $couleur) {
+                $hex = $couleursHex[$index] ?? '#cccccc';
+                $stock = $request->input("stock_couleur_{$index}", 0);
 
-            $couleursWithHex[] = [
-                'name' => $couleur,
-                'hex' => $hex
-            ];
+                $couleursWithHex[] = [
+                    'name' => $couleur,
+                    'hex' => $hex
+                ];
 
-            $stockCouleurs[] = [
-                'name' => $couleur,
-                'quantity' => (int) $stock
-            ];
-        }
+                $stockCouleurs[] = [
+                    'name' => $couleur,
+                    'quantity' => (int) $stock
+                ];
+            }
 
-        // Traiter les couleurs personnalisées
-        foreach ($couleursPersonnalisees as $index => $couleur) {
-            $stock = $request->input("stock_couleur_custom_{$index}", 0);
+            // Traiter les couleurs personnalisées
+            foreach ($couleursPersonnalisees as $index => $couleur) {
+                $stock = $request->input("stock_couleur_custom_{$index}", 0);
 
-            $couleursWithHex[] = [
-                'name' => $couleur,
-                'hex' => '#cccccc' // Couleur par défaut pour les couleurs personnalisées
-            ];
+                $couleursWithHex[] = [
+                    'name' => $couleur,
+                    'hex' => '#cccccc' // Couleur par défaut pour les couleurs personnalisées
+                ];
 
-            $stockCouleurs[] = [
-                'name' => $couleur,
-                'quantity' => (int) $stock
-            ];
+                $stockCouleurs[] = [
+                    'name' => $couleur,
+                    'quantity' => (int) $stock
+                ];
+            }
+        } else {
+            // Si pas de champs de stock par couleur, garder les couleurs existantes
+            $existingColors = $product->couleur ?? [];
+            $existingStock = $product->stock_couleurs ?? [];
+
+            if (is_string($existingColors)) {
+                $existingColors = json_decode($existingColors, true) ?? [];
+            }
+            if (is_string($existingStock)) {
+                $existingStock = json_decode($existingStock, true) ?? [];
+            }
+
+            $couleursWithHex = $existingColors;
+            $stockCouleurs = $existingStock;
         }
 
         // Convertir les couleurs en JSON (pour stockage en base)
-        $data['couleur'] = json_encode($couleursWithHex);
-        $data['stock_couleurs'] = json_encode($stockCouleurs);
+        $data['couleur'] = $couleursWithHex; // Laravel cast automatiquement en JSON
+        $data['stock_couleurs'] = $stockCouleurs; // Laravel cast automatiquement en JSON
 
         // Traiter les couleurs masquées
-        $data['hidden_colors'] = json_encode($request->input('hidden_colors', []));
+        $hiddenColors = $request->input('hidden_colors', []);
+        $data['hidden_colors'] = $hiddenColors; // Laravel cast automatiquement en JSON
 
-        // Ne plus utiliser quantite_stock - le stock total sera calculé automatiquement
-        // Le stock total sera calculé via l'accessor dans le modèle Product
+        Log::info('Update Product - Couleurs masquées:', [
+            'hidden_colors_input' => $hiddenColors,
+            'hidden_colors_json' => $data['hidden_colors']
+        ]);
+
+        // Calculer le stock total à partir des stocks par couleur seulement s'ils sont présents
+        if ($hasStockFields && !empty($stockCouleurs)) {
+            $totalStock = array_sum(array_column($stockCouleurs, 'quantity'));
+            $data['quantite_stock'] = $totalStock;
+        } else {
+            // Utiliser le quantite_stock du formulaire (déjà validé)
+            $data['quantite_stock'] = $request->input('quantite_stock', $product->quantite_stock);
+        }
 
         Log::info('Update Product - Stock par couleur mis à jour:', [
             'couleurs_traitees' => count($couleursWithHex),
-            'stock_par_couleur' => $stockCouleurs
+            'stock_par_couleur' => $stockCouleurs,
+            'quantite_stock_final' => $data['quantite_stock'],
+            'has_stock_fields' => $hasStockFields
         ]);
 
         // Convertir les tailles en JSON (nullable pour les accessoires)
         if (isset($data['tailles']) && !empty($data['tailles'])) {
-            $data['tailles'] = json_encode($data['tailles']);
+            $data['tailles'] = $data['tailles']; // Laravel cast automatiquement en JSON
         } else {
-            $data['tailles'] = null;
+            // Si pas de tailles fournies, garder les tailles existantes
+            $data['tailles'] = $product->tailles;
         }
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
@@ -578,8 +686,7 @@ class ProductController extends Controller
             }
         }
 
-        // Ne plus utiliser quantite_stock - le stock total sera calculé automatiquement
-        // Le stock total sera calculé via l'accessor dans le modèle Product
+        // Le stock total est maintenant géré dans la logique ci-dessus
 
         $product->update($data);
 
@@ -788,19 +895,19 @@ class ProductController extends Controller
         });
         $totalStock = array_sum(array_map('intval', $numericQuantities));
 
-        Log::info('Fusion intelligente des couleurs - Debug final:', [
-            'existing_colors_count' => count($existingColors),
-            'new_colors_count' => count($newColors),
-            'new_custom_colors_count' => count($newCustomColors),
-            'merged_colors_count' => count($mergedColors),
-            'merged_stock_count' => count($mergedStock),
-            'total_stock_calculated' => $totalStock,
-            'processed_colors' => $processedColors,
-            'merged_colors' => $mergedColors,
-            'merged_stock' => $mergedStock,
-            'colors_removed' => $colorsToRemove ?? [],
-            'stock_removed' => $stockToRemove ?? []
-        ]);
+        // Log::info('Fusion intelligente des couleurs - Debug final:', [
+        //     'existing_colors_count' => count($existingColors),
+        //     'new_colors_count' => count($newColors),
+        //     'new_custom_colors_count' => count($newCustomColors),
+        //     'merged_colors_count' => count($mergedColors),
+        //     'merged_stock_count' => count($mergedStock),
+        //     'total_stock_calculated' => $totalStock,
+        //     'processed_colors' => $processedColors,
+        //     'merged_colors' => $mergedColors,
+        //     'merged_stock' => $mergedStock,
+        //     'colors_removed' => $colorsToRemove ?? [],
+        //     'stock_removed' => $stockToRemove ?? []
+        // ]);
 
         return [
             'colors' => $mergedColors,

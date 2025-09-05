@@ -96,7 +96,7 @@
                                 @endif
                                 <div>
                                     <p class="text-sm font-medium text-gray-900">{{ $product->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ number_format($product->prix_vente, 0) }} MAD</p>
+                                    <p class="text-xs text-gray-500">{{ number_format((float)$product->prix_vente, 0) }} MAD</p>
                                 </div>
                             </div>
                             <div class="text-right">

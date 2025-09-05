@@ -46,6 +46,9 @@ class StockService
             // Utiliser la méthode du modèle Product pour diminuer le stock par couleur
             $nouveauStock = $product->decreaseColorStock($couleur, $quantite);
 
+            // Recharger le produit pour avoir les données à jour
+            $product->refresh();
+
             Log::info("Stock diminué pour {$product->name} (ID: {$productId}) - Couleur: {$couleur} - Quantité: {$quantite} - Nouveau stock couleur: {$nouveauStock} - Nouveau stock total: {$product->quantite_stock}");
 
             return true;

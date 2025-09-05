@@ -143,10 +143,10 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                    <div class="text-sm text-gray-900 font-medium">{{ number_format($product->prix_admin, 2) }} MAD</div>
+                                    <div class="text-sm text-gray-900 font-medium">{{ number_format($product->prix_admin_moyen, 2) }} MAD</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                    <div class="text-sm text-gray-900 font-medium">{{ number_format($product->prix_vente, 2) }} MAD</div>
+                                    <div class="text-sm text-gray-900 font-medium">{{ number_format((float) $product->prix_vente, 2) }} MAD</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full

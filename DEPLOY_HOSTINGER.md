@@ -1,115 +1,89 @@
-# 🚀 Simple Hostinger Deployment Guide (First Time)
+# Instructions de déploiement sur Hostinger
 
-This guide is made super simple for your first deployment on Hostinger!
+## Problème identifié
+La page admin/products s'affiche mal sur Hostinger car elle utilise des assets statiques au lieu de Vite.
 
-## 📋 What You Need Before Starting
-- A Hostinger hosting plan (any plan with PHP 8.1+)
-- Your domain name
-- Basic computer skills (you can do this!)
+## Solutions appliquées
+1. ✅ Corrigé la vue `admin/products.blade.php` pour utiliser le layout principal
+2. ✅ Supprimé les références aux CSS statiques
 
-## 🎯 Step-by-Step Deployment
+## Étapes de déploiement
 
-### Step 1: Buy Hostinger Plan
-1. Go to [hostinger.com](https://hostinger.com)
-2. Choose any hosting plan (Premium or higher recommended)
-3. Buy and wait for activation email
+### 1. Compiler les assets localement
+```bash
+# Windows PowerShell
+.\build-production.ps1
 
-### Step 2: Prepare Your Files (Do This Once)
-1. Open Command Prompt/Terminal in your project folder
-2. Run these commands one by one:
+# Ou manuellement
+npm install
+npm run build
+composer install --optimize-autoloader --no-dev
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### 2. Déployer sur Hostinger
+1. **Uploader tous les fichiers** sauf :
+   - `node_modules/`
+   - `.git/`
+   - `storage/logs/`
+   - `.env` (créer un nouveau sur Hostinger)
+
+2. **IMPORTANT : Copier le dossier build dans public_html**
    ```bash
-   npm install
-   npm run build
-   ```
-3. This creates a `public/build` folder (important!)
-
-### Step 3: Upload to Hostinger
-1. Login to Hostinger hPanel
-2. Go to **File Manager**
-3. Navigate to `public_html` folder
-4. **Delete everything** in `public_html` (it's empty anyway)
-5. **Upload your entire project folder** to `public_html`
-6. **Important**: After upload, you'll see your project folder inside `public_html`. You need to move all the files FROM inside your project folder UP into `public_html` itself.
-
-**What this means:**
-- Upload your project folder (with all files inside) to `public_html`
-- Then open your project folder in File Manager
-- Select ALL files and folders inside it (app, bootstrap, config, database, etc.)
-- Cut them and paste them directly into `public_html`
-- Delete the now-empty project folder
-
-**Final result:** Your `public_html` should contain: `app`, `bootstrap`, `config`, `database`, `public`, `resources`, `routes`, `storage`, `.env`, etc. - NOT a folder containing these.
-
-### Step 4: Set Up Database
-1. In hPanel, go to **Databases** → **MySQL Databases**
-2. Create a new database (note the name)
-3. Create a database user (note username and password)
-4. Add user to database with **ALL PRIVILEGES**
-
-**Important Notes:**
-- **Don't import your local database** - you'll create a fresh one on Hostinger
-- Laravel will create all the tables automatically when you run `php artisan migrate` later
-- Your local database data won't be transferred (unless you specifically want to export/import it)
-- The database connection is configured in the `.env` file you'll edit in Step 5
-
-### Step 5: Configure Your App
-1. In File Manager, find `.env.example` in your project
-2. Right-click → **Rename** → change to `.env`
-3. Right-click `.env` → **Edit**
-4. Change these lines:
-   ```
-   APP_URL=https://yourdomain.com
-   DB_DATABASE=your_database_name
-   DB_USERNAME=your_username
-   DB_PASSWORD=your_password
-   ```
-5. Save the file
-
-### Step 6: Install Dependencies
-1. In hPanel, go to **Advanced** → **SSH Access**
-2. Enable SSH and note your SSH details
-3. Use any SSH app (like PuTTY on Windows) to connect
-4. Run these commands one by one:
-   ```bash
-   cd public_html
-   composer install --no-dev
-   php artisan key:generate
-   php artisan migrate
-   php artisan storage:link
+   # Sur Hostinger, copier les assets compilés
+   cp -r public/build/ public_html/build/
    ```
 
-### Step 7: Set Permissions
-1. Still in SSH, run:
-   ```bash
-   chmod -R 755 storage
-   chmod -R 755 bootstrap/cache
-   ```
+3. **Créer le fichier .env sur Hostinger** avec :
+```env
+APP_NAME=Affilook
+APP_ENV=production
+APP_KEY=base64:VOTRE_CLE_ICI
+APP_DEBUG=false
+APP_URL=https://votre-domaine.com
 
-### Step 8: Test Your Site!
-1. Visit your domain in browser
-2. If it works - congratulations! 🎉
-3. If it doesn't work, check the troubleshooting section below
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=votre_db
+DB_USERNAME=votre_user
+DB_PASSWORD=votre_password
 
-## 🔧 If Something Goes Wrong
+# Autres configurations...
+```
 
-### Common Issues:
-1. **White page**: Check if `.env` file exists and has correct database info
-2. **Database error**: Verify database credentials in `.env`
-3. **Permission error**: Make sure you ran the chmod commands
-4. **Assets not loading**: Check if `public/build` folder exists
+4. **Générer la clé d'application** :
+```bash
+php artisan key:generate
+```
 
-### Get Help:
-- Check `storage/logs/laravel.log` for error messages
-- Contact Hostinger support (they're very helpful!)
-- Make sure PHP version is 8.1 or higher in hPanel → **Advanced** → **PHP Configuration**
+5. **Exécuter les migrations** :
+```bash
+php artisan migrate --force
+```
 
-## 💡 Pro Tips
-- Take screenshots of your database settings
-- Save your SSH password somewhere safe
-- Don't panic - this is normal for first deployment!
-- Hostinger support is excellent for beginners
+6. **Créer le lien symbolique pour le storage** :
+```bash
+php artisan storage:link
+```
 
-## 🎉 You're Done!
-Your Laravel app should now be live on your domain! 
+### 4. Vérifier les permissions
+- `storage/` : 755
+- `bootstrap/cache/` : 755
+- `public/` : 755
 
-**Need help?** Hostinger has 24/7 live chat support - they're great for beginners!
+### 5. Tester
+- Aller sur `https://votre-domaine.com/admin/products`
+- Vérifier que l'affichage est correct
+
+## Fichiers modifiés
+- `resources/views/admin/products.blade.php` : Corrigé pour utiliser le layout principal
+- `build-production.ps1` : Script de compilation pour Windows
+- `build-production.sh` : Script de compilation pour Linux/Mac
+
+## Notes importantes
+- Les assets sont maintenant compilés avec Vite
+- Le layout principal utilise Tailwind CSS via CDN
+- Tous les styles sont maintenant cohérents entre localhost et Hostinger

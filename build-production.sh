@@ -1,29 +1,25 @@
 #!/bin/bash
 
-echo "🚀 Building production assets..."
+echo "=== Compilation des assets pour la production ==="
 
 # Installer les dépendances Node.js
-echo "📦 Installing Node.js dependencies..."
+echo "Installation des dépendances Node.js..."
 npm install
 
-# Build des assets pour la production
-echo "🎨 Building assets for production..."
+# Compiler les assets pour la production
+echo "Compilation des assets..."
 npm run build
 
-# Vérifier que les assets sont créés
-echo "✅ Checking built assets..."
-if [ -f "public/build/manifest.json" ]; then
-    echo "✅ Vite manifest found"
-    cat public/build/manifest.json
-else
-    echo "❌ Vite manifest not found"
-fi
+# Optimiser l'autoloader Composer
+echo "Optimisation de l'autoloader Composer..."
+composer install --optimize-autoloader --no-dev
 
-if [ -f "public/build/assets/app.css" ]; then
-    echo "✅ CSS assets found"
-    ls -la public/build/assets/
-else
-    echo "❌ CSS assets not found"
-fi
+# Nettoyer le cache
+echo "Nettoyage du cache..."
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-echo "🎯 Production build completed!"
+echo "=== Compilation terminée ==="
+echo "Assets compilés dans public/build/"
+echo "N'oubliez pas de déployer le dossier public/build/ sur Hostinger"

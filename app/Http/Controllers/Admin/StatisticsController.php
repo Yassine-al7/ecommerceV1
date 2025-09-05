@@ -122,7 +122,8 @@ class StatisticsController extends Controller
 
     public function stock()
     {
-        $products = Product::with('category')->get();
+        // Forcer le rechargement des données depuis la base
+        $products = Product::with('category')->get()->fresh();
         return view('admin.stock', compact('products'));
     }
 }

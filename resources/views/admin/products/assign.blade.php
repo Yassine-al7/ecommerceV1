@@ -31,7 +31,7 @@
                 </div>
                 <div>
                     <span class="text-sm font-medium text-blue-700">تمن البيع:</span>
-                    <p class="text-blue-900">{{ number_format($product->prix_admin, 0) }} MAD</p>
+                    <p class="text-blue-900">{{ number_format($product->prix_admin_moyen, 0) }} MAD</p>
                 </div>
             </div>
         </div>
@@ -137,11 +137,11 @@
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                         <div>
                                             <span class="font-medium text-blue-700">تمن البيع:</span>
-                                            <p class="text-blue-900">{{ number_format($assignment->pivot->prix_admin ?? $product->prix_admin, 0) }} MAD</p>
+                                            <p class="text-blue-900">{{ number_format($assignment->pivot->prix_admin ?? $product->prix_admin_moyen, 0) }} MAD</p>
                                         </div>
                                         <div>
                                             <span class="font-medium text-blue-700">تمن:</span>
-                                            <p class="text-blue-900">{{ number_format($assignment->pivot->prix_vente ?? $product->prix_vente, 0) }} MAD</p>
+                                            <p class="text-blue-900">{{ number_format((float)($assignment->pivot->prix_vente ?? $product->prix_vente), 0) }} MAD</p>
                                         </div>
                                         <div>
                                             <span class="font-medium text-blue-700">مرئي:</span>

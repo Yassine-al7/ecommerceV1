@@ -76,10 +76,10 @@
                 {{-- Prix et total --}}
                 <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
                     <div class="text-sm text-gray-600">
-                        <span class="font-medium">Prix unitaire:</span> {{ number_format($product->prix_vente, 2) }} MAD
+                        <span class="font-medium">Prix unitaire:</span> {{ number_format((float)$product->prix_vente, 2) }} MAD
                     </div>
                     <div class="text-lg font-semibold text-gray-900">
-                        Total: {{ number_format($product->prix_vente * $productData['qty'], 2) }} MAD
+                        Total: {{ number_format((float)$product->prix_vente * $productData['qty'], 2) }} MAD
                     </div>
                 </div>
             </div>

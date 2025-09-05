@@ -132,10 +132,13 @@ class Product extends Model
             return [];
         }
 
-        return array_filter($allColors, function($color) use ($hiddenColors) {
+        $visibleColors = array_filter($allColors, function($color) use ($hiddenColors) {
             $colorName = is_array($color) ? $color['name'] : $color;
             return !in_array($colorName, $hiddenColors);
         });
+
+
+        return $visibleColors;
     }
 
     /**
@@ -162,13 +165,13 @@ class Product extends Model
 
             $decoded = json_decode($cleanedValue, true);
 
-            // Debug: afficher les étapes de nettoyage
-            \Log::info("Tailles Accesseur Debug", [
-                'raw' => $rawValue,
-                'cleaned' => $cleanedValue,
-                'decoded' => $decoded,
-                'json_error' => json_last_error_msg()
-            ]);
+            // Debug: afficher les étapes de nettoyage (désactivé en production)
+            // \Log::info("Tailles Accesseur Debug", [
+            //     'raw' => $rawValue,
+            //     'cleaned' => $cleanedValue,
+            //     'decoded' => $decoded,
+            //     'json_error' => json_last_error_msg()
+            // ]);
 
             return is_array($decoded) ? $decoded : [];
         }
@@ -353,47 +356,6 @@ class Product extends Model
 
         // Si la couleur n'est pas trouvée dans stock_couleurs, retourner 0
         return 0;
-    }
-
-    /**
-     * Obtenir les couleurs visibles (excluant les couleurs masquées)
-     */
-    public function getVisibleColorsAttribute()
-    {
-        $couleurs = $this->couleur;
-        $hiddenColors = $this->hidden_colors ?? [];
-        
-        if (empty($couleurs)) {
-            return [];
-        }
-        
-        // Décoder les couleurs si c'est un JSON
-        if (is_string($couleurs)) {
-            $couleurs = json_decode($couleurs, true) ?? [];
-        }
-        
-        if (!is_array($couleurs)) {
-            return [];
-        }
-        
-        // Filtrer les couleurs masquées
-        $visibleColors = [];
-        foreach ($couleurs as $couleur) {
-            if (is_array($couleur) && isset($couleur['name'])) {
-                $colorName = $couleur['name'];
-            } elseif (is_string($couleur)) {
-                $colorName = $couleur;
-            } else {
-                continue;
-            }
-            
-            // Vérifier si la couleur n'est pas masquée
-            if (!in_array($colorName, $hiddenColors)) {
-                $visibleColors[] = $couleur;
-            }
-        }
-        
-        return $visibleColors;
     }
 
     /**
