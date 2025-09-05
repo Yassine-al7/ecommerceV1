@@ -13,7 +13,10 @@ return new class extends Migration
     public function up(): void
     {
         // Modifier la colonne vendeur_id pour la rendre nullable
-        DB::statement('ALTER TABLE produits MODIFY COLUMN vendeur_id BIGINT UNSIGNED NULL');
+        // Utiliser la syntaxe Laravel compatible avec SQLite
+        Schema::table('produits', function (Blueprint $table) {
+            $table->unsignedBigInteger('vendeur_id')->nullable()->change();
+        });
     }
 
     /**
@@ -22,6 +25,8 @@ return new class extends Migration
     public function down(): void
     {
         // Restaurer la colonne vendeur_id pour la rendre non-nullable
-        DB::statement('ALTER TABLE produits MODIFY COLUMN vendeur_id BIGINT UNSIGNED NOT NULL');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->unsignedBigInteger('vendeur_id')->nullable(false)->change();
+        });
     }
 };
