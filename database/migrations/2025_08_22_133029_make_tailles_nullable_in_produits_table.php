@@ -14,7 +14,9 @@ return new class extends Migration
      */
     public function up()
     {
-        DB::statement('ALTER TABLE produits MODIFY COLUMN tailles JSON NULL');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->json('tailles')->nullable()->change();
+        });
     }
 
     /**
@@ -24,6 +26,8 @@ return new class extends Migration
      */
     public function down()
     {
-        DB::statement('ALTER TABLE produits MODIFY COLUMN tailles JSON NOT NULL');
+        Schema::table('produits', function (Blueprint $table) {
+            $table->json('tailles')->nullable(false)->change();
+        });
     }
 };
