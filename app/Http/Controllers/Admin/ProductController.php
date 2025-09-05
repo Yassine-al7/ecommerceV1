@@ -255,8 +255,29 @@ class ProductController extends Controller
             }
         }
 
-        // Ne plus utiliser quantite_stock - le stock total sera calculé automatiquement
-        // Le stock total sera calculé via l'accessor dans le modèle Product
+        // Initialiser le stock par couleur si pas fourni
+        if (empty($data['stock_couleurs']) && !empty($data['couleur'])) {
+            $couleurs = is_array($data['couleur']) ? $data['couleur'] : [$data['couleur']];
+            $stockCouleurs = [];
+            foreach ($couleurs as $couleur) {
+                $stockCouleurs[] = [
+                    'name' => $couleur,
+                    'quantity' => $data['quantite_stock'] ?? 0
+                ];
+            }
+            $data['stock_couleurs'] = $stockCouleurs;
+        }
+
+        // Calculer le stock total basé sur les stocks par couleur
+        if (!empty($data['stock_couleurs'])) {
+            $stockTotal = 0;
+            foreach ($data['stock_couleurs'] as $stockCouleur) {
+                if (is_array($stockCouleur) && isset($stockCouleur['quantity'])) {
+                    $stockTotal += (int)$stockCouleur['quantity'];
+                }
+            }
+            $data['quantite_stock'] = $stockTotal;
+        }
 
         $product = Product::create($data);
 

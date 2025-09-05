@@ -96,7 +96,7 @@
                     </div>
                     <div class="ml-3 md:ml-4">
                         <p class="text-xs md:text-sm font-medium text-gray-600">{{ __('seller.stats.revenue') }}</p>
-                        <p class="text-xl md:text-2xl font-bold text-gray-900">{{ number_format($totalRevenue, 0) }} MAD</p>
+                        <p class="text-xl md:text-2xl font-bold text-gray-900">{{ number_format((float)$totalRevenue, 0) }} MAD</p>
                     </div>
                 </div>
             </div>
@@ -176,7 +176,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('seller.stats.paid_profits') }}</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalPaid, 0) }} MAD</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalPaid, 0) }} MAD</p>
                         <p class="text-xs text-gray-500">{{ __('seller.stats.paid_orders') }}</p>
                     </div>
                 </div>
@@ -189,7 +189,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('seller.stats.pending_profits') }}</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format($totalPending, 0) }} MAD</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalPending, 0) }} MAD</p>
                         <p class="text-xs text-gray-500">{{ __('seller.stats.unpaid_orders') }}</p>
                     </div>
                 </div>
@@ -292,52 +292,6 @@
     </div>
 </div>
 
-@php
-function getStatusColor($status) {
-    switch ($status) {
-        case 'en attente':
-            return 'bg-yellow-100 text-yellow-800';
-        case 'confirmé':
-            return 'bg-blue-100 text-blue-800';
-        case 'pas de réponse':
-            return 'bg-gray-100 text-gray-800';
-        case 'expédition':
-            return 'bg-purple-100 text-purple-800';
-        case 'livré':
-            return 'bg-green-100 text-green-800';
-        case 'annulé':
-            return 'bg-red-100 text-red-800';
-        case 'reporté':
-            return 'bg-orange-100 text-orange-800';
-        case 'retourné':
-            return 'bg-gray-100 text-gray-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
-    }
-}
-
-function getStatusLabel($status) {
-    switch ($status) {
-        case 'en attente':
-            return 'En attente';
-        case 'confirmé':
-            return 'Confirmé';
-        case 'pas de réponse':
-            return 'Pas de réponse';
-        case 'expédition':
-            return 'Expédition';
-        case 'livré':
-            return 'Livré';
-        case 'annulé':
-            return 'Annulé';
-        case 'reporté':
-            return 'Reporté';
-        case 'retourné':
-            return 'Retourné';
-        default:
-            return ucfirst($status);
-    }
-}
-@endphp
+{{-- getStatusColor() and getStatusLabel() functions are now available globally --}}
 
 @endsection
