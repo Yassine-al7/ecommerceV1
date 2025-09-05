@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -13,10 +14,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('produits', function (Blueprint $table) {
-            // Changer le type de colonne de decimal à text pour stocker du JSON
-            $table->text('prix_admin')->change();
-        });
+        // Changer le type de colonne de decimal à text pour stocker du JSON
+        DB::statement('ALTER TABLE produits MODIFY COLUMN prix_admin TEXT');
     }
 
     /**
@@ -26,9 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('produits', function (Blueprint $table) {
-            // Revenir au type decimal (attention: peut causer des erreurs si des données JSON existent)
-            $table->decimal('prix_admin', 8, 2)->change();
-        });
+        // Revenir au type decimal (attention: peut causer des erreurs si des données JSON existent)
+        DB::statement('ALTER TABLE produits MODIFY COLUMN prix_admin DECIMAL(8,2)');
     }
 };

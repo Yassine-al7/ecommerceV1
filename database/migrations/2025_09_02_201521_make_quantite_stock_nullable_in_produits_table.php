@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -13,10 +14,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('produits', function (Blueprint $table) {
-            // Rendre quantite_stock nullable car il sera calculé automatiquement
-            $table->integer('quantite_stock')->nullable()->change();
-        });
+        // Rendre quantite_stock nullable car il sera calculé automatiquement
+        DB::statement('ALTER TABLE produits MODIFY COLUMN quantite_stock INT NULL');
     }
 
     /**
@@ -26,9 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('produits', function (Blueprint $table) {
-            // Revenir à la version précédente (non nullable)
-            $table->integer('quantite_stock')->nullable(false)->change();
-        });
+        // Revenir à la version précédente (non nullable)
+        DB::statement('ALTER TABLE produits MODIFY COLUMN quantite_stock INT NOT NULL');
     }
 };
