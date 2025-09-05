@@ -12,15 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop foreign key constraints first if they exist
+        // For SQLite, we can't easily check foreign keys, so we'll try to drop them safely
         if (Schema::hasTable('produits')) {
-            Schema::table('produits', function (Blueprint $table) {
-                // Check if the foreign key exists before trying to drop it
-                $foreignKeys = $this->getForeignKeyConstraints('produits');
-                if (in_array('produits_categorie_id_foreign', $foreignKeys)) {
+            try {
+                Schema::table('produits', function (Blueprint $table) {
                     $table->dropForeign(['categorie_id']);
-                }
-            });
+                });
+            } catch (Exception $e) {
+                // Foreign key might not exist, continue
+            }
         }
 
         Schema::dropIfExists('categories');
@@ -35,9 +35,13 @@ return new class extends Migration
 
         // Recreate foreign key constraint
         if (Schema::hasTable('produits')) {
-            Schema::table('produits', function (Blueprint $table) {
-                $table->foreign('categorie_id')->references('id')->on('categories');
-            });
+            try {
+                Schema::table('produits', function (Blueprint $table) {
+                    $table->foreign('categorie_id')->references('id')->on('categories');
+                });
+            } catch (Exception $e) {
+                // Foreign key creation might fail, continue
+            }
         }
     }
 
@@ -47,35 +51,15 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasTable('produits')) {
-            Schema::table('produits', function (Blueprint $table) {
-                $foreignKeys = $this->getForeignKeyConstraints('produits');
-                if (in_array('produits_categorie_id_foreign', $foreignKeys)) {
+            try {
+                Schema::table('produits', function (Blueprint $table) {
                     $table->dropForeign(['categorie_id']);
-                }
-            });
+                });
+            } catch (Exception $e) {
+                // Foreign key might not exist, continue
+            }
         }
 
         Schema::dropIfExists('categories');
-    }
-
-    /**
-     * Get foreign key constraints for a table
-     */
-    private function getForeignKeyConstraints($tableName)
-    {
-        $foreignKeys = [];
-        $constraints = DB::select("
-            SELECT CONSTRAINT_NAME
-            FROM information_schema.TABLE_CONSTRAINTS
-            WHERE TABLE_SCHEMA = DATABASE()
-            AND TABLE_NAME = ?
-            AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-        ", [$tableName]);
-
-        foreach ($constraints as $constraint) {
-            $foreignKeys[] = $constraint->CONSTRAINT_NAME;
-        }
-
-        return $foreignKeys;
     }
 };
