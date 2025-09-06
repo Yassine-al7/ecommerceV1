@@ -726,7 +726,7 @@ class ProductController extends Controller
         // Traiter les prix admin (peut être une plage comme [400,500])
         $prixAdmin = $data['prix_admin'] ?? $product->prix_admin;
         $prixAdminForPivot = null; // Prix à utiliser dans la table pivot (decimal)
-        
+
         if ($prixAdmin) {
             // Si c'est une plage [400,500], extraire les prix
             if (preg_match('/\[([^\]]+)\]/', $prixAdmin, $matches)) {
