@@ -349,39 +349,39 @@ function addProduct() {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Produit *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
                 <select name="products[${productCounter}][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500" required>
-                    <option value="">Sélectionnez un produit</option>
+                    <option value="">{{ __('seller_order_form.select_product') }}</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Couleur *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.color_field') }} *</label>
                 <select name="products[${productCounter}][couleur_produit]" class="color-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                    <option value="">Sélectionnez d'abord un produit</option>
+                    <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Taille *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.size_field') }} *</label>
                 <select name="products[${productCounter}][taille_produit]" class="size-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                    <option value="">Sélectionnez d'abord un produit</option>
+                    <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
                 </select>
                 <!-- Les notes d'information des tailles seront ajoutées ici dynamiquement -->
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Quantité *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.quantity') }} *</label>
                 <input type="number" name="products[${productCounter}][quantite_produit]" class="quantity-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="1" min="1" required>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">سعر البيع للزبون (DH) *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.sale_price_client') }} *</label>
                 <input type="number" name="products[${productCounter}][prix_vente_client]" class="prix-vente-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" step="0.01" min="0.01" required>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Prix d'achat (DH)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.purchase_price') }}</label>
                 <input type="text" class="prix-achat-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold" readonly>
             </div>
 
@@ -390,7 +390,7 @@ function addProduct() {
 
         <!-- Image du produit -->
         <div class="product-image mt-4 hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Image du produit</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
             <div class="w-32 h-32 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                 <img class="w-full h-full object-cover" alt="Image produit">
             </div>
