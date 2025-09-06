@@ -14,7 +14,7 @@
                 </a>
             </div>
 
-            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-8" id="productForm">
+            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-8" id="productForm" onsubmit="return validateProductForm()">
                 @csrf
 
                 <!-- Informations de base -->
@@ -772,19 +772,20 @@ function validateProductForm() {
         return false;
     }
 
-    // Vérifier les couleurs
-    const selectedColors = document.querySelectorAll('.color-item.selected, .color-item[data-selected="true"], .selected-color');
-    console.log('🎨 Couleurs trouvées:', selectedColors.length);
+    // Vérifier les couleurs - utiliser les checkboxes
+    const colorCheckboxes = document.querySelectorAll('input[name="couleurs[]"]:checked');
+    const customColorCheckboxes = document.querySelectorAll('input[name="couleurs_personnalisees[]"]:checked');
 
-    // Alternative: vérifier les inputs cachés des couleurs
-    const colorInputs = document.querySelectorAll('input[name^="couleurs"]:checked, input[name^="couleurs_personnalisees"]:checked');
-    console.log('🎨 Inputs couleurs cochés:', colorInputs.length);
+    console.log('🎨 Checkboxes couleurs cochées:', colorCheckboxes.length);
+    console.log('🎨 Checkboxes couleurs personnalisées cochées:', customColorCheckboxes.length);
 
-    if (selectedColors.length === 0 && colorInputs.length === 0) {
+    if (colorCheckboxes.length === 0 && customColorCheckboxes.length === 0) {
         console.log('❌ Aucune couleur sélectionnée');
         alert('يرجى اختيار لون واحد على الأقل');
         return false;
     }
+
+    console.log('✅ Couleurs sélectionnées:', colorCheckboxes.length + customColorCheckboxes.length);
 
     console.log('✅ Formulaire valide, soumission en cours...');
     return true;
