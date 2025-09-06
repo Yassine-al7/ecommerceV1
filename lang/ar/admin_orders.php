@@ -5,8 +5,12 @@ return [
     'stats' => [
         'pending' => 'قيد الانتظار',
         'confirmed' => 'مؤكد',
+        'shipping' => 'الشحن',
         'delivered' => 'تم التسليم',
         'no_answer' => 'لا يوجد رد',
+        'cancelled' => 'ملغي',
+        'postponed' => 'مؤجل',
+        'returned' => 'مرتجع',
         'issue' => 'مشاكل',
     ],
     'filters' => [

@@ -44,7 +44,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-shipping-fast text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Expédition</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.shipping') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['expédition'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-times-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Annulé</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.cancelled') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['annulé'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -96,7 +96,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-exclamation-triangle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Reporté</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.postponed') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['reporté'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-undo text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Retourné</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.returned') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['retourné'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -139,12 +139,12 @@ use App\Helpers\OrderHelper;
                         <option value="">{{ __('admin_orders.filters.all_statuses') }}</option>
                         <option value="en attente">{{ __('admin_orders.stats.pending') }}</option>
                         <option value="confirmé">{{ __('admin_orders.stats.confirmed') }}</option>
-                        <option value="expédition">Expédition</option>
+                        <option value="expédition">{{ __('admin_orders.stats.shipping') }}</option>
                         <option value="livré">{{ __('admin_orders.stats.delivered') }}</option>
                         <option value="pas de réponse">{{ __('admin_orders.stats.no_answer') }}</option>
-                        <option value="reporté">Reporté</option>
-                        <option value="retourné">Retourné</option>
-                        <option value="annulé">Annulé</option>
+                        <option value="reporté">{{ __('admin_orders.stats.postponed') }}</option>
+                        <option value="retourné">{{ __('admin_orders.stats.returned') }}</option>
+                        <option value="annulé">{{ __('admin_orders.stats.cancelled') }}</option>
                         <option value="problematique">{{ __('admin_orders.stats.issue') }}</option>
                     </select>
                 </div>
@@ -299,14 +299,14 @@ use App\Helpers\OrderHelper;
                                         @method('PATCH')
                                         <select name="status" onchange="this.form.submit()"
                                                 class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full">
-                                            <option value="en attente" @selected($order->status == 'en attente')>En attente</option>
-                                            <option value="confirmé" @selected($order->status == 'confirmé')>Confirmé</option>
-                                            <option value="pas de réponse" @selected($order->status == 'pas de réponse')>Pas de réponse</option>
-                                            <option value="expédition" @selected($order->status == 'expédition')>Expédition</option>
-                                            <option value="livré" @selected($order->status == 'livré')>Livré</option>
-                                            <option value="annulé" @selected($order->status == 'annulé')>Annulé</option>
-                                            <option value="reporté" @selected($order->status == 'reporté')>Reporté</option>
-                                            <option value="retourné" @selected($order->status == 'retourné')>Retourné</option>
+                                            <option value="en attente" @selected($order->status == 'en attente')>{{ __('admin_orders.stats.pending') }}</option>
+                                            <option value="confirmé" @selected($order->status == 'confirmé')>{{ __('admin_orders.stats.confirmed') }}</option>
+                                            <option value="pas de réponse" @selected($order->status == 'pas de réponse')>{{ __('admin_orders.stats.no_answer') }}</option>
+                                            <option value="expédition" @selected($order->status == 'expédition')>{{ __('admin_orders.stats.shipping') }}</option>
+                                            <option value="livré" @selected($order->status == 'livré')>{{ __('admin_orders.stats.delivered') }}</option>
+                                            <option value="annulé" @selected($order->status == 'annulé')>{{ __('admin_orders.stats.cancelled') }}</option>
+                                            <option value="reporté" @selected($order->status == 'reporté')>{{ __('admin_orders.stats.postponed') }}</option>
+                                            <option value="retourné" @selected($order->status == 'retourné')>{{ __('admin_orders.stats.returned') }}</option>
                                         </select>
                                     </form>
                                 </td>
