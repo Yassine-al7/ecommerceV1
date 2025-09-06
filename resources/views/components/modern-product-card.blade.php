@@ -4,8 +4,13 @@
     <!-- Image du produit avec badge -->
     <div class="relative h-48 bg-gray-100 overflow-hidden">
         @if($product->image && $product->image !== null && $product->image !== '/storage/products/default-product.svg')
+            @php
+                // Forcer l'URL correcte pour Hostinger
+                $imageUrl = str_replace('/storage/', '/public/storage/', $product->image);
+                $imageUrl = 'https://affilook.com' . $imageUrl;
+            @endphp
             <img id="product-image-{{ $product->id }}"
-                 src="{{ asset($product->image) }}"
+                 src="{{ $imageUrl }}"
                  alt="{{ $product->name }}"
                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                  onerror="console.log('Image error:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -16,9 +21,9 @@
             <!-- Debug image info -->
             <div class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
                 IMG: {{ $product->image }}<br>
-                Asset: {{ asset($product->image) }}<br>
+                New URL: {{ $imageUrl }}<br>
                 Exists: {{ file_exists(public_path($product->image)) ? 'YES' : 'NO' }}<br>
-                <a href="{{ asset($product->image) }}" target="_blank" class="text-yellow-300">Test Link</a>
+                <a href="{{ $imageUrl }}" target="_blank" class="text-yellow-300">Test Link</a>
             </div>
         @else
             <div class="text-gray-400 text-center flex items-center justify-center h-full">
