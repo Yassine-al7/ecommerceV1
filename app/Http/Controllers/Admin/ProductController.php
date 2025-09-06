@@ -713,7 +713,7 @@ class ProductController extends Controller
         $data = $request->validate([
             'selected_sellers' => 'required|array|min:1',
             'selected_sellers.*' => 'exists:users,id',
-            'prix_admin' => 'nullable|numeric',
+            'prix_admin' => 'nullable|string', // Accepter les plages comme [400,500]
             'prix_vente' => 'nullable|numeric',
             'visible' => 'nullable|boolean',
             'action' => 'required|in:assign,remove',
@@ -722,8 +722,23 @@ class ProductController extends Controller
         $action = $data['action'];
         $selectedSellers = $data['selected_sellers'];
 
-        // Utiliser les prix du produit si non spécifiés
+        // Traiter les prix admin (peut être une plage comme [400,500])
         $prixAdmin = $data['prix_admin'] ?? $product->prix_admin;
+        if ($prixAdmin) {
+            // Si c'est une plage [400,500], extraire les prix
+            if (preg_match('/\[([^\]]+)\]/', $prixAdmin, $matches)) {
+                $prixArray = array_map('floatval', explode(',', $matches[1]));
+                $prixAdmin = json_encode($prixArray);
+            } elseif (strpos($prixAdmin, ',') !== false) {
+                // Si c'est une liste séparée par des virgules
+                $prixArray = array_map('floatval', explode(',', $prixAdmin));
+                $prixAdmin = json_encode($prixArray);
+            } else {
+                // Si c'est un seul prix
+                $prixAdmin = json_encode([(float) $prixAdmin]);
+            }
+        }
+        
         $prixVente = $data['prix_vente'] ?? $product->prix_vente;
 
         if ($action === 'assign') {

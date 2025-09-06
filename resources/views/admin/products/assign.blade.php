@@ -168,9 +168,14 @@
                             <label class="block text-sm font-medium text-gray-700">تمن المقترح للبيع (MAD)</label>
                             <input type="text" name="prix_admin"
                                    value="{{ old('prix_admin', $product->prix_admin) }}"
-                                   placeholder="مثال: 150-200 أو 150,200,250"
+                                   placeholder="مثال: [400,500] أو 150,200,250 أو 150"
                                    class="mt-1 w-full border rounded px-3 py-2">
-                            <p class="text-xs text-gray-500 mt-1">يمكنك إدخال سعر واحد أو عدة أسعار مفصولة بفاصلة</p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                يمكنك إدخال:<br>
+                                • سعر واحد: <code>150</code><br>
+                                • عدة أسعار: <code>150,200,250</code><br>
+                                • نطاق سعر: <code>[400,500]</code>
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">تمن (MAD)</label>

@@ -12,6 +12,7 @@ return [
         'string' => 'يجب ألا يزيد :attribute عن :max حروف.',
         'numeric' => 'يجب ألا يزيد :attribute عن :max.',
     ],
+    'numeric' => 'يجب أن يكون :attribute رقماً.',
     'confirmed' => 'تأكيد :attribute غير متطابق.',
     'unique' => ':attribute مستخدم مسبقاً.',
 
@@ -22,6 +23,8 @@ return [
         'numero_telephone' => 'رقم الهاتف',
         'store_name' => 'اسم المتجر',
         'rib' => 'RIB',
+        'prix_admin' => 'تمن المقترح للبيع',
+        'prix_vente' => 'تمن البيع',
     ],
 ];
 
