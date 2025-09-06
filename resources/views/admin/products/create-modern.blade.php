@@ -112,9 +112,9 @@
                                         $currentIndex = $isSelected ? $colorIndex : null;
                                         if ($isSelected) $colorIndex++;
                                     @endphp
-                                    <div class="color-card bg-white border-2 border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                                    <div class="color-card bg-white border-2 border-gray-200 rounded-xl p-3 hover:shadow-lg transition-all duration-300 cursor-pointer group"
                                          data-color-name="{{ $name }}" data-color-hex="{{ $hex }}">
-                                        <div class="flex flex-col items-center space-y-3">
+                                        <div class="flex flex-col items-center space-y-2">
                                             <!-- Checkbox et couleur -->
                                             <div class="flex items-center space-x-3">
                                                 <input type="checkbox" name="couleurs[]" value="{{ $name }}"
@@ -127,8 +127,8 @@
                                                      style="background-color: {{ $hex }}"></div>
                                             </div>
 
-                                            <!-- Nom de la couleur -->
-                                            <span class="text-sm font-medium text-gray-700 text-center color-name">{{ $name }}</span>
+                                            <!-- Nom de la couleur (masqué) -->
+                                            <span class="text-sm font-medium text-gray-700 text-center color-name" style="display: none;">{{ $name }}</span>
 
                                             <!-- Champ de stock pour cette couleur -->
                                             <div class="w-full stock-field" style="display: none;">
