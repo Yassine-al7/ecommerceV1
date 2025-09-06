@@ -133,10 +133,10 @@
                                             <!-- Champ de stock pour cette couleur -->
                                             <div class="w-full stock-field" style="display: none;">
                                                 <label class="block text-xs text-gray-600 mb-1">الكمية</label>
-                                                <input type="number" 
-                                                       name="stock_couleur_{{ $loop->index }}" 
+                                                <input type="number"
+                                                       name="stock_couleur_{{ $loop->index }}"
                                                        value="{{ old('stock_couleur_' . $loop->index, 0) }}"
-                                                       min="0" 
+                                                       min="0"
                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input"
                                                        placeholder="0">
                                             </div>
