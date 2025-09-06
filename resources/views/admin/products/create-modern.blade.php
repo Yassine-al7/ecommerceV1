@@ -14,7 +14,7 @@
                 </a>
             </div>
 
-            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-8" id="productForm" onsubmit="return validateProductForm()">
+            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-8" id="productForm">
                 @csrf
 
                 <!-- Informations de base -->
