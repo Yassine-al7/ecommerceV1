@@ -15,7 +15,9 @@
             </div>
             <!-- Debug image info -->
             <div class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
-                IMG: {{ $product->image }}
+                IMG: {{ $product->image }}<br>
+                Asset: {{ asset($product->image) }}<br>
+                Exists: {{ file_exists(public_path($product->image)) ? 'YES' : 'NO' }}
             </div>
         @else
             <div class="text-gray-400 text-center flex items-center justify-center h-full">
@@ -97,6 +99,9 @@
                     <!-- Debug info -->
                     <span class="text-yellow-200 text-xs">
                         (T:{{ $product->total_stock ?? 'N/A' }} | Q:{{ $product->quantite_stock ?? 'N/A' }})
+                    </span>
+                    <span class="text-yellow-200 text-xs">
+                        Stock: {{ json_encode($product->stock_couleurs ?? []) }}
                     </span>
                 </div>
             </div>
