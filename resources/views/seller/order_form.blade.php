@@ -647,7 +647,7 @@ function setupProductEvents(productItem) {
                 } else if (!image.startsWith('http')) {
                     imageUrl = '/public/storage/' + image;
                 }
-                
+
                 productImageImg.src = imageUrl;
                 productImage.classList.remove('hidden');
                 console.log('🖼️ Image affichée:', imageUrl);
@@ -880,13 +880,16 @@ function setupProductEvents(productItem) {
             if (tailles && Array.isArray(tailles) && tailles.length > 0) {
                 console.log('✅ Tailles valides détectées');
                                     tailles.forEach(taille => {
-                        const option = document.createElement('option');
-                        // Triple nettoyage pour être sûr
-                        const tailleClean = taille.replace(/[\[\]'"]/g, '').trim();
-                        option.value = tailleClean;
-                        option.textContent = tailleClean;
-                        sizeSelect.appendChild(option);
-                        console.log(`  📏 Taille ajoutée: "${tailleClean}" (original: "${taille}")`);
+                        // Vérifier que taille n'est pas null/undefined avant de faire replace
+                        if (taille && typeof taille === 'string') {
+                            const option = document.createElement('option');
+                            // Triple nettoyage pour être sûr
+                            const tailleClean = taille.replace(/[\[\]'"]/g, '').trim();
+                            option.value = tailleClean;
+                            option.textContent = tailleClean;
+                            sizeSelect.appendChild(option);
+                            console.log(`  📏 Taille ajoutée: "${tailleClean}" (original: "${taille}")`);
+                        }
                     });
                 console.log(`📏 Tailles disponibles: ${tailles.join(', ')}`);
                 console.log(`📏 Tailles affichées: ${tailles.join(' | ')}`);
@@ -902,13 +905,16 @@ function setupProductEvents(productItem) {
                 if (tailles && tailles.length > 0) {
                     console.log('✅ Tailles du produit trouvées dans la base de données');
                     tailles.forEach(taille => {
-                        const option = document.createElement('option');
-                        // Triple nettoyage pour être sûr
-                        const tailleClean = taille.replace(/[\[\]'"]/g, '').trim();
-                        option.value = tailleClean;
-                        option.textContent = tailleClean;
-                        sizeSelect.appendChild(option);
-                        console.log(`  📏 Taille ajoutée: "${tailleClean}" (original: "${taille}")`);
+                        // Vérifier que taille n'est pas null/undefined avant de faire replace
+                        if (taille && typeof taille === 'string') {
+                            const option = document.createElement('option');
+                            // Triple nettoyage pour être sûr
+                            const tailleClean = taille.replace(/[\[\]'"]/g, '').trim();
+                            option.value = tailleClean;
+                            option.textContent = tailleClean;
+                            sizeSelect.appendChild(option);
+                            console.log(`  📏 Taille ajoutée: "${tailleClean}" (original: "${taille}")`);
+                        }
                     });
                     console.log(`📏 Tailles du produit: ${tailles.join(', ')}`);
 
