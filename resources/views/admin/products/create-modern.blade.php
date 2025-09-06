@@ -280,6 +280,10 @@
                             class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
                         <i class="fas fa-undo mr-2"></i>إعادة تعيين
                     </button>
+                    <!-- Bouton de test temporaire -->
+                    <button type="button" onclick="submitFormWithoutValidation()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center">
+                        <i class="fas fa-bug mr-2"></i>Test (Sans validation)
+                    </button>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all duration-200 hover:shadow-lg font-medium">
                         <i class="fas fa-save mr-2"></i>إنشاء المنتج
                     </button>
@@ -784,6 +788,19 @@ function validateProductForm() {
 
     console.log('✅ Formulaire valide, soumission en cours...');
     return true;
+}
+
+// Fonction de test pour soumettre sans validation
+function submitFormWithoutValidation() {
+    console.log('🧪 Test: Soumission du formulaire sans validation');
+    const form = document.getElementById('productForm');
+    if (form) {
+        // Désactiver temporairement la validation
+        form.onsubmit = null;
+        form.submit();
+    } else {
+        console.error('❌ Formulaire non trouvé');
+    }
 }
 </script>
 @endsection
