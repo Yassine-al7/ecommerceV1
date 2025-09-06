@@ -228,6 +228,17 @@ const productsData = @json(($products ?? [])->map(function($product) {
     return $product;
 }));
 
+// Debug des données des produits
+console.log('🔍 Debug productsData:');
+productsData.forEach((product, index) => {
+    console.log(`  Product ${index}:`, {
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        image_url: product.image_url
+    });
+});
+
 // Récupérer la configuration des prix de livraison
 async function loadDeliveryConfig() {
     try {
