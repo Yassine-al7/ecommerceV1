@@ -130,6 +130,16 @@
                                             <!-- Nom de la couleur -->
                                             <span class="text-sm font-medium text-gray-700 text-center color-name">{{ $name }}</span>
 
+                                            <!-- Champ de stock pour cette couleur -->
+                                            <div class="w-full">
+                                                <label class="block text-xs text-gray-600 mb-1">الكمية</label>
+                                                <input type="number" 
+                                                       name="stock_couleur_{{ $loop->index }}" 
+                                                       value="{{ old('stock_couleur_' . $loop->index, 0) }}"
+                                                       min="0" 
+                                                       class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input"
+                                                       placeholder="0">
+                                            </div>
 
                                         </div>
                                     </div>

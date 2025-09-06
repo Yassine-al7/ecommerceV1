@@ -132,14 +132,14 @@ class ProductController extends Controller
             'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
         ];
 
-        // Ajouter la validation des stocks par couleur (temporairement désactivée)
-        // foreach ($couleurs as $index => $couleur) {
-        //     $validationRules["stock_couleur_{$index}"] = 'required|integer|min:1';
-        // }
+        // Ajouter la validation des stocks par couleur
+        foreach ($couleurs as $index => $couleur) {
+            $validationRules["stock_couleur_{$index}"] = 'required|integer|min:0';
+        }
 
-        // foreach ($couleursPersonnalisees as $index => $couleur) {
-        //     $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:1';
-        // }
+        foreach ($couleursPersonnalisees as $index => $couleur) {
+            $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:0';
+        }
 
         $data = $request->validate($validationRules);
 
