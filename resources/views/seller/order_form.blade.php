@@ -612,7 +612,7 @@ function setupProductEvents(productItem) {
                                         // Supprimer tous les caractères de formatage JSON : quotes, crochets, espaces
                                         return taille.replace(/[\[\]'"]/g, '').trim();
                                     }
-                                    return taille;
+                                    return taille || '';
                                 });
                                 console.log('  - Tailles nettoyées:', tailles);
                             }
@@ -636,9 +636,17 @@ function setupProductEvents(productItem) {
             });
 
             if (image && image.trim() !== '') {
-                productImageImg.src = image;
+                // Corriger l'URL de l'image pour éviter 404
+                let imageUrl = image;
+                if (image.startsWith('/storage/')) {
+                    imageUrl = '{{ asset("") }}' + image;
+                } else if (!image.startsWith('http')) {
+                    imageUrl = '{{ asset("") }}' + '/storage/' + image;
+                }
+
+                productImageImg.src = imageUrl;
                 productImage.classList.remove('hidden');
-                console.log('🖼️ Image affichée:', image);
+                console.log('🖼️ Image affichée:', imageUrl);
             } else {
                 productImage.classList.add('hidden');
                 console.log('❌ Pas d\'image disponible - image:', image);
