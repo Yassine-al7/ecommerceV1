@@ -102,7 +102,7 @@
                                     <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                         <option value="">{{ __('seller_order_form.select_product') }}</option>
                                         @foreach(($products ?? []) as $p)
-                                            <option value="{{ $p->id }}" data-image="{{ $p->image ? asset($p->image) : '' }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                            <option value="{{ $p->id }}" data-image="{{ $p->image ? '/storage/' . $p->image : '' }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -224,7 +224,7 @@ let productCounter = 1;
 
 // Données des produits passées depuis PHP
 const productsData = @json(($products ?? [])->map(function($product) {
-    $product->image_url = $product->image ? asset($product->image) : null;
+    $product->image_url = $product->image ? '/storage/' . $product->image : null;
     return $product;
 }));
 
