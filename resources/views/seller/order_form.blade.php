@@ -143,7 +143,7 @@
                             <div class="product-image mt-4 hidden">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
                                 <div class="w-32 h-32 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                                    <img class="w-full h-full object-cover" alt="Image produit">
+                                    <img class="w-full h-full object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
                                 </div>
                             </div>
                         </div>
@@ -401,7 +401,7 @@ function addProduct() {
         <div class="product-image mt-4 hidden">
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
             <div class="w-32 h-32 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                <img class="w-full h-full object-cover" alt="Image produit">
+                <img class="w-full h-full object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
             </div>
         </div>
     `;

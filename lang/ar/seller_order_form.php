@@ -30,6 +30,7 @@ return [
     'purchase_price' => 'سعر الشراء (درهم)',
     'margin_per_product' => 'هامش الربح لكل منتج (درهم)',
     'product_image_label' => 'صورة المنتج',
+    'product_image_alt' => 'صورة المنتج',
 
     'totals_section' => 'ملخص الطلب',
     'total_order_price' => 'السعر الإجمالي للطلب (درهم)',
