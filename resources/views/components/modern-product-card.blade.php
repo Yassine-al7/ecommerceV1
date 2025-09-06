@@ -18,23 +18,12 @@
                 <i class="fas fa-image text-4xl mb-2"></i>
                 <p class="text-sm">صورة مفقودة</p>
             </div>
-            <!-- Debug image info -->
-            <div class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
-                IMG: {{ $product->image }}<br>
-                New URL: {{ $imageUrl }}<br>
-                Exists: {{ file_exists(public_path($product->image)) ? 'YES' : 'NO' }}<br>
-                <a href="{{ $imageUrl }}" target="_blank" class="text-yellow-300">Test Link</a>
-            </div>
         @else
             <div class="text-gray-400 text-center flex items-center justify-center h-full">
                 <div>
                     <i class="fas fa-image text-4xl mb-2"></i>
                     <p class="text-sm">لا توجد صورة</p>
                 </div>
-            </div>
-            <!-- Debug no image info -->
-            <div class="absolute bottom-2 left-2 bg-red-500 bg-opacity-50 text-white text-xs p-1 rounded">
-                NO IMG: {{ $product->image ?? 'NULL' }}
             </div>
         @endif
 
@@ -101,13 +90,6 @@
                     <span class="text-blue-100 text-xs">المخزون</span>
                     <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
                         {{ $product->total_stock ?? $product->quantite_stock ?? 0 }}
-                    </span>
-                    <!-- Debug info -->
-                    <span class="text-yellow-200 text-xs">
-                        (T:{{ $product->total_stock ?? 'N/A' }} | Q:{{ $product->quantite_stock ?? 'N/A' }})
-                    </span>
-                    <span class="text-yellow-200 text-xs">
-                        Stock: {{ json_encode($product->stock_couleurs ?? []) }}
                     </span>
                 </div>
             </div>
