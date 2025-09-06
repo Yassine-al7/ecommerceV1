@@ -13,9 +13,9 @@
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">إجمالي رقم المعاملات</h3>
                 <div class="text-3xl font-bold text-green-600 mb-2">
-                    {{ number_format($topSellers->sum('total_revenue'), 2) }} MAD
+                    {{ number_format($totalRevenue, 2) }} MAD
                 </div>
-                <p class="text-sm text-gray-600">إجمالي الطلبات المسلمة</p>
+                <p class="text-sm text-gray-600">إجمالي الطلبات المسلمة ({{ $totalOrders }})</p>
             </div>
 
             <!-- Total vendeurs -->

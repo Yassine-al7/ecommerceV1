@@ -20,10 +20,10 @@ class StatisticsController extends Controller
             ->take(5)
             ->get();
 
-        // Si aucun produit n'a de ventes, créer des données de test
+        // Si aucun produit n'a de ventes, garder les vrais produits avec 0 ventes
         if ($topProducts->where('total_sales', '>', 0)->count() == 0) {
             $topProducts = Product::take(5)->get()->map(function($product) {
-                $product->total_sales = rand(1, 10); // Données de test
+                $product->total_sales = 0; // Vraies données avec 0 ventes
                 return $product;
             });
         }
@@ -37,11 +37,11 @@ class StatisticsController extends Controller
             ->take(6)
             ->get();
 
-        // Si aucun vendeur n'a de ventes, créer des données de test
+        // Si aucun vendeur n'a de ventes, garder les vrais vendeurs avec 0 ventes
         if ($topSellers->where('total_revenue', '>', 0)->count() == 0) {
             $topSellers = User::where('role', 'seller')->take(6)->get()->map(function($seller) {
-                $seller->total_orders = rand(1, 20);
-                $seller->total_revenue = rand(1000, 50000); // Données de test en MAD
+                $seller->total_orders = 0;
+                $seller->total_revenue = 0; // Vraies données avec 0 ventes
                 return $seller;
             });
         }
@@ -108,6 +108,10 @@ class StatisticsController extends Controller
             ->orderBy('total_revenue', 'desc')
             ->get();
 
+        // Calculer le vrai chiffre d'affaires total
+        $totalRevenue = Order::where('status', 'livré')->sum('prix_commande');
+        $totalOrders = Order::where('status', 'livré')->count();
+
         return view('admin.statistics', compact(
             'topProducts',
             'topSellers',
@@ -116,7 +120,9 @@ class StatisticsController extends Controller
             'totalSellers',
             'activeSellers',
             'newSellersThisMonth',
-            'allSellers'
+            'allSellers',
+            'totalRevenue',
+            'totalOrders'
         ));
     }
 
