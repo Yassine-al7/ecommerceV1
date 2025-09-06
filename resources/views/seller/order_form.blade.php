@@ -102,7 +102,7 @@
                                     <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                         <option value="">{{ __('seller_order_form.select_product') }}</option>
                                         @foreach(($products ?? []) as $p)
-                                            <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                            <option value="{{ $p->id }}" data-image="{{ $p->image ? asset($p->image) : '' }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -223,7 +223,10 @@ let deliveryConfig = {
 let productCounter = 1;
 
 // Données des produits passées depuis PHP
-const productsData = @json($products ?? []);
+const productsData = @json(($products ?? [])->map(function($product) {
+    $product->image_url = $product->image ? asset($product->image) : null;
+    return $product;
+}));
 
 // Récupérer la configuration des prix de livraison
 async function loadDeliveryConfig() {
@@ -412,7 +415,7 @@ function addProduct() {
         const option = document.createElement('option');
         option.value = product.id;
         option.textContent = product.name;
-        option.setAttribute('data-image', product.image || '');
+        option.setAttribute('data-image', product.image_url || '');
         option.setAttribute('data-prix-admin', product.pivot?.prix_vente || product.prix_admin || '0');
         option.setAttribute('data-tailles', product.tailles ? JSON.stringify(product.tailles) : '[]');
         productSelect.appendChild(option);
@@ -602,7 +605,7 @@ function setupProductEvents(productItem) {
             if (image) {
                 productImageImg.src = image;
                 productImage.classList.remove('hidden');
-                console.log('🖼️ Image affichée');
+                console.log('🖼️ Image affichée:', image);
             } else {
                 productImage.classList.add('hidden');
                 console.log('❌ Pas d\'image disponible');
