@@ -193,10 +193,11 @@
                             <input type="number" id="quantite_stock" name="quantite_stock"
                                    min="0" step="1"
                                    value="{{ old('quantite_stock', 0) }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-medium"
-                                   placeholder="أدخل عدد القطع المتاحة">
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-lg font-medium"
+                                   placeholder="سيتم ملؤه تلقائياً"
+                                   readonly>
                             <p class="text-sm text-gray-500 mt-2">
-                                💡 <strong>نصيحة:</strong> أدخل العدد الإجمالي للقطع المتاحة. يمكنك لاحقاً إخفاء الألوان المنفذة من البطاقة.
+                                💡 <strong>نصيحة:</strong> هذا الحقل يتم ملؤه تلقائياً بناءً على الكميات المدخلة لكل لون.
                             </p>
                             @error('quantite_stock')
                                 <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
@@ -617,6 +618,12 @@ function calculateTotalStock() {
     const totalDisplay = document.getElementById('totalStockDisplay');
     if (totalDisplay) {
         totalDisplay.textContent = total;
+    }
+
+    // Mettre à jour le champ de stock global
+    const globalStockInput = document.querySelector('input[name="quantite_stock"]');
+    if (globalStockInput) {
+        globalStockInput.value = total;
     }
 }
 
