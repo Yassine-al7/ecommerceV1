@@ -230,14 +230,19 @@ const productsData = @json(($products ?? [])->map(function($product) {
 
 // Debug des données des produits
 console.log('🔍 Debug productsData:');
-productsData.forEach((product, index) => {
-    console.log(`  Product ${index}:`, {
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        image_url: product.image_url
+console.log('🔍 Nombre de produits:', productsData.length);
+if (productsData.length === 0) {
+    console.log('❌ PROBLÈME: Aucun produit trouvé dans productsData');
+} else {
+    productsData.forEach((product, index) => {
+        console.log(`  Product ${index}:`, {
+            id: product.id,
+            name: product.name,
+            image: product.image,
+            image_url: product.image_url
+        });
     });
-});
+}
 
 // Récupérer la configuration des prix de livraison
 async function loadDeliveryConfig() {
@@ -510,7 +515,7 @@ function setupProductEvents(productItem) {
     const margeProduitDisplay = productItem.querySelector('.marge-produit-display');
     const productImage = productItem.querySelector('.product-image');
     const productImageImg = productItem.querySelector('.product-image img');
-    
+
     console.log('🔍 Debug éléments image:', {
         productItem: productItem,
         productImage: productImage,
@@ -552,6 +557,7 @@ function setupProductEvents(productItem) {
 
                 // Événement de sélection de produit
             productSelect.addEventListener('change', function() {
+                console.log('🎯 ÉVÉNEMENT: Sélection de produit déclenchée');
                 const selectedOption = this.options[this.selectedIndex];
                 const productName = selectedOption.textContent || 'Produit inconnu';
                 console.log(`📦 Produit sélectionné dans ${productTitle}:`, selectedOption.value);
