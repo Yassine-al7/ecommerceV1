@@ -613,13 +613,21 @@ function setupProductEvents(productItem) {
                     }
 
             // Afficher l'image
-            if (image) {
+            console.log('🖼️ Debug image:', {
+                image: image,
+                productImage: productImage,
+                productImageImg: productImageImg,
+                hasImage: !!image,
+                imageLength: image ? image.length : 0
+            });
+            
+            if (image && image.trim() !== '') {
                 productImageImg.src = image;
                 productImage.classList.remove('hidden');
                 console.log('🖼️ Image affichée:', image);
             } else {
                 productImage.classList.add('hidden');
-                console.log('❌ Pas d\'image disponible');
+                console.log('❌ Pas d\'image disponible - image:', image);
             }
 
             // Afficher le prix d'achat
