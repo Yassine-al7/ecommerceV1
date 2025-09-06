@@ -14,7 +14,7 @@
                 </a>
             </div>
 
-            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-8" id="productForm">
+            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-8" id="productForm" onsubmit="return validateProductForm()">
                 @csrf
 
                 <!-- Informations de base -->
@@ -708,5 +708,67 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialiser les compteurs
     updateSelectedColorsCount();
 });
+
+// Fonction de validation du formulaire de produit
+function validateProductForm() {
+    console.log('🔍 Validation du formulaire de produit en cours...');
+    
+    const form = document.getElementById('productForm');
+    const name = form.querySelector('input[name="name"]').value;
+    const category = form.querySelector('select[name="categorie_id"]').value;
+    const prixAdmin = form.querySelector('input[name="prix_admin"]').value;
+    const prixVente = form.querySelector('input[name="prix_vente"]').value;
+    const quantiteStock = form.querySelector('input[name="quantite_stock"]').value;
+    
+    console.log('📝 Données du formulaire:', {
+        name: name,
+        category: category,
+        prixAdmin: prixAdmin,
+        prixVente: prixVente,
+        quantiteStock: quantiteStock
+    });
+    
+    // Vérifier les champs requis
+    if (!name.trim()) {
+        console.log('❌ Nom du produit manquant');
+        alert('يرجى إدخال اسم المنتج');
+        return false;
+    }
+    
+    if (!category) {
+        console.log('❌ Catégorie manquante');
+        alert('يرجى اختيار تصنيف');
+        return false;
+    }
+    
+    if (!prixAdmin.trim()) {
+        console.log('❌ Prix admin manquant');
+        alert('يرجى إدخال سعر الإدارة');
+        return false;
+    }
+    
+    if (!prixVente || prixVente <= 0) {
+        console.log('❌ Prix vente invalide');
+        alert('يرجى إدخال سعر بيع صحيح');
+        return false;
+    }
+    
+    if (!quantiteStock || quantiteStock < 0) {
+        console.log('❌ Quantité stock invalide');
+        alert('يرجى إدخال كمية مخزون صحيحة');
+        return false;
+    }
+    
+    // Vérifier les couleurs
+    const selectedColors = document.querySelectorAll('.color-item.selected');
+    if (selectedColors.length === 0) {
+        console.log('❌ Aucune couleur sélectionnée');
+        alert('يرجى اختيار لون واحد على الأقل');
+        return false;
+    }
+    
+    console.log('✅ Formulaire valide, soumission en cours...');
+    return true;
+}
 </script>
 @endsection
