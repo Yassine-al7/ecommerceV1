@@ -111,6 +111,9 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        // Debug: Afficher les données reçues
+        \Log::info('🔍 Données reçues pour création de produit:', $request->all());
+        
         // Récupérer la catégorie pour vérifier si c'est un accessoire
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
@@ -118,6 +121,12 @@ class ProductController extends Controller
         // Récupérer les couleurs pour la validation dynamique
         $couleurs = $request->input('couleurs', []);
         $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
+        
+        \Log::info('🎨 Couleurs reçues:', [
+            'couleurs' => $couleurs,
+            'couleurs_personnalisees' => $couleursPersonnalisees,
+            'isAccessoire' => $isAccessoire
+        ]);
 
         $validationRules = [
             'name' => 'required|string|max:255',
@@ -132,14 +141,14 @@ class ProductController extends Controller
             'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
         ];
 
-        // Ajouter la validation des stocks par couleur
-        foreach ($couleurs as $index => $couleur) {
-            $validationRules["stock_couleur_{$index}"] = 'required|integer|min:1';
-        }
+        // Ajouter la validation des stocks par couleur (temporairement désactivée)
+        // foreach ($couleurs as $index => $couleur) {
+        //     $validationRules["stock_couleur_{$index}"] = 'required|integer|min:1';
+        // }
 
-        foreach ($couleursPersonnalisees as $index => $couleur) {
-            $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:1';
-        }
+        // foreach ($couleursPersonnalisees as $index => $couleur) {
+        //     $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:1';
+        // }
 
         $data = $request->validate($validationRules);
 
