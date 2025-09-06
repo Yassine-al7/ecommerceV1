@@ -21,7 +21,7 @@
         @endif
 
         <div class="bg-white rounded-lg shadow-lg p-8">
-            <form method="POST" action="{{ isset($order) ? route('seller.orders.update', $order->id) : route('seller.orders.store') }}" class="space-y-6" onsubmit="return validateFormBeforeSubmit()">
+            <form method="POST" action="{{ isset($order) ? route('seller.orders.update', $order->id) : route('seller.orders.store') }}" class="space-y-6" onsubmit="return validateFormBeforeSubmit()" id="orderForm">
                 @csrf
                 @if(isset($order))
                     @method('PUT')
@@ -193,9 +193,15 @@
                     <a href="{{ route('seller.orders.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
                         <i class="fas fa-arrow-left mr-2"></i>{{ __('seller_order_form.actions_back') }}
                     </a>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-                        <i class="fas fa-save mr-2"></i>{{ isset($order) ? __('seller_order_form.actions_submit_update') : __('seller_order_form.actions_submit_create') }}
-                    </button>
+                    <div class="flex space-x-3">
+                        <!-- Bouton de test temporaire -->
+                        <button type="button" onclick="submitFormWithoutValidation()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                            <i class="fas fa-bug mr-2"></i>Test (Sans validation)
+                        </button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-save mr-2"></i>{{ isset($order) ? __('seller_order_form.actions_submit_update') : __('seller_order_form.actions_submit_create') }}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -1365,8 +1371,12 @@ function validateForm() {
 }
 
 function validateFormBeforeSubmit() {
+    console.log('🔍 Validation du formulaire en cours...');
+
     // Nettoyer toutes les erreurs de validation existantes
     const productItems = document.querySelectorAll('.product-item');
+    console.log(`📦 Nombre de produits à valider: ${productItems.length}`);
+
     productItems.forEach(productItem => {
         clearStockValidation(productItem);
         const quantityInput = productItem.querySelector('.quantity-input');
@@ -1388,9 +1398,11 @@ function validateFormBeforeSubmit() {
             const selectedQuantity = parseInt(quantityInput.value) || 0;
 
             if (!selectedColor) {
+                console.log(`❌ Produit ${index + 1}: Couleur manquante`);
                 showStockError(productItem, 'Veuillez sélectionner une couleur');
                 isValid = false;
             } else if (selectedQuantity <= 0) {
+                console.log(`❌ Produit ${index + 1}: Quantité invalide (${selectedQuantity})`);
                 showStockError(productItem, 'La quantité doit être supérieure à 0');
                 isValid = false;
             } else {
@@ -1409,6 +1421,7 @@ function validateFormBeforeSubmit() {
             // Validation de la taille (seulement si le champ est visible)
             if (sizeSelect && sizeSelect.parentElement.style.display !== 'none') {
                 if (!sizeSelect.value || sizeSelect.value === '') {
+                    console.log(`❌ Produit ${index + 1}: Taille manquante`);
                     showStockError(productItem, 'Veuillez sélectionner une taille');
                     isValid = false;
                 }
@@ -1416,13 +1429,30 @@ function validateFormBeforeSubmit() {
         }
     });
 
+    console.log(`✅ Validation terminée. Formulaire valide: ${isValid}`);
+
     if (!isValid) {
+        console.log('❌ Formulaire bloqué par la validation JavaScript');
         alert('❌ Veuillez corriger les erreurs avant d\'envoyer la commande');
         return false;
     }
 
+    console.log('✅ Formulaire prêt à être soumis');
     // Si tout est valide, demander confirmation
     return confirmOrder();
+}
+
+// Fonction de test pour soumettre sans validation
+function submitFormWithoutValidation() {
+    console.log('🧪 Test: Soumission du formulaire sans validation');
+    const form = document.getElementById('orderForm');
+    if (form) {
+        // Désactiver temporairement la validation
+        form.onsubmit = null;
+        form.submit();
+    } else {
+        console.error('❌ Formulaire non trouvé');
+    }
 }
 
 function confirmOrder() {
