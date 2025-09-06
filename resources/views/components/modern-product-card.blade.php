@@ -8,7 +8,7 @@
                  src="{{ asset($product->image) }}"
                  alt="{{ $product->name }}"
                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 onerror="console.log('Image error:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
                 <i class="fas fa-image text-4xl mb-2"></i>
                 <p class="text-sm">صورة مفقودة</p>
@@ -17,7 +17,8 @@
             <div class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
                 IMG: {{ $product->image }}<br>
                 Asset: {{ asset($product->image) }}<br>
-                Exists: {{ file_exists(public_path($product->image)) ? 'YES' : 'NO' }}
+                Exists: {{ file_exists(public_path($product->image)) ? 'YES' : 'NO' }}<br>
+                <a href="{{ asset($product->image) }}" target="_blank" class="text-yellow-300">Test Link</a>
             </div>
         @else
             <div class="text-gray-400 text-center flex items-center justify-center h-full">

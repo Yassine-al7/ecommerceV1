@@ -131,7 +131,7 @@
                                             <span class="text-sm font-medium text-gray-700 text-center color-name">{{ $name }}</span>
 
                                             <!-- Champ de stock pour cette couleur -->
-                                            <div class="w-full">
+                                            <div class="w-full stock-field" style="display: none;">
                                                 <label class="block text-xs text-gray-600 mb-1">الكمية</label>
                                                 <input type="number" 
                                                        name="stock_couleur_{{ $loop->index }}" 
@@ -401,16 +401,19 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleColorCard(checkbox) {
     const colorCard = checkbox.closest('.color-card');
     const hexInput = colorCard.querySelector('.color-hex-input');
+    const stockField = colorCard.querySelector('.stock-field');
 
     if (checkbox.checked) {
         colorCard.classList.add('selected');
         if (hexInput) hexInput.disabled = false;
+        if (stockField) stockField.style.display = 'block';
 
         // Changer l'image principale du produit
         changeMainProductImage(colorCard);
     } else {
         colorCard.classList.remove('selected');
         if (hexInput) hexInput.disabled = true;
+        if (stockField) stockField.style.display = 'none';
     }
 
     updateSelectedColorsCount();
