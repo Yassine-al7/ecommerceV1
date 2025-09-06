@@ -5,7 +5,7 @@
     <div class="relative h-48 bg-gray-100 overflow-hidden">
         @if($product->image)
             <img id="product-image-{{ $product->id }}"
-                 src="{{ $product->image }}"
+                 src="{{ asset($product->image) }}"
                  alt="{{ $product->name }}"
                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">

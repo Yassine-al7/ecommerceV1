@@ -111,9 +111,6 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        // Debug: Afficher les données reçues
-        \Log::info('🔍 Données reçues pour création de produit:', $request->all());
-        
         // Récupérer la catégorie pour vérifier si c'est un accessoire
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
@@ -121,12 +118,6 @@ class ProductController extends Controller
         // Récupérer les couleurs pour la validation dynamique
         $couleurs = $request->input('couleurs', []);
         $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
-        
-        \Log::info('🎨 Couleurs reçues:', [
-            'couleurs' => $couleurs,
-            'couleurs_personnalisees' => $couleursPersonnalisees,
-            'isAccessoire' => $isAccessoire
-        ]);
 
         $validationRules = [
             'name' => 'required|string|max:255',
