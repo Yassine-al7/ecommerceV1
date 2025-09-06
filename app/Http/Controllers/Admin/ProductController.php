@@ -233,8 +233,8 @@ class ProductController extends Controller
             $imagePath = $request->file('image')->store('products', 'public');
             $data['image'] = '/storage/' . $imagePath;
         } else {
-            // Si aucune image n'est fournie, utiliser une image par défaut
-            $data['image'] = '/storage/products/default-product.svg';
+            // Si aucune image n'est fournie, laisser null pour afficher le placeholder
+            $data['image'] = null;
         }
 
         // Gérer les images par couleur

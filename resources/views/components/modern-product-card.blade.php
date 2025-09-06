@@ -3,7 +3,7 @@
 <div class="modern-product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
     <!-- Image du produit avec badge -->
     <div class="relative h-48 bg-gray-100 overflow-hidden">
-        @if($product->image)
+        @if($product->image && $product->image !== '/storage/products/default-product.svg')
             <img id="product-image-{{ $product->id }}"
                  src="{{ asset($product->image) }}"
                  alt="{{ $product->name }}"
