@@ -138,7 +138,8 @@
                                                        value="{{ old('stock_couleur_' . $loop->index, 0) }}"
                                                        min="0"
                                                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input"
-                                                       placeholder="0">
+                                                       placeholder="0"
+                                                       oninput="calculateTotalStock()">
                                             </div>
 
                                         </div>
@@ -159,6 +160,14 @@
                             </h4>
                             <div id="selectedColorsList" class="flex flex-wrap gap-2">
                                 <!-- Les couleurs sélectionnées seront affichées ici -->
+                            </div>
+
+                            <!-- Stock total -->
+                            <div class="mt-4 pt-4 border-t border-green-200">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-green-800">المخزون الإجمالي:</span>
+                                    <span id="totalStockDisplay" class="text-lg font-bold text-green-900">0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -589,6 +598,25 @@ function updateSelectedColorsCount() {
     const countElement = document.getElementById('selectedColorsCount');
     if (countElement) {
         countElement.textContent = `${selectedColors.length} محددة`;
+    }
+
+    // Calculer et afficher le stock total
+    calculateTotalStock();
+}
+
+// Fonction pour calculer le stock total
+function calculateTotalStock() {
+    const stockInputs = document.querySelectorAll('.stock-input');
+    let total = 0;
+
+    stockInputs.forEach(input => {
+        const value = parseInt(input.value) || 0;
+        total += value;
+    });
+
+    const totalDisplay = document.getElementById('totalStockDisplay');
+    if (totalDisplay) {
+        totalDisplay.textContent = total;
     }
 }
 
