@@ -3,7 +3,7 @@
 <div class="modern-product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
     <!-- Image du produit avec badge -->
     <div class="relative h-48 bg-gray-100 overflow-hidden">
-        @if($product->image && $product->image !== '/storage/products/default-product.svg')
+        @if($product->image && $product->image !== null && $product->image !== '/storage/products/default-product.svg')
             <img id="product-image-{{ $product->id }}"
                  src="{{ asset($product->image) }}"
                  alt="{{ $product->name }}"
@@ -84,7 +84,7 @@
                 <div class="flex items-center space-x-2">
                     <span class="text-blue-100 text-xs">المخزون</span>
                     <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
-                        {{ $product->quantite_stock ?? 0 }}
+                        {{ $product->total_stock ?? $product->quantite_stock ?? 0 }}
                     </span>
                 </div>
             </div>
