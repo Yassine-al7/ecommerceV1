@@ -297,7 +297,7 @@ class Product extends Model
     {
         return $this->belongsToMany(User::class, 'product_user', 'product_id', 'user_id')
             ->withPivot('prix_admin', 'prix_vente', 'visible')
-            ->where('role', 'seller');
+            ->where('users.role', 'seller');
     }
 
     public function stocks()
