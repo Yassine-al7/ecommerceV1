@@ -712,9 +712,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // Fonction de validation du formulaire de produit
 function validateProductForm() {
     console.log('🔍 Validation du formulaire de produit en cours...');
-    
+
     const form = document.getElementById('productForm');
-    
+
     // Debug: Afficher tous les éléments de couleur
     console.log('🔍 Debug des couleurs:');
     console.log('- .color-item:', document.querySelectorAll('.color-item').length);
@@ -771,11 +771,11 @@ function validateProductForm() {
     // Vérifier les couleurs
     const selectedColors = document.querySelectorAll('.color-item.selected, .color-item[data-selected="true"], .selected-color');
     console.log('🎨 Couleurs trouvées:', selectedColors.length);
-    
+
     // Alternative: vérifier les inputs cachés des couleurs
     const colorInputs = document.querySelectorAll('input[name^="couleurs"]:checked, input[name^="couleurs_personnalisees"]:checked');
     console.log('🎨 Inputs couleurs cochés:', colorInputs.length);
-    
+
     if (selectedColors.length === 0 && colorInputs.length === 0) {
         console.log('❌ Aucune couleur sélectionnée');
         alert('يرجى اختيار لون واحد على الأقل');
