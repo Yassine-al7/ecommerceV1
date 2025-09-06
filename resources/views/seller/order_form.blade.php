@@ -607,13 +607,16 @@ function setupProductEvents(productItem) {
 
                             // Nettoyer TOUS les caractères de formatage des tailles
                             if (Array.isArray(tailles)) {
-                                tailles = tailles.map(taille => {
-                                    if (typeof taille === 'string') {
-                                        // Supprimer tous les caractères de formatage JSON : quotes, crochets, espaces
-                                        return taille.replace(/[\[\]'"]/g, '').trim();
-                                    }
-                                    return taille || '';
-                                });
+                                tailles = tailles
+                                    .filter(taille => taille !== null && taille !== undefined) // Filtrer les valeurs null/undefined
+                                    .map(taille => {
+                                        if (typeof taille === 'string') {
+                                            // Supprimer tous les caractères de formatage JSON : quotes, crochets, espaces
+                                            return taille.replace(/[\[\]'"]/g, '').trim();
+                                        }
+                                        return taille || '';
+                                    })
+                                    .filter(taille => taille !== ''); // Filtrer les chaînes vides
                                 console.log('  - Tailles nettoyées:', tailles);
                             }
                         } else {
@@ -636,14 +639,15 @@ function setupProductEvents(productItem) {
             });
 
             if (image && image.trim() !== '') {
-                // Corriger l'URL de l'image pour éviter 404
+                // Corriger l'URL de l'image pour éviter 404 (même logique que la liste des produits)
                 let imageUrl = image;
                 if (image.startsWith('/storage/')) {
-                    imageUrl = '{{ asset("") }}' + image;
+                    // Remplacer /storage/ par /public/storage/ pour Hostinger
+                    imageUrl = image.replace('/storage/', '/public/storage/');
                 } else if (!image.startsWith('http')) {
-                    imageUrl = '{{ asset("") }}' + '/storage/' + image;
+                    imageUrl = '/public/storage/' + image;
                 }
-
+                
                 productImageImg.src = imageUrl;
                 productImage.classList.remove('hidden');
                 console.log('🖼️ Image affichée:', imageUrl);
