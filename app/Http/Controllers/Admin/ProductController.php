@@ -725,18 +725,20 @@ class ProductController extends Controller
 
         // Traiter les prix admin (peut être une plage comme [400,500])
         $prixAdmin = $data['prix_admin'] ?? $product->prix_admin;
+        $prixAdminForPivot = null; // Prix à utiliser dans la table pivot (decimal)
+        
         if ($prixAdmin) {
             // Si c'est une plage [400,500], extraire les prix
             if (preg_match('/\[([^\]]+)\]/', $prixAdmin, $matches)) {
                 $prixArray = array_map('floatval', explode(',', $matches[1]));
-                $prixAdmin = json_encode($prixArray);
+                $prixAdminForPivot = array_sum($prixArray) / count($prixArray); // Prix moyen
             } elseif (strpos($prixAdmin, ',') !== false) {
                 // Si c'est une liste séparée par des virgules
                 $prixArray = array_map('floatval', explode(',', $prixAdmin));
-                $prixAdmin = json_encode($prixArray);
+                $prixAdminForPivot = array_sum($prixArray) / count($prixArray); // Prix moyen
             } else {
                 // Si c'est un seul prix
-                $prixAdmin = json_encode([(float) $prixAdmin]);
+                $prixAdminForPivot = (float) $prixAdmin;
             }
         }
 
@@ -747,7 +749,7 @@ class ProductController extends Controller
             foreach ($selectedSellers as $sellerId) {
                 $product->assignedUsers()->syncWithoutDetaching([
                     $sellerId => [
-                        'prix_admin' => $prixAdmin,
+                        'prix_admin' => $prixAdminForPivot,
                         'prix_vente' => $prixVente,
                         'visible' => $data['visible'] ?? true,
                     ]
