@@ -705,7 +705,8 @@ class ProductController extends Controller
     public function assignForm(Product $product)
     {
         $sellers = User::where('role', 'seller')->get();
-        return view('admin.products.assign', compact('product', 'sellers'));
+        $assignedSellers = $product->assignedSellers;
+        return view('admin.products.assign', compact('product', 'sellers', 'assignedSellers'));
     }
 
     public function assignStore(Request $request, Product $product)
@@ -738,7 +739,7 @@ class ProductController extends Controller
                 $prixAdmin = json_encode([(float) $prixAdmin]);
             }
         }
-        
+
         $prixVente = $data['prix_vente'] ?? $product->prix_vente;
 
         if ($action === 'assign') {

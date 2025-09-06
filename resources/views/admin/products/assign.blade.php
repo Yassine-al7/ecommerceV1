@@ -88,8 +88,8 @@
 
                     @foreach($sellers as $seller)
                         @php
-                            $isAssigned = $product->assignedSellers->contains($seller->id);
-                            $assignment = $product->assignedSellers->where('id', $seller->id)->first();
+                            $isAssigned = $assignedSellers->contains($seller->id);
+                            $assignment = $assignedSellers->where('id', $seller->id)->first();
                         @endphp
 
                         <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
