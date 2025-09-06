@@ -510,6 +510,14 @@ function setupProductEvents(productItem) {
     const margeProduitDisplay = productItem.querySelector('.marge-produit-display');
     const productImage = productItem.querySelector('.product-image');
     const productImageImg = productItem.querySelector('.product-image img');
+    
+    console.log('🔍 Debug éléments image:', {
+        productItem: productItem,
+        productImage: productImage,
+        productImageImg: productImageImg,
+        hasProductImage: !!productImage,
+        hasProductImageImg: !!productImageImg
+    });
     // Recalculer marge et totaux en temps réel quand le prix de vente change
     if (prixVenteInput) {
         prixVenteInput.addEventListener('input', function() {
@@ -620,7 +628,7 @@ function setupProductEvents(productItem) {
                 hasImage: !!image,
                 imageLength: image ? image.length : 0
             });
-            
+
             if (image && image.trim() !== '') {
                 productImageImg.src = image;
                 productImage.classList.remove('hidden');
