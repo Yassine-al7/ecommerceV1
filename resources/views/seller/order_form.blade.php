@@ -102,7 +102,7 @@
                                     <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                         <option value="">{{ __('seller_order_form.select_product') }}</option>
                                         @foreach(($products ?? []) as $p)
-                                            <option value="{{ $p->id }}" data-image="{{ $p->image ? '/storage/' . $p->image : '' }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                            <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -222,11 +222,58 @@ let deliveryConfig = {
 
 let productCounter = 1;
 
+// Variable globale pour suivre le stock disponible en temps réel
+let availableStockTracker = {};
+
 // Données des produits passées depuis PHP
 const productsData = @json(($products ?? [])->map(function($product) {
-    $product->image_url = $product->image ? '/storage/' . $product->image : null;
+    // Utiliser l'image telle qu'elle est stockée (déjà avec /storage/)
+    $product->image_url = $product->image;
     return $product;
 }));
+
+// Initialiser le tracker de stock avec les valeurs initiales
+function initializeStockTracker() {
+    console.log('🔄 Initialisation du tracker de stock...');
+    availableStockTracker = {};
+
+    productsData.forEach(product => {
+        if (product.stock_couleurs_filtre && Array.isArray(product.stock_couleurs_filtre)) {
+            product.stock_couleurs_filtre.forEach(colorStock => {
+                const colorName = colorStock.name;
+                const initialStock = parseInt(colorStock.quantity) || 0;
+
+                if (!availableStockTracker[colorName]) {
+                    availableStockTracker[colorName] = initialStock;
+                    console.log(`📦 Stock initial pour ${colorName}: ${initialStock}`);
+                } else {
+                    // Si la couleur existe déjà, prendre le maximum (au cas où elle serait dans plusieurs produits)
+                    availableStockTracker[colorName] = Math.max(availableStockTracker[colorName], initialStock);
+                    console.log(`📦 Stock mis à jour pour ${colorName}: ${availableStockTracker[colorName]}`);
+                }
+            });
+        }
+    });
+
+    console.log('✅ Tracker de stock initialisé:', availableStockTracker);
+}
+
+// Fonction pour mettre à jour le stock disponible
+function updateAvailableStock(colorName, quantityUsed) {
+    if (availableStockTracker[colorName] !== undefined) {
+        availableStockTracker[colorName] -= quantityUsed;
+        console.log(`📊 Stock mis à jour pour ${colorName}: -${quantityUsed} = ${availableStockTracker[colorName]} disponible`);
+    }
+}
+
+// Fonction pour restaurer le stock (quand on change de quantité)
+function restoreAvailableStock(colorName, oldQuantity, newQuantity) {
+    if (availableStockTracker[colorName] !== undefined) {
+        const difference = oldQuantity - newQuantity;
+        availableStockTracker[colorName] += difference;
+        console.log(`🔄 Stock restauré pour ${colorName}: +${difference} = ${availableStockTracker[colorName]} disponible`);
+    }
+}
 
 // Debug des données des produits
 console.log('🔍 Debug productsData:');
@@ -537,13 +584,51 @@ function setupProductEvents(productItem) {
 
     // Recalculer achat/marge/totaux quand la quantité change
     if (quantityInput) {
+        // Stocker l'ancienne quantité pour la restauration
+        let oldQuantity = parseInt(quantityInput.value) || 0;
+
         quantityInput.addEventListener('input', function() {
+            const colorSelect = productItem.querySelector('.color-select');
+            const selectedColor = colorSelect ? colorSelect.value : '';
+            const newQuantity = parseInt(this.value) || 0;
+
+            // Restaurer l'ancienne quantité dans le tracker
+            if (selectedColor && oldQuantity > 0) {
+                restoreAvailableStock(selectedColor, oldQuantity, 0);
+            }
+
+            // Mettre à jour avec la nouvelle quantité
+            if (selectedColor && newQuantity > 0) {
+                updateAvailableStock(selectedColor, newQuantity);
+            }
+
+            // Mettre à jour l'ancienne quantité
+            oldQuantity = newQuantity;
+
             calculatePurchasePrice(productItem);
             calculateProductMargin(productItem);
             validateStockQuantity(productItem);
             safeCalculateTotals();
         });
+
         quantityInput.addEventListener('change', function() {
+            const colorSelect = productItem.querySelector('.color-select');
+            const selectedColor = colorSelect ? colorSelect.value : '';
+            const newQuantity = parseInt(this.value) || 0;
+
+            // Restaurer l'ancienne quantité dans le tracker
+            if (selectedColor && oldQuantity > 0) {
+                restoreAvailableStock(selectedColor, oldQuantity, 0);
+            }
+
+            // Mettre à jour avec la nouvelle quantité
+            if (selectedColor && newQuantity > 0) {
+                updateAvailableStock(selectedColor, newQuantity);
+            }
+
+            // Mettre à jour l'ancienne quantité
+            oldQuantity = newQuantity;
+
             calculatePurchasePrice(productItem);
             calculateProductMargin(productItem);
             validateStockQuantity(productItem);
@@ -629,28 +714,35 @@ function setupProductEvents(productItem) {
                         tailles = [];
                     }
 
-            // Afficher l'image
-            console.log('🖼️ Debug image:', {
-                image: image,
-                productImage: productImage,
-                productImageImg: productImageImg,
-                hasImage: !!image,
-                imageLength: image ? image.length : 0
-            });
+            // Afficher l'image - DEBUG COMPLET
+            console.log('🖼️ ===== DEBUG IMAGE COMPLET =====');
+            console.log('🖼️ Image brute:', image);
+            console.log('🖼️ Type image:', typeof image);
+            console.log('🖼️ Image length:', image ? image.length : 0);
+            console.log('🖼️ Image starts with /storage/:', image ? image.startsWith('/storage/') : false);
+            console.log('🖼️ ProductImage element:', productImage);
+            console.log('🖼️ ProductImageImg element:', productImageImg);
+            console.log('🖼️ ProductImageImg exists:', !!productImageImg);
+            console.log('🖼️ =================================');
 
             if (image && image.trim() !== '') {
-                // Corriger l'URL de l'image pour éviter 404 (même logique que la liste des produits)
+                // Utiliser l'URL de l'image telle qu'elle est (déjà corrigée)
                 let imageUrl = image;
-                if (image.startsWith('/storage/')) {
-                    // Remplacer /storage/ par /public/storage/ pour Hostinger
-                    imageUrl = image.replace('/storage/', '/public/storage/');
-                } else if (!image.startsWith('http')) {
-                    imageUrl = '/public/storage/' + image;
-                }
+                console.log('🖼️ URL de l\'image:', imageUrl);
 
                 productImageImg.src = imageUrl;
                 productImage.classList.remove('hidden');
-                console.log('🖼️ Image affichée:', imageUrl);
+                console.log('🖼️ Image affichée avec URL:', imageUrl);
+
+                // Vérifier si l'image se charge
+                productImageImg.onload = function() {
+                    console.log('✅ Image chargée avec succès:', imageUrl);
+                };
+
+                productImageImg.onerror = function() {
+                    console.log('❌ Erreur de chargement avec URL:', imageUrl);
+                };
+
             } else {
                 productImage.classList.add('hidden');
                 console.log('❌ Pas d\'image disponible - image:', image);
@@ -983,7 +1075,7 @@ function setupProductEvents(productItem) {
     }
 }
 
-// Fonction de validation du stock
+// Fonction de validation du stock avec tracker global
 function validateStockQuantity(productItem) {
     const colorSelect = productItem.querySelector('.color-select');
     const quantityInput = productItem.querySelector('.quantity-input');
@@ -999,11 +1091,10 @@ function validateStockQuantity(productItem) {
         return;
     }
 
-    // Récupérer le stock disponible pour cette couleur
-    const selectedOption = colorSelect.options[colorSelect.selectedIndex];
-    const availableStock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+    // Utiliser le stock disponible depuis le tracker global
+    const availableStock = availableStockTracker[selectedColor] || 0;
 
-    console.log(`🔍 Validation stock: Couleur=${selectedColor}, Quantité=${selectedQuantity}, Stock=${availableStock}`);
+    console.log(`🔍 Validation stock: Couleur=${selectedColor}, Quantité=${selectedQuantity}, Stock disponible=${availableStock}`);
 
     // Si l'admin masque les couleurs épuisées, ne pas afficher d'erreur pour stock 0
     if (availableStock === 0) {
@@ -1872,6 +1963,9 @@ function forceRecalculate() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== Initialisation du formulaire de commande ===');
+
+    // Initialiser le tracker de stock
+    initializeStockTracker();
 
     // Charger la configuration de livraison
     loadDeliveryConfig();
