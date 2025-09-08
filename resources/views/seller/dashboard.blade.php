@@ -124,7 +124,7 @@
                         <i class="fas fa-check text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Confirmé</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('seller.statuses.confirmed') }}</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $ordersConfirme }}</p>
                     </div>
                 </div>
@@ -136,7 +136,7 @@
                         <i class="fas fa-shipping-fast text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Expédition</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('seller.statuses.shipping') }}</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $ordersExpedition }}</p>
                     </div>
                 </div>

@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'products' => [
+        'details' => [
+            'colors' => 'الألوان',
+            'sizes' => 'المقاسات',
+            'stock_by_color' => 'المخزون حسب اللون',
+            'admin_price' => 'سعر الأدمن',
+            'currency_mad' => 'درهم',
+        ],
+    ],
     'title' => 'لوحة تحكم البائع',
     'welcome' => 'مرحباً :name - نظرة عامة على نشاطك',
 

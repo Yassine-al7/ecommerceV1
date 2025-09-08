@@ -108,6 +108,7 @@ Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logou
 Route::middleware(['auth', 'verified', 'seller'])->prefix('seller')->name('seller.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Seller\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/products', [App\Http\Controllers\Seller\ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/{id}', [App\Http\Controllers\Seller\ProductController::class, 'show'])->name('products.show');
     Route::resource('orders', App\Http\Controllers\Seller\OrderController::class)->except(['destroy']);
     Route::resource('invoices', App\Http\Controllers\Seller\InvoiceController::class)->only(['index', 'show']);
 });

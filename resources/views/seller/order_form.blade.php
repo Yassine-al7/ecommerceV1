@@ -607,6 +607,7 @@ function setupProductEvents(productItem) {
 
             calculatePurchasePrice(productItem);
             calculateProductMargin(productItem);
+            setQuantityBounds(productItem);
             validateStockQuantity(productItem);
             safeCalculateTotals();
         });
@@ -631,6 +632,7 @@ function setupProductEvents(productItem) {
 
             calculatePurchasePrice(productItem);
             calculateProductMargin(productItem);
+            setQuantityBounds(productItem);
             validateStockQuantity(productItem);
             safeCalculateTotals();
         });
@@ -898,6 +900,7 @@ function setupProductEvents(productItem) {
 
                 // Ajouter la validation de stock pour les couleurs
                 colorSelect.addEventListener('change', function() {
+                    setQuantityBounds(productItem);
                     validateStockQuantity(productItem);
                 });
             }
@@ -1075,51 +1078,124 @@ function setupProductEvents(productItem) {
     }
 }
 
-// Fonction de validation du stock avec tracker global
+// Disponible = stock initial (du produit sélectionné) - somme des quantités des AUTRES lignes sur la même (productId,couleur)
+function getAvailableForItem(productItem) {
+    const productSelect = productItem.querySelector('.product-select');
+    const colorSelect = productItem.querySelector('.color-select');
+    if (!productSelect || !colorSelect || !productSelect.value || !colorSelect.value) {
+        return { available: 0, current: 0, initial: 0, usedOther: 0 };
+    }
+
+    const productId = productSelect.value;
+    const colorName = colorSelect.value;
+
+    // 1) Stock initial pour ce (productId,couleur) – toujours depuis productsData (source de vérité)
+    let initial = 0;
+    const product = productsData.find(p => p.id == productId);
+    if (product) {
+        // Priorité: stock_couleurs_filtre (déjà filtré et nettoyé)
+        if (Array.isArray(product.stock_couleurs_filtre)) {
+            const cs = product.stock_couleurs_filtre.find(sc => sc.name === colorName);
+            if (cs) initial = parseInt(cs.quantity) || 0;
+        }
+        // Fallback: stock_couleurs (peut être string JSON ou tableau)
+        if (initial === 0 && product.stock_couleurs) {
+            try {
+                const raw = typeof product.stock_couleurs === 'string' ? JSON.parse(product.stock_couleurs) : product.stock_couleurs;
+                if (Array.isArray(raw)) {
+                    const cs2 = raw.find(sc => sc.name === colorName);
+                    if (cs2) initial = parseInt(cs2.quantity) || 0;
+                }
+            } catch (_) {}
+        }
+    }
+
+    // 2) Somme des quantités des AUTRES lignes pour ce (productId,couleur)
+    let usedOther = 0;
+    const allItems = document.querySelectorAll('.product-item');
+    allItems.forEach(it => {
+        if (it === productItem) return;
+        const ps = it.querySelector('.product-select');
+        const cs2 = it.querySelector('.color-select');
+        const qi = it.querySelector('.quantity-input');
+        if (!ps || !cs2 || !qi) return;
+        if (ps.value == productId && cs2.value === colorName) {
+            usedOther += (parseInt(qi.value) || 0);
+        }
+    });
+
+    // 3) Quantité sur la ligne en cours (pour l'autoriser à rester à sa valeur)
+    const current = parseInt(productItem.querySelector('.quantity-input')?.value) || 0;
+
+    // Disponible pour cette ligne = initial - usedOther
+    const available = Math.max(0, initial - usedOther);
+    return { available, current, initial, usedOther };
+}
+
+// Fixer min/max de l'input quantité en fonction du stock disponible
+function setQuantityBounds(productItem) {
+    const quantityInput = productItem.querySelector('.quantity-input');
+    const colorSelect = productItem.querySelector('.color-select');
+    if (!quantityInput || !colorSelect || !colorSelect.value) return;
+
+    const info = getAvailableForItem(productItem);
+    const maxAllowed = Math.max(0, info.available + info.current);
+
+    quantityInput.setAttribute('min', '1');
+    quantityInput.setAttribute('max', String(maxAllowed));
+
+    let q = parseInt(quantityInput.value) || 0;
+    if (q > maxAllowed) {
+        quantityInput.value = String(maxAllowed);
+    } else if (q < 1) {
+        quantityInput.value = '1';
+    }
+
+    // Message de validation HTML5 si la valeur dépasse le stock autorisé
+    const currentVal = (parseInt(quantityInput.value) || 0);
+    quantityInput.setCustomValidity(
+        currentVal > maxAllowed ? `Stock insuffisant. Maximum: ${maxAllowed}` : ''
+    );
+}
+
+// Fonction de validation du stock (par produit et couleur) en tenant compte des autres lignes
 function validateStockQuantity(productItem) {
     const colorSelect = productItem.querySelector('.color-select');
     const quantityInput = productItem.querySelector('.quantity-input');
-
     if (!colorSelect || !quantityInput) return;
 
     const selectedColor = colorSelect.value;
     const selectedQuantity = parseInt(quantityInput.value) || 0;
-
     if (!selectedColor) {
-        // Pas de couleur sélectionnée, pas de validation
         clearStockValidation(productItem);
         return;
     }
 
-    // Utiliser le stock disponible depuis le tracker global
-    const availableStock = availableStockTracker[selectedColor] || 0;
+    const info = getAvailableForItem(productItem);
+    // Autoriser jusqu'à available + current (pour ne pas pénaliser la ligne courante)
+    const maxAllowed = info.available + info.current;
 
-    console.log(`🔍 Validation stock: Couleur=${selectedColor}, Quantité=${selectedQuantity}, Stock disponible=${availableStock}`);
-
-    // Si l'admin masque les couleurs épuisées, ne pas afficher d'erreur pour stock 0
-    if (availableStock === 0) {
-        clearStockValidation(productItem);
-        quantityInput.setCustomValidity('');
-        return;
-    }
-
-    if (selectedQuantity > availableStock) {
-        // Quantité trop élevée
-        showStockError(productItem, `Quantité (${selectedQuantity}) dépasse le stock disponible (${availableStock}) pour la couleur ${selectedColor}`);
-        quantityInput.setCustomValidity(`Stock insuffisant. Maximum: ${availableStock}`);
-        quantityInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
-    } else if (selectedQuantity <= 0) {
-        // Quantité invalide
+    if (selectedQuantity <= 0) {
         showStockError(productItem, 'La quantité doit être supérieure à 0');
         quantityInput.setCustomValidity('La quantité doit être supérieure à 0');
-        quantityInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
-    } else {
-        // Quantité valide
+        quantityInput.classList.add('border-red-500','focus:border-red-500','focus:ring-red-500');
+        return;
+    }
+
+    if (selectedQuantity > maxAllowed) {
+        showStockError(
+          productItem,
+          `Quantité (${selectedQuantity}) dépasse le stock disponible (${maxAllowed}) pour la couleur ${selectedColor} (initial: ${info.initial}, utilisé ailleurs: ${info.usedOther})`
+        );
+        quantityInput.setCustomValidity(`Stock insuffisant. Maximum: ${maxAllowed}`);
+        quantityInput.classList.add('border-red-500','focus:border-red-500','focus:ring-red-500');
+        return;
+    }
+
         clearStockValidation(productItem);
         quantityInput.setCustomValidity('');
-        quantityInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
-        quantityInput.classList.add('border-green-500', 'focus:border-green-500', 'focus:ring-green-500');
-    }
+    quantityInput.classList.remove('border-red-500','focus:border-red-500','focus:ring-red-500');
+    quantityInput.classList.add('border-green-500','focus:border-green-500','focus:ring-green-500');
 }
 
 // Fonction pour afficher l'erreur de stock

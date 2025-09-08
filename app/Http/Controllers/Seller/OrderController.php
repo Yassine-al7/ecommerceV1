@@ -188,7 +188,9 @@ class OrderController extends Controller
 
 	public function store(Request $request)
 	{
-		        $data = $request->validate([
+
+        // Valider d'abord les données d'entrée (pour disposer de $data)
+        $data = $request->validate([
             'nom_client' => 'required|string',
             'ville' => 'required|string',
             'adresse_client' => 'required|string',
@@ -201,6 +203,50 @@ class OrderController extends Controller
             'products.*.prix_vente_client' => 'required|numeric|min:0.01',
             'commentaire' => 'nullable|string',
         ]);
+
+        // Agréger les quantités demandées par (produit|couleur)
+        $requestedByKey = [];
+        foreach ($data['products'] as $p) {
+            $key = $p['product_id'].'|'.($p['couleur_produit'] ?? '');
+            $requestedByKey[$key] = ($requestedByKey[$key] ?? 0) + (int)($p['quantite_produit'] ?? 0);
+        }
+
+        // Vérifier le stock réel pour chaque (produit|couleur)
+        $errors = [];
+        foreach ($requestedByKey as $key => $qtyRequested) {
+            [$productId, $colorName] = explode('|', $key, 2);
+
+            $product = auth()->user()
+                ->assignedProducts()
+                ->where('produits.id', $productId)
+                ->first();
+
+            if (!$product) {
+                $errors[] = "Produit #{$productId} non accessible.";
+                continue;
+            }
+
+            $available = 0;
+            $raw = $product->stock_couleurs;
+            try {
+                $stockCouleurs = is_string($raw) ? json_decode($raw, true) : $raw;
+                if (is_array($stockCouleurs)) {
+                    foreach ($stockCouleurs as $sc) {
+                        if (is_array($sc) && ($sc['name'] ?? '') === $colorName) {
+                            $available = (int)($sc['quantity'] ?? 0);
+                            break;
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {}
+
+            if ($qtyRequested > $available) {
+                $errors[] = "Stock insuffisant pour produit #{$productId} - couleur {$colorName}. Demandé: {$qtyRequested}, Disponible: {$available}.";
+            }
+        }
+        if (!empty($errors)) {
+            return back()->withErrors(['stock' => implode("\n", $errors)])->withInput();
+        }
 
 		// Générer une référence unique
 		$data['reference'] = $this->generateUniqueOrderReference();
@@ -335,7 +381,7 @@ class OrderController extends Controller
                 // Validation des tailles (seulement si ce n'est pas un accessoire)
                 if (!$isAccessoire) {
                     // Nettoyer la taille sélectionnée (supprimer les caractères de formatage éventuels)
-                    $tailleSelectionnee = preg_replace('/[\[\]\'"]/', '', trim((string)$productData['taille_produit']));
+                    $tailleSelectionnee = preg_replace('#[\\[\\]\'\"]#', '', trim((string)$productData['taille_produit']));
 
                     // Vérifier que la taille est fournie pour les produits non-accessoires
                     if (empty($tailleSelectionnee)) {
@@ -354,7 +400,7 @@ class OrderController extends Controller
                     }
 
                     $taillesClean = array_map(function($taille) {
-                        return preg_replace('/[\[\]\'"]/', '', trim((string)$taille));
+                        return preg_replace('#[\\[\\]\'\"]#', '', trim((string)$taille));
                     }, $tailles);
 
                     \Log::info("Taille sélectionnée nettoyée: '{$tailleSelectionnee}' pour le produit {$product->name}");
@@ -604,7 +650,7 @@ class OrderController extends Controller
 				}
 
 				// Nettoyer la taille sélectionnée
-				$tailleSelectionnee = preg_replace('/[\[\]\'"]/', '', trim((string)$productData['taille_produit']));
+				$tailleSelectionnee = preg_replace('#[\\[\\]\'\"]#', '', trim((string) $productData['taille_produit']));
 
 				// Vérifier que la taille est fournie pour les produits non-accessoires
 				if (empty($tailleSelectionnee)) {
@@ -622,7 +668,7 @@ class OrderController extends Controller
 				}
 
 				$taillesClean = array_map(function($taille) {
-					return preg_replace('/[\[\]\'"]/', '', trim((string)$taille));
+					return preg_replace('#[\\[\\]\'\"]#', '', trim((string) $taille));
 				}, $tailles);
 
 				// Vérifier que la taille sélectionnée est disponible

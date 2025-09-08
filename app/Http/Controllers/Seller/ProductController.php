@@ -91,4 +91,41 @@ class ProductController extends Controller
 
         return view('seller.products.index', compact('products', 'categories'));
     }
+
+    public function show($id)
+    {
+        $userId = auth()->id();
+        $user = \App\Models\User::find($userId);
+        if (!$user) {
+            return redirect()->back()->with('error', 'Utilisateur non trouvé');
+        }
+
+        $product = $user->assignedProducts()
+            ->with('category')
+            ->select(
+                'produits.id',
+                'produits.name',
+                'produits.image',
+                'produits.prix_admin',
+                'produits.couleur',
+                'produits.tailles',
+                'produits.stock_couleurs',
+                'produits.quantite_stock',
+                'produits.categorie_id'
+            )
+            ->where('produits.id', $id)
+            ->firstOrFail();
+
+        // Normalize fields for view
+        $sizes = is_array($product->tailles) ? $product->tailles : (json_decode((string) $product->tailles, true) ?: []);
+        $colors = is_array($product->couleur) ? $product->couleur : (json_decode((string) $product->couleur, true) ?: []);
+        $stockByColor = is_array($product->stock_couleurs) ? $product->stock_couleurs : (json_decode((string) $product->stock_couleurs, true) ?: []);
+
+        return view('seller.products.show', [
+            'product' => $product,
+            'sizes' => $sizes,
+            'colors' => $colors,
+            'stockByColor' => $stockByColor,
+        ]);
+    }
 }

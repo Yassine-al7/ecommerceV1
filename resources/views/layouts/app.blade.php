@@ -11,6 +11,11 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Professional font stack: Inter (latin) + Cairo (arabic) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Legacy display fonts (kept for compatibility with existing styles) -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .affilook-logo {
@@ -48,7 +53,7 @@
         }
 
         body {
-            font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
             margin: 0;
             padding: 0;
             background-color: #f8fafc;
@@ -58,8 +63,14 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
+        /* Prefer Cairo for RTL (Arabic) contexts */
+        [dir="rtl"] body,
+        html[dir="rtl"] body {
+            font-family: 'Cairo', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+        }
+
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Orbitron', monospace;
+            font-family: 'Inter', 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
             color: #1a202c;
             margin: 0 0 1rem 0;
         }

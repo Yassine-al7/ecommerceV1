@@ -3,17 +3,23 @@
 <div class="modern-product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
     <!-- Image du produit avec badge -->
     <div class="relative h-48 bg-gray-100 overflow-hidden">
-        @if($product->image && $product->image !== null && $product->image !== '/storage/products/default-product.svg')
+        @if($product->image && $product->image !== '/storage/products/default-product.svg')
             @php
-                // Forcer l'URL correcte pour Hostinger
-                $imageUrl = str_replace('/storage/', '/public/storage/', $product->image);
-                $imageUrl = 'https://affilook.com' . $imageUrl;
+                $src = trim($product->image ?? '', '/');
+                // Si déjà une URL absolue (http/https), on la garde
+                if (preg_match('#^https?://#i', $src)) {
+                    $imageUrl = $src;
+                } else {
+                    // Normalise: si commence par storage/, asset() génère correctement /storage/...
+                    // (on enlève juste les / en trop au début)
+                    $imageUrl = asset(ltrim($product->image, '/'));
+                }
             @endphp
             <img id="product-image-{{ $product->id }}"
-                 src="{{ $imageUrl }}"
-                 alt="{{ $product->name }}"
-                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                 onerror="console.log('Image error:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                src="{{ $imageUrl }}"
+                alt="{{ $product->name }}"
+                class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
                 <i class="fas fa-image text-4xl mb-2"></i>
                 <p class="text-sm">صورة مفقودة</p>
@@ -175,14 +181,10 @@
             @endif
 
             @if($userType === 'seller' && $showActions)
-                <div class="flex space-x-1 pt-2 border-t border-gray-100">
+                <div class="pt-2 border-t border-gray-100">
                     <button onclick="viewDetails({{ $product->id }})"
-                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-1.5 px-2 rounded text-xs font-medium transition-colors">
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-1.5 px-2 rounded text-xs font-medium transition-colors">
                         <i class="fas fa-eye mr-1"></i>تفاصيل
-                    </button>
-                    <button onclick="selectProduct({{ $product->id }})"
-                            class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-1.5 px-2 rounded text-xs font-medium transition-colors">
-                        <i class="fas fa-check mr-1"></i>اختيار
                     </button>
                 </div>
             @endif
