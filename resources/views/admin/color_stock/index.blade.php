@@ -161,7 +161,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         @if($product->image)
-                                            <img class="h-10 w-10 rounded-lg object-cover mr-3" src="{{ $product->image }}" alt="{{ $product->name }}">
+                                            <img class="h-10 w-10 rounded-lg object-cover mr-3" src="{{ '/' . ltrim($product->image, '/') }}" alt="{{ $product->name }}">
                                         @else
                                             <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center mr-3">
                                                 <i class="fas fa-image text-gray-400"></i>

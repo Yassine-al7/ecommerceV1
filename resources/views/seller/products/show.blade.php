@@ -27,7 +27,8 @@
                             if (preg_match('#^https?://#i', $src)) {
                                 $imageUrl = $src;
                             } elseif ($src) {
-                                $imageUrl = asset(ltrim($product->image, '/'));
+                                // Pour Hostinger: utiliser directement le chemin sans asset()
+                                $imageUrl = '/' . ltrim($product->image, '/');
                             } else {
                                 $imageUrl = null;
                             }
