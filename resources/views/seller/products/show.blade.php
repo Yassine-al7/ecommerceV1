@@ -27,8 +27,8 @@
                             if (preg_match('#^https?://#i', $src)) {
                                 $imageUrl = $src;
                             } elseif ($src) {
-                                // Pour Hostinger: utiliser le chemin complet vers storage/app/public/
-                                $imageUrl = '/storage/app/public/' . ltrim($product->image, '/');
+                                // Pour Hostinger: utiliser directement le chemin de l'image
+                                $imageUrl = $product->image;
                             } else {
                                 $imageUrl = null;
                             }

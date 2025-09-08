@@ -10,8 +10,8 @@
                 if (preg_match('#^https?://#i', $src)) {
                     $imageUrl = $src;
                 } else {
-                    // Pour Hostinger: utiliser le chemin complet vers storage/app/public/
-                    $imageUrl = '/storage/app/public/' . ltrim($product->image, '/');
+                    // Pour Hostinger: utiliser directement le chemin de l'image
+                    $imageUrl = $product->image;
                 }
             @endphp
             <img id="product-image-{{ $product->id }}"

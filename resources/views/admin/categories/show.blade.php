@@ -87,7 +87,7 @@
                         <div class="flex items-center justify-between py-3 {{ !$loop->last ? 'border-b border-gray-200' : '' }}">
                             <div class="flex items-center space-x-3">
                                 @if($product->image)
-                                    <img src="{{ '/storage/app/public/' . ltrim($product->image, '/') }}" alt="{{ $product->name }}"
+                                    <img src="{{ $product->image }}" alt="{{ $product->name }}"
                                          class="w-10 h-10 rounded object-cover">
                                 @else
                                     <div class="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
