@@ -11,7 +11,7 @@
         if (!preg_match('#^https?://#i', $imageUrl)) {
             // Supprimer le /storage/ initial pour éviter double /storage
             $imageUrl = ltrim(str_replace('/storage/', '', $imageUrl), '/');
-            $imageUrl = asset('storage/' . $imageUrl);
+            $imageUrl = asset('storage/app/public/products' . $imageUrl);
         }
     @endphp
 
