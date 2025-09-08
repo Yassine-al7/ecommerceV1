@@ -3,34 +3,27 @@
 <div class="modern-product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
     <!-- Image du produit avec badge -->
     <div class="relative h-48 bg-gray-100 overflow-hidden">
-        @if($product->image && $product->image !== '/storage/products/default-product.svg')
-            @php
-                $src = trim($product->image ?? '', '/');
-                // Si déjà une URL absolue (http/https), on la garde
-                if (preg_match('#^https?://#i', $src)) {
-                    $imageUrl = $src;
-                } else {
-                    // Pour Hostinger: utiliser directement le chemin de l'image
-                    $imageUrl = $product->image;
-                }
-            @endphp
-            <img id="product-image-{{ $product->id }}"
-                src="{{ $imageUrl }}"
-                alt="{{ $product->name }}"
-                class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
-                <i class="fas fa-image text-4xl mb-2"></i>
-                <p class="text-sm">صورة مفقودة</p>
-            </div>
-        @else
-            <div class="text-gray-400 text-center flex items-center justify-center h-full">
-                <div>
-                    <i class="fas fa-image text-4xl mb-2"></i>
-                    <p class="text-sm">لا توجد صورة</p>
-                </div>
-            </div>
-        @endif
+        @if($product->image && $product->image !== 'products/default-product.svg')
+    @php
+        $imageUrl = $product->image;
+
+        // Si ce n'est pas une URL externe
+        if (!preg_match('#^https?://#i', $imageUrl)) {
+            // Supprimer le /storage/ initial pour éviter double /storage
+            $imageUrl = ltrim(str_replace('/storage/', '', $imageUrl), '/');
+            $imageUrl = asset('storage/' . $imageUrl);
+        }
+    @endphp
+
+    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+@else
+    <div class="text-gray-400 text-center flex items-center justify-center h-full">
+        <div>
+            <i class="fas fa-image text-4xl mb-2"></i>
+            <p class="text-sm">لا توجد صورة</p>
+        </div>
+    </div>
+@endif
 
         <!-- Badge de statut/ID -->
         <div class="absolute top-3 left-3">
