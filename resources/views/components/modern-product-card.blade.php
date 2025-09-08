@@ -10,9 +10,8 @@
                 if (preg_match('#^https?://#i', $src)) {
                     $imageUrl = $src;
                 } else {
-                    // Pour Hostinger: utiliser directement le chemin sans asset()
-                    // car asset() peut causer des problèmes avec les chemins
-                    $imageUrl = '/' . ltrim($product->image, '/');
+                    // Pour Hostinger: utiliser le chemin complet vers storage/app/public/
+                    $imageUrl = '/storage/app/public/' . ltrim($product->image, '/');
                 }
             @endphp
             <img id="product-image-{{ $product->id }}"
