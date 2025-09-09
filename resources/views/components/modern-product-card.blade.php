@@ -4,27 +4,32 @@
     <!-- Image du produit avec badge -->
     <div class="relative h-48 bg-gray-100 overflow-hidden">
         @if($product->image && $product->image !== '/storage/products/default-product.svg')
-        @php
-        $imagePath = $product->image;
+            @php
+                $src = trim($product->image ?? '', '/');
+                if (preg_match('#^https?://#i', $src)) {
+                    $imageUrl = $src;
+                } elseif ($src) {
+                    $imageUrl = $product->image; // ex: /storage/products/xxx.jpg
+                } else {
+                    $imageUrl = null;
+                }
+            @endphp
 
-        if ($imagePath) {
-            // remove duplicate /storage/ if it already exists
-            $imagePath = preg_replace('#^/?storage/#', '', $imagePath);
-            $imageUrl = asset('storage/' . $imagePath);
-        }
-    @endphp
+            @if(!empty($imageUrl))
+                <img id="product-image-{{ $product->id }}" src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
+                    <i class="fas fa-image text-4xl mb-2"></i>
+                    <p class="text-sm">صورة مفقودة</p>
+                </div>
+            @else
+                <div class="text-gray-400 text-center flex items-center justify-center h-full">
+                    <div>
+                        <i class="fas fa-image text-4xl mb-2"></i>
+                        <p class="text-sm">لا توجد صورة</p>
+                    </div>
+                </div>
+            @endif
 
-    @if(!empty($imageUrl))
-        <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
-    @else
-        <div class="text-gray-400 text-center flex items-center justify-center h-full">
-            <div>
-                <i class="fas fa-image text-4xl mb-2"></i>
-                <p class="text-sm">لا توجد صورة</p>
-            </div>
-        </div>
-    @endif
-    
         @else
             <div class="text-gray-400 text-center flex items-center justify-center h-full">
                 <div>
