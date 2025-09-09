@@ -3,27 +3,36 @@
 <div class="modern-product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
     <!-- Image du produit avec badge -->
     <div class="relative h-48 bg-gray-100 overflow-hidden">
-        @if($product->image && $product->image !== 'products/default-product.svg')
-    @php
-        $imageUrl = $product->image;
+        @if($product->image && $product->image !== '/storage/products/default-product.svg')
+        @php
+        $imagePath = $product->image;
 
-        // Si ce n'est pas une URL externe
-        if (!preg_match('#^https?://#i', $imageUrl)) {
-            // Supprimer le /storage/ initial pour éviter double /storage
-            $imageUrl = ltrim(str_replace('/storage/', '', $imageUrl), '/');
-            $imageUrl = asset('storage/app/public/products' . $imageUrl);
+        if ($imagePath) {
+            // remove duplicate /storage/ if it already exists
+            $imagePath = preg_replace('#^/?storage/#', '', $imagePath);
+            $imageUrl = asset('storage/' . $imagePath);
         }
     @endphp
 
-    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
-@else
-    <div class="text-gray-400 text-center flex items-center justify-center h-full">
-        <div>
-            <i class="fas fa-image text-4xl mb-2"></i>
-            <p class="text-sm">لا توجد صورة</p>
+    @if(!empty($imageUrl))
+        <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+    @else
+        <div class="text-gray-400 text-center flex items-center justify-center h-full">
+            <div>
+                <i class="fas fa-image text-4xl mb-2"></i>
+                <p class="text-sm">لا توجد صورة</p>
+            </div>
         </div>
-    </div>
-@endif
+    @endif
+    
+        @else
+            <div class="text-gray-400 text-center flex items-center justify-center h-full">
+                <div>
+                    <i class="fas fa-image text-4xl mb-2"></i>
+                    <p class="text-sm">لا توجد صورة</p>
+                </div>
+            </div>
+        @endif
 
         <!-- Badge de statut/ID -->
         <div class="absolute top-3 left-3">

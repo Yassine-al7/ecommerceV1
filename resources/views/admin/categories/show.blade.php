@@ -86,8 +86,18 @@
                     @forelse($category->products()->take(10)->get() as $product)
                         <div class="flex items-center justify-between py-3 {{ !$loop->last ? 'border-b border-gray-200' : '' }}">
                             <div class="flex items-center space-x-3">
-                                @if($product->image)
-                                    <img src="{{ $product->image }}" alt="{{ $product->name }}"
+                                @php
+                                    $src = trim($product->image ?? '', '/');
+                                    if (preg_match('#^https?://#i', $src)) {
+                                        $imageUrl = $src;
+                                    } elseif ($src) {
+                                        $imageUrl = $product->image;
+                                    } else {
+                                        $imageUrl = null;
+                                    }
+                                @endphp
+                                @if($imageUrl)
+                                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}"
                                          class="w-10 h-10 rounded object-cover">
                                 @else
                                     <div class="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">

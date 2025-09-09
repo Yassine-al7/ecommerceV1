@@ -160,8 +160,18 @@
                             <tr class="product-row hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        @if($product->image)
-                                            <img class="h-10 w-10 rounded-lg object-cover mr-3" src="{{ $product->image }}" alt="{{ $product->name }}">
+                                        @php
+                                            $src = trim($product->image ?? '', '/');
+                                            if (preg_match('#^https?://#i', $src)) {
+                                                $imageUrl = $src;
+                                            } elseif ($src) {
+                                                $imageUrl = $product->image;
+                                            } else {
+                                                $imageUrl = null;
+                                            }
+                                        @endphp
+                                        @if($imageUrl)
+                                            <img class="h-10 w-10 rounded-lg object-cover mr-3" src="{{ $imageUrl }}" alt="{{ $product->name }}">
                                         @else
                                             <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center mr-3">
                                                 <i class="fas fa-image text-gray-400"></i>

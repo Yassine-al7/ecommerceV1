@@ -67,8 +67,18 @@
                                 </div>
                                 <!-- Prévisualisation de l'image principale -->
                                 <div id="mainImagePreviewContainer" class="mt-3 {{ $product->image ? '' : 'hidden' }}">
+                                    @php
+                                        $src = trim($product->image ?? '', '/');
+                                        if (preg_match('#^https?://#i', $src)) {
+                                            $imageUrl = $src;
+                                        } elseif ($src) {
+                                            $imageUrl = $product->image;
+                                        } else {
+                                            $imageUrl = '';
+                                        }
+                                    @endphp
                                     <img id="mainImagePreview" class="w-32 h-32 object-cover rounded-lg border border-gray-300"
-                                         src="{{ $product->image ?? '' }}" alt="Prévisualisation">
+                                         src="{{ $imageUrl }}" alt="Prévisualisation">
                                 </div>
                             </div>
                             @error('image')
