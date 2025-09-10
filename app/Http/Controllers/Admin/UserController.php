@@ -63,7 +63,7 @@ class UserController extends Controller
             'rib' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $seller = User::create([
+        User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -74,9 +74,6 @@ class UserController extends Controller
             'rib' => $request->rib,
             'email_verified_at' => now(), // Auto-vérifier les comptes créés par l'admin
         ]);
-
-        // Assigner par défaut tous les produits existants à ce vendeur
-        $this->assignAllProductsToSeller($seller);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Vendeur créé avec succès !');
@@ -136,8 +133,6 @@ class UserController extends Controller
 
         $request->validate($rules);
 
-        $oldRole = $user->role;
-
         $data = [
             'name' => $request->name,
             'email' => $request->email,
@@ -154,11 +149,6 @@ class UserController extends Controller
         }
 
         $user->update($data);
-
-        // Si l'utilisateur devient vendeur, lui assigner tous les produits par défaut
-        if ($oldRole !== 'seller' && $user->role === 'seller') {
-            $this->assignAllProductsToSeller($user);
-        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Vendeur mis à jour avec succès !');
@@ -223,35 +213,5 @@ class UserController extends Controller
 
         return redirect()->back()
             ->with('success', "Le vendeur {$user->name} a été {$status} avec succès.");
-    }
-
-    /**
-     * Assigner tous les produits existants au vendeur donné (par défaut).
-     */
-    private function assignAllProductsToSeller(User $seller): void
-    {
-        if ($seller->role !== 'seller') {
-            return;
-        }
-
-        $productIdsAlready = $seller->assignedProducts()->pluck('produits.id')->toArray();
-        $products = \App\Models\Product::select('id', 'prix_admin_moyen', 'prix_vente')->get();
-
-        $attach = [];
-        foreach ($products as $product) {
-            if (!in_array($product->id, $productIdsAlready, true)) {
-                $attach[$product->id] = [
-                    'prix_admin' => $product->prix_admin_moyen,
-                    'prix_vente' => $product->prix_vente,
-                    'visible' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-        }
-
-        if (!empty($attach)) {
-            $seller->assignedProducts()->attach($attach);
-        }
     }
 }

@@ -992,29 +992,4 @@ class ProductController extends Controller
             $product->assignedUsers()->attach($newAssignments);
         }
     }
-
-    /**
-     * Optionally re-sync all existing products to a seller (utility if needed elsewhere)
-     */
-    private function syncAllProductsToSeller(\App\Models\User $seller): void
-    {
-        if ($seller->role !== 'seller') return;
-        $productIds = $seller->assignedProducts()->pluck('produits.id')->toArray();
-        $products = Product::select('id', 'prix_admin_moyen', 'prix_vente')->get();
-        $attach = [];
-        foreach ($products as $product) {
-            if (!in_array($product->id, $productIds, true)) {
-                $attach[$product->id] = [
-                    'prix_admin' => $product->prix_admin_moyen,
-                    'prix_vente' => $product->prix_vente,
-                    'visible' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-        }
-        if (!empty($attach)) {
-            $seller->assignedProducts()->attach($attach);
-        }
-    }
 }
