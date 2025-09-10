@@ -7,8 +7,10 @@
     <div class="max-w-7xl mx-auto">
         <!-- Header Section -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">فواتيري</h1>
-            <p class="text-gray-600">تتبع الطلبات المسلّمة وحالة الدفع الخاصة بها</p>
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 text-blue-900 shadow-sm text-right" dir="rtl">
+                <h1 class="text-2xl md:text-3xl font-extrabold mb-1">فواتيري</h1>
+                <p class="text-sm md:text-base leading-relaxed">تتبع الطلبات المسلّمة وحالة الدفع الخاصة بها</p>
+            </div>
         </div>
 
         <!-- Cartes de Statistiques -->
