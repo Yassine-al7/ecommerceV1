@@ -137,15 +137,15 @@ use App\Helpers\OrderHelper;
                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('admin_orders.filters.status') }}</label>
                     <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">{{ __('admin_orders.filters.all_statuses') }}</option>
-                        <option value="en attente">{{ __('admin_orders.stats.pending') }}</option>
-                        <option value="confirmé">{{ __('admin_orders.stats.confirmed') }}</option>
-                        <option value="expédition">{{ __('admin_orders.stats.shipping') }}</option>
-                        <option value="livré">{{ __('admin_orders.stats.delivered') }}</option>
-                        <option value="pas de réponse">{{ __('admin_orders.stats.no_answer') }}</option>
-                        <option value="reporté">{{ __('admin_orders.stats.postponed') }}</option>
-                        <option value="retourné">{{ __('admin_orders.stats.returned') }}</option>
-                        <option value="annulé">{{ __('admin_orders.stats.cancelled') }}</option>
-                        <option value="problematique">{{ __('admin_orders.stats.issue') }}</option>
+                        <option value="en attente">{{ OrderHelper::getStatusLabel('en attente') }}</option>
+                        <option value="confirmé">{{ OrderHelper::getStatusLabel('confirmé') }}</option>
+                        <option value="expédition">{{ OrderHelper::getStatusLabel('expédition') }}</option>
+                        <option value="livré">{{ OrderHelper::getStatusLabel('livré') }}</option>
+                        <option value="pas de réponse">{{ OrderHelper::getStatusLabel('pas de réponse') }}</option>
+                        <option value="reporté">{{ OrderHelper::getStatusLabel('reporté') }}</option>
+                        <option value="retourné">{{ OrderHelper::getStatusLabel('retourné') }}</option>
+                        <option value="annulé">{{ OrderHelper::getStatusLabel('annulé') }}</option>
+                        <option value="problematique">{{ OrderHelper::getStatusLabel('problematique') }}</option>
                     </select>
                 </div>
 
@@ -299,14 +299,14 @@ use App\Helpers\OrderHelper;
                                         @method('PATCH')
                                         <select name="status" onchange="this.form.submit()"
                                                 class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full">
-                                            <option value="en attente" @selected($order->status == 'en attente')>{{ __('admin_orders.stats.pending') }}</option>
-                                            <option value="confirmé" @selected($order->status == 'confirmé')>{{ __('admin_orders.stats.confirmed') }}</option>
-                                            <option value="pas de réponse" @selected($order->status == 'pas de réponse')>{{ __('admin_orders.stats.no_answer') }}</option>
-                                            <option value="expédition" @selected($order->status == 'expédition')>{{ __('admin_orders.stats.shipping') }}</option>
-                                            <option value="livré" @selected($order->status == 'livré')>{{ __('admin_orders.stats.delivered') }}</option>
-                                            <option value="annulé" @selected($order->status == 'annulé')>{{ __('admin_orders.stats.cancelled') }}</option>
-                                            <option value="reporté" @selected($order->status == 'reporté')>{{ __('admin_orders.stats.postponed') }}</option>
-                                            <option value="retourné" @selected($order->status == 'retourné')>{{ __('admin_orders.stats.returned') }}</option>
+                                            <option value="en attente" @selected($order->status == 'en attente')>{{ OrderHelper::getStatusLabel('en attente') }}</option>
+                                            <option value="confirmé" @selected($order->status == 'confirmé')>{{ OrderHelper::getStatusLabel('confirmé') }}</option>
+                                            <option value="pas de réponse" @selected($order->status == 'pas de réponse')>{{ OrderHelper::getStatusLabel('pas de réponse') }}</option>
+                                            <option value="expédition" @selected($order->status == 'expédition')>{{ OrderHelper::getStatusLabel('expédition') }}</option>
+                                            <option value="livré" @selected($order->status == 'livré')>{{ OrderHelper::getStatusLabel('livré') }}</option>
+                                            <option value="annulé" @selected($order->status == 'annulé')>{{ OrderHelper::getStatusLabel('annulé') }}</option>
+                                            <option value="reporté" @selected($order->status == 'reporté')>{{ OrderHelper::getStatusLabel('reporté') }}</option>
+                                            <option value="retourné" @selected($order->status == 'retourné')>{{ OrderHelper::getStatusLabel('retourné') }}</option>
                                         </select>
                                     </form>
                                 </td>
