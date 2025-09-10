@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Ma Facturation')
+@section('title', 'فواتيري')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header Section -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Ma Facturation</h1>
-            <p class="text-gray-600">Suivez vos commandes livrées et leur statut de paiement</p>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">فواتيري</h1>
+            <p class="text-gray-600">تتبع الطلبات المسلّمة وحالة الدفع الخاصة بها</p>
         </div>
 
         <!-- Cartes de Statistiques -->
@@ -19,7 +19,7 @@
                         <i class="fas fa-shopping-cart text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Commandes Livrées</p>
+                        <p class="text-sm font-medium text-gray-600">الطلبات المُسلَّمة</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $orders->total() }}</p>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
                         <i class="fas fa-coins text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Chiffre d'Affaires</p>
+                        <p class="text-sm font-medium text-gray-600">الإيرادات</p>
                         <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalRevenue, 2) }} MAD</p>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Bénéfices Payés</p>
+                        <p class="text-sm font-medium text-gray-600">الأرباح المدفوعة</p>
                         <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalBeneficesPayes, 2) }} MAD</p>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                         <i class="fas fa-dollar-sign text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Bénéfices à Recevoir</p>
+                        <p class="text-sm font-medium text-gray-600">الأرباح المستحقة</p>
                         <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalBeneficesNonPayes, 2) }} MAD</p>
                     </div>
                 </div>
@@ -72,25 +72,25 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Référence
+                                    المرجع
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Client
+                                    العميل
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date Livraison
+                                    تاريخ التسليم
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Montant
+                                    المبلغ
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Bénéfice
+                                    الربح
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Statut Paiement
+                                    حالة الدفع
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
+                                    إجراءات
                                 </th>
                             </tr>
                         </thead>
@@ -115,18 +115,18 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($order->facturation_status == 'payé')
                                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                                <i class="fas fa-check-circle mr-1"></i>Payé
+                                                <i class="fas fa-check-circle mr-1"></i>مدفوع
                                             </span>
                                         @else
                                             <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                                <i class="fas fa-clock mr-1"></i>En attente
+                                                <i class="fas fa-clock mr-1"></i>قيد الانتظار
                                             </span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a href="{{ route('seller.invoices.show', $order->id) }}"
                                            class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-eye mr-1"></i>Voir
+                                            <i class="fas fa-eye mr-1"></i>عرض
                                         </a>
                                     </td>
                                 </tr>
@@ -145,8 +145,8 @@
                     <div class="text-gray-400 mb-4">
                         <i class="fas fa-file-invoice text-6xl"></i>
                     </div>
-                    <h3 class="text-xl font-medium text-gray-800 mb-2">Aucune facture trouvée</h3>
-                    <p class="text-gray-600">Vous n'avez pas encore de commandes livrées à facturer.</p>
+                    <h3 class="text-xl font-medium text-gray-800 mb-2">لا توجد فواتير</h3>
+                    <p class="text-gray-600">لا توجد طلبات مُسلَّمة للفوترة حتى الآن.</p>
                 </div>
             @endif
         </div>
