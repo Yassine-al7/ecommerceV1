@@ -98,12 +98,17 @@
                 @endif
 
                 <!-- Stock compact -->
-                <div class="flex items-center space-x-2">
-                    <span class="text-blue-100 text-xs">المخزون</span>
-                    <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
-                        {{ $product->total_stock ?? $product->quantite_stock ?? 0 }}
-                    </span>
-                </div>
+                @php
+                    $totalStock = $product->total_stock ?? $product->quantite_stock ?? 0;
+                @endphp
+                @if($totalStock > 0)
+                    <div class="flex items-center space-x-2">
+                        <span class="text-blue-100 text-xs">المخزون</span>
+                        <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
+                            {{ $totalStock }}
+                        </span>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -116,7 +121,7 @@
                     <p class="font-bold text-base text-gray-800">{{ $product->prix_vente ?? 0 }} درهم</p>
                 </div>
                 <div class="text-center flex-1">
-                    <p class="text-gray-600 text-xs">الموزع</p>
+                    <p class="text-gray-600 text-xs">تمن المقترح للبيع</p>
                     @php
                         $prixAdminArray = $product->prix_admin_array ?? [];
                         $prixAdminDisplay = '';
