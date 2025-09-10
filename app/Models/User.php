@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\ResetPasswordNotification;
-use App\Models\Product;
 
 class User extends Authenticatable // implements MustVerifyEmail  // TEMPORAIREMENT DÉSACTIVÉ
 {
@@ -41,21 +40,6 @@ class User extends Authenticatable // implements MustVerifyEmail  // TEMPORAIREM
         ];
     }
 
-    protected static function booted(): void
-    {
-        static::created(function (User $user) {
-            if ($user->role === 'seller') {
-                $user->assignAllProductsByDefault();
-            }
-        });
-
-        static::updated(function (User $user) {
-            if ($user->wasChanged('role') && $user->role === 'seller') {
-                $user->assignAllProductsByDefault();
-            }
-        });
-    }
-
     public function hasRole(string $role): bool
     {
         return $this->role === $role;
@@ -87,45 +71,6 @@ class User extends Authenticatable // implements MustVerifyEmail  // TEMPORAIREM
     }
 
     /**
-     * Assigner tous les produits existants par défaut à ce vendeur (idempotent).
-     */
-    public function assignAllProductsByDefault(): void
-    {
-        if ($this->role !== 'seller') {
-            return;
-        }
-
-        $alreadyAssignedProductIds = $this->assignedProducts()->pluck('produits.id')->toArray();
-        $products = Product::select('id', 'prix_admin', 'prix_vente')->get();
-
-        $attach = [];
-        foreach ($products as $product) {
-            if (!in_array($product->id, $alreadyAssignedProductIds, true)) {
-                // Calculer le prix admin moyen si stocké en JSON
-                $prixAdminArray = json_decode($product->prix_admin, true);
-                if (is_array($prixAdminArray) && !empty($prixAdminArray)) {
-                    $numeric = array_filter($prixAdminArray, fn($v) => is_numeric($v));
-                    $prixAdminMoyen = !empty($numeric) ? array_sum($numeric) / count($numeric) : (float) $product->prix_vente;
-                } else {
-                    $prixAdminMoyen = is_numeric($product->prix_admin) ? (float) $product->prix_admin : (float) $product->prix_vente;
-                }
-
-                $attach[$product->id] = [
-                    'prix_admin' => $prixAdminMoyen,
-                    'prix_vente' => $product->prix_vente,
-                    'visible' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-        }
-
-        if (!empty($attach)) {
-            $this->assignedProducts()->attach($attach);
-        }
-    }
-
-    /**
      * Relation avec les commandes du vendeur
      */
     public function orders()
@@ -140,4 +85,51 @@ class User extends Authenticatable // implements MustVerifyEmail  // TEMPORAIREM
     {
         return $this->hasMany(Order::class, 'seller_id')->where('status', 'livré');
     }
+
+    protected static function booted(): void
+{
+    static::created(function (User $user) {
+        if ($user->role === 'seller') {
+            $user->assignAllProductsByDefault();
+        }
+    });
+
+    static::updated(function (User $user) {
+        if ($user->wasChanged('role') && $user->role === 'seller') {
+            $user->assignAllProductsByDefault();
+        }
+    });
+}
+
+public function assignAllProductsByDefault(): void
+{
+    if ($this->role !== 'seller') return;
+
+    $already = $this->assignedProducts()->pluck('produits.id')->toArray();
+    $products = Product::select('id', 'prix_admin', 'prix_vente')->get();
+
+    $attach = [];
+    foreach ($products as $product) {
+        if (!in_array($product->id, $already, true)) {
+            $arr = json_decode($product->prix_admin, true);
+            if (is_array($arr) && !empty($arr)) {
+                $nums = array_filter($arr, fn($v) => is_numeric($v));
+                $avg = !empty($nums) ? array_sum($nums) / count($nums) : (float) $product->prix_vente;
+            } else {
+                $avg = is_numeric($product->prix_admin) ? (float) $product->prix_admin : (float) $product->prix_vente;
+            }
+
+            $attach[$product->id] = [
+                'prix_admin' => $avg,
+                'prix_vente' => $product->prix_vente,
+                'visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+    }
+    if (!empty($attach)) {
+        $this->assignedProducts()->attach($attach);
+    }
+}
 }
