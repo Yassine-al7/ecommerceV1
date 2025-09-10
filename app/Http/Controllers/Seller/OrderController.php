@@ -279,7 +279,10 @@ class OrderController extends Controller
 		$margeTotaleProduits = 0;
 
 		foreach ($data['products'] as $productData) {
-			$product = auth()->user()->assignedProducts()->where('produits.id', $productData['product_id'])->with('category')->firstOrFail();
+			$product = auth()->user()->assignedProducts()->where('produits.id', $productData['product_id'])->with('category')->first();
+			if (!$product) {
+				return back()->withErrors(['product_id' => "Le produit sélectionné n'est pas accessible pour votre compte."])->withInput();
+			}
 
 			            // Récupérer les tailles et couleurs spécifiques de ce produit depuis la base de données
             // Les accesseurs du modèle ont déjà décodé les données en tableaux
@@ -625,7 +628,10 @@ class OrderController extends Controller
 		$margeTotaleProduits = 0;
 
 		foreach ($data['products'] as $productData) {
-			$product = auth()->user()->assignedProducts()->where('produits.id', $productData['product_id'])->with('category')->firstOrFail();
+			$product = auth()->user()->assignedProducts()->where('produits.id', $productData['product_id'])->with('category')->first();
+			if (!$product) {
+				return back()->withErrors(['product_id' => "Le produit sélectionné n'est pas accessible pour votre compte."])->withInput();
+			}
 
 			// Récupérer les tailles spécifiques de ce produit depuis la base de données
 			// Les accesseurs du modèle ont déjà décodé les données en tableaux

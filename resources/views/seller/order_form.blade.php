@@ -10,13 +10,20 @@
             <p class="text-gray-600 mt-2">{{ isset($order) ? __('seller_order_form.subtitle_edit') : __('seller_order_form.subtitle_create') }}</p>
         </div>
 
-        @if(isset($errors) && $errors->any())
+        @if($errors->any())
             <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                <div class="font-semibold mb-2">يرجى تصحيح الأخطاء التالية:</div>
                 <ul class="list-disc list-inside">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
+                <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
             </div>
         @endif
 
@@ -194,10 +201,6 @@
                         <i class="fas fa-arrow-left mr-2"></i>{{ __('seller_order_form.actions_back') }}
                     </a>
                     <div class="flex space-x-3">
-                        <!-- Bouton de test temporaire -->
-                        <button type="button" onclick="submitFormWithoutValidation()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
-                            <i class="fas fa-bug mr-2"></i>Test (Sans validation)
-                        </button>
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
                             <i class="fas fa-save mr-2"></i>{{ isset($order) ? __('seller_order_form.actions_submit_update') : __('seller_order_form.actions_submit_create') }}
                         </button>
