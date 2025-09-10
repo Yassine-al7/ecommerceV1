@@ -39,12 +39,7 @@
             </div>
         @endif
 
-        <!-- Badge de statut/ID -->
-        <div class="absolute top-3 left-3">
-            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                <span class="text-white font-bold text-sm">{{ $product->id ?? 'N/A' }}</span>
-            </div>
-        </div>
+
 
         <!-- Badge de visibilité -->
         @if($product->visible !== null)
