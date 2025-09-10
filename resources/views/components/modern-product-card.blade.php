@@ -97,15 +97,12 @@
                     </div>
                 @endif
 
-                <!-- Stock compact -->
-                @php
-                    $totalStock = $product->total_stock ?? $product->quantite_stock ?? 0;
-                @endphp
-                @if($totalStock > 0)
+                <!-- Product ID compact -->
+                @if(!empty($product->id))
                     <div class="flex items-center space-x-2">
-                        <span class="text-blue-100 text-xs">المخزون</span>
+                        <span class="text-blue-100 text-xs">ID</span>
                         <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
-                            {{ $totalStock }}
+                            #{{ $product->id }}
                         </span>
                     </div>
                 @endif
