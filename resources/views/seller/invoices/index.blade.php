@@ -7,7 +7,7 @@
     <div class="max-w-7xl mx-auto">
         <!-- Header Section -->
         <div class="mb-8">
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 text-blue-900 shadow-sm text-right" dir="rtl">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 text-blue-900 shadow-sm text-center" dir="rtl">
                 <h1 class="text-2xl md:text-3xl font-extrabold mb-1">فواتيري</h1>
                 <p class="text-sm md:text-base leading-relaxed">تتبع الطلبات المسلّمة وحالة الدفع الخاصة بها</p>
             </div>
