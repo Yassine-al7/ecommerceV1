@@ -18,7 +18,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-clock text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.pending') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.pending', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['en attente'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -31,7 +31,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.confirmed') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.confirmed', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['confirmé'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -44,7 +44,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-shipping-fast text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.shipping') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.shipping', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['expédition'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -57,7 +57,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.delivered') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.delivered', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['livré'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -70,7 +70,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-phone text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.no_answer') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.no_answer', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['pas de réponse'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-times-circle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.cancelled') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.cancelled', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['annulé'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -96,7 +96,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-exclamation-triangle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.postponed') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.postponed', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['reporté'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-undo text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.returned') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.returned', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['retourné'] ?? 0 }}</p>
                     </div>
                 </div>
@@ -122,7 +122,7 @@ use App\Helpers\OrderHelper;
                         <i class="fas fa-exclamation-triangle text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.issue') }}</p>
+                        <p class="text-sm font-medium text-gray-600">{{ __('admin_orders.stats.issue', [], 'ar') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $stats['problematique'] ?? 0 }}</p>
                     </div>
                 </div>

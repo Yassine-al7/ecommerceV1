@@ -64,10 +64,7 @@
 
         <!-- Tableau des Factures -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800">Commandes Livrées</h2>
-                <p class="text-sm text-gray-600">Statut de paiement synchronisé avec l'admin</p>
-            </div>
+            <div class="px-6 py-4 border-b border-gray-200"></div>
 
             @if($orders->count() > 0)
                 <div class="overflow-x-auto">
