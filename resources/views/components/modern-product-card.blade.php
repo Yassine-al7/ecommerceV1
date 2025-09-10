@@ -70,49 +70,46 @@
             </div>
 
                                     <!-- Section couleurs et stock compacte -->
-            @php
-                // Utiliser les couleurs visibles (excluant les couleurs masquées)
-                $couleurs = $product->visible_colors ?? [];
-                $couleurs = array_slice($couleurs, 0, 3); // Limiter à 3 couleurs
-                $hasColors = !empty($couleurs);
+            <div class="flex items-center justify-between">
+                @php
+                    // Utiliser les couleurs visibles (excluant les couleurs masquées)
+                    $couleurs = $product->visible_colors ?? [];
+                    $couleurs = array_slice($couleurs, 0, 3); // Limiter à 3 couleurs
+                @endphp
 
-                // Stock
-                $totalStock = $product->total_stock ?? $product->quantite_stock ?? 0;
-                $hasStock = $totalStock > 0;
-            @endphp
-
-            @if($hasColors || $hasStock)
-                <div class="flex items-center {{ ($hasColors && $hasStock) ? 'justify-between' : 'justify-start' }}">
-                    @if($hasColors)
-                        <div class="flex items-center space-x-2">
-                            <span class="text-blue-100 text-xs">الألوان</span>
-                            <div class="flex space-x-1">
-                                @foreach($couleurs as $couleur)
-                                    @php
-                                        $couleurData = is_array($couleur) ? $couleur : ['name' => $couleur, 'hex' => '#cccccc'];
-                                        $hex = $couleurData['hex'] ?? '#cccccc';
-                                        $colorName = $couleurData['name'] ?? $couleur;
-                                    @endphp
-                                    <div class="w-4 h-4 border border-white shadow-sm cursor-pointer color-circle"
-                                         style="background-color: {{ $hex }}"
-                                         title="{{ $colorName }}"
-                                         onclick="changeProductImage({{ $product->id }}, '{{ $colorName }}')">
-                                    </div>
-                                @endforeach
-                            </div>
+                @if(!empty($couleurs))
+                    <div class="flex items-center space-x-2">
+                        <span class="text-blue-100 text-xs">الألوان</span>
+                        <div class="flex space-x-1">
+                            @foreach($couleurs as $couleur)
+                                @php
+                                    $couleurData = is_array($couleur) ? $couleur : ['name' => $couleur, 'hex' => '#cccccc'];
+                                    $hex = $couleurData['hex'] ?? '#cccccc';
+                                    $colorName = $couleurData['name'] ?? $couleur;
+                                @endphp
+                                <div class="w-4 h-4 border border-white shadow-sm cursor-pointer color-circle"
+                                     style="background-color: {{ $hex }}"
+                                     title="{{ $colorName }}"
+                                     onclick="changeProductImage({{ $product->id }}, '{{ $colorName }}')">
+                                </div>
+                            @endforeach
                         </div>
-                    @endif
+                    </div>
+                @endif
 
-                    @if($hasStock)
-                        <div class="flex items-center space-x-2">
-                            <span class="text-blue-100 text-xs">المخزون</span>
-                            <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
-                                {{ $totalStock }}
-                            </span>
-                        </div>
-                    @endif
-                </div>
-            @endif
+                <!-- Stock compact -->
+                @php
+                    $totalStock = $product->total_stock ?? $product->quantite_stock ?? 0;
+                @endphp
+                @if($totalStock > 0)
+                    <div class="flex items-center space-x-2">
+                        <span class="text-blue-100 text-xs">المخزون</span>
+                        <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
+                            {{ $totalStock }}
+                        </span>
+                    </div>
+                @endif
+            </div>
         </div>
 
         <!-- Informations de prix et détails -->
