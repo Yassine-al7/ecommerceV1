@@ -140,6 +140,21 @@
                                     }
                                 @endphp
                                 @php
+                                    // Préparer un mapping du stock existant par couleur
+                                    $stockByColor = [];
+                                    $rawStock = $product->stock_couleurs ?? [];
+                                    if (is_string($rawStock)) {
+                                        $rawStock = json_decode($rawStock, true) ?: [];
+                                    }
+                                    if (is_array($rawStock)) {
+                                        foreach ($rawStock as $sc) {
+                                            if (is_array($sc) && isset($sc['name'])) {
+                                                $stockByColor[$sc['name']] = (int)($sc['quantity'] ?? 0);
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                @php
                                     $colorIndex = 0; // Index pour les champs de stock
                                 @endphp
                                 @foreach($predefinedColors as $name => $hex)
@@ -151,7 +166,7 @@
                                     @endphp
                                     <div class="color-card bg-white border-2 border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group {{ $isActive ? 'selected' : '' }} w-full"
                                          data-color-name="{{ $name }}" data-color-hex="{{ $hex }}">
-                                        <div class="flex flex-col items-center space-y-3">
+                                        <div class="flex flex-col items-center space-y-3 w-full">
                                             <!-- Checkbox et couleur -->
                                             <div class="flex items-center space-x-3 w-full justify-center">
                                                 <input type="checkbox" name="couleurs[]" value="{{ $name }}"
@@ -166,6 +181,18 @@
 
                                             <!-- Nom de la couleur -->
                                             <span class="text-sm font-medium text-gray-700 text-center color-name">{{ $name }}</span>
+
+                                            <!-- Champ de stock pour cette couleur (aligné sur le create) -->
+                                            <div class="w-full stock-field" style="display: {{ $isActive ? 'block' : 'none' }};">
+                                                <label class="block text-xs text-gray-600 mb-1">المخزون</label>
+                                                <input type="number"
+                                                       name="stock_couleur_{{ $isActive ? $currentIndex : $loop->index }}"
+                                                       value="{{ old('stock_couleur_' . ($isActive ? $currentIndex : $loop->index), $stockByColor[$name] ?? 0) }}"
+                                                       min="0"
+                                                       class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input"
+                                                       placeholder="0"
+                                                       oninput="calculateTotalStock()">
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -277,7 +304,7 @@
                     @enderror
                 </div>
 
-                <!-- Stock Global -->
+                <!-- Stock Global (calculé depuis stock par couleur) -->
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
                     <h2 class="text-xl font-semibold text-blue-800 mb-6 flex items-center">
                         <i class="fas fa-boxes mr-3"></i>
@@ -286,20 +313,15 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="quantite_stock" class="block text-sm font-medium text-gray-700 mb-2">
-                                عدد القطع المتاحة <span class="text-red-500">*</span>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                المخزون الإجمالي (محسوب)
                             </label>
-                            <input type="number" id="quantite_stock" name="quantite_stock"
-                                   min="0" step="1"
-                                   value="{{ old('quantite_stock', $product->quantite_stock ?? 0) }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-medium"
-                                   placeholder="أدخل عدد القطع المتاحة">
+                            <input type="number" id="stockTotal" value="0" readonly
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-lg font-medium">
+                            <input type="hidden" id="stockTotalHidden" name="quantite_stock" value="0">
                             <p class="text-sm text-gray-500 mt-2">
-                                💡 <strong>نصيحة:</strong> أدخل العدد الإجمالي للقطع المتاحة. يمكنك لاحقاً إخفاء الألوان المنفذة من البطاقة.
+                                💡 يتم حسابه تلقائياً من مجموع مخزون الألوان.
                             </p>
-                            @error('quantite_stock')
-                                <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <div class="flex items-center justify-center">
