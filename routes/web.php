@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\ColorStockController;
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/statistics', [App\Http\Controllers\Admin\StatisticsController::class, 'index'])->name('statistics.index');
+    Route::get('/statistics/top-products', [App\Http\Controllers\Admin\StatisticsController::class, 'topProducts'])->name('statistics.top-products');
     Route::get('/stock', [App\Http\Controllers\Admin\StatisticsController::class, 'stock'])->name('stock.index');
 
     // Admin Management

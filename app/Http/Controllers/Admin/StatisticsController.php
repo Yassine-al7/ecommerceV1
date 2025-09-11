@@ -126,6 +126,28 @@ class StatisticsController extends Controller
         ));
     }
 
+    /**
+     * Return Top 5 products data as JSON for dynamic charts
+     */
+    public function topProducts()
+    {
+        $topProducts = Product::select('produits.*')
+            ->selectRaw('(SELECT COUNT(*) FROM commandes WHERE JSON_CONTAINS(produits, JSON_OBJECT("product_id", produits.id))) as total_sales')
+            ->orderBy('total_sales', 'desc')
+            ->take(5)
+            ->get(['id', 'name']);
+
+        // Ensure names and totals are present
+        $labels = $topProducts->pluck('name')->values();
+        $data = $topProducts->pluck('total_sales')->map(function ($v) { return (int) $v; })->values();
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $data,
+            'updated_at' => now()->toISOString(),
+        ]);
+    }
+
     public function stock()
     {
         // Forcer le rechargement des données depuis la base
