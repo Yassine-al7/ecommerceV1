@@ -1,9 +1,18 @@
-@extends('layouts.app')
-
-@section('title', 'إدارة المخزون')
-
-@section('content')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المخزون</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+</head>
 <body>
+    @extends('layouts.app')
+
+    @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
         <div class="bg-white rounded-lg shadow-lg p-6">
