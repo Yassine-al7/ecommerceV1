@@ -270,6 +270,20 @@
         }
     </style>
     <style>
+        /* Global blurred background image layer */
+        .site-bg {
+            position: fixed;
+            inset: 0;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            filter: blur(10px);
+            transform: scale(1.05);
+            opacity: .25;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .app-root { position: relative; z-index: 1; }
         :root {
             --brand-primary: {{ config('branding.primary') }};
             --brand-secondary: {{ config('branding.secondary') }};
@@ -324,6 +338,7 @@
     </style>
 </head>
 <body class="gradient-bg vignette-bg min-h-screen">
+    <div class="site-bg" style="background-image: url('{{ asset('images/background.jpg') }}')"></div>
     <div class="min-h-screen">
         <div class="flex flex-col min-h-screen">
                                                 <!-- Header Mobile avec Menu à gauche et Logo centré -->
