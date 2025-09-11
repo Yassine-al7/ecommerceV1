@@ -131,15 +131,42 @@ class StatisticsController extends Controller
      */
     public function topProducts()
     {
-        $topProducts = Product::select('produits.*')
-            ->selectRaw('(SELECT COUNT(*) FROM commandes WHERE status = "livré" AND JSON_CONTAINS(produits, JSON_OBJECT("product_id", produits.id))) as total_sales')
-            ->orderBy('total_sales', 'desc')
-            ->take(5)
-            ->get(['id', 'name', \DB::raw('total_sales')]);
+        // Build top products by summing quantities in delivered orders
+        $orders = Order::where('status', 'livré')->get(['produits']);
 
-        // Ensure names and totals are present
-        $labels = $topProducts->pluck('name')->values();
-        $data = $topProducts->pluck('total_sales')->map(function ($v) { return (int) ($v ?? 0); })->values();
+        $productIdToQty = [];
+        foreach ($orders as $order) {
+            $items = $order->produits;
+            if (is_string($items)) {
+                $decoded = json_decode($items, true);
+                $items = is_array($decoded) ? $decoded : [];
+            }
+            if (!is_array($items)) continue;
+
+            foreach ($items as $item) {
+                if (is_array($item) && isset($item['product_id'])) {
+                    $pid = (int) $item['product_id'];
+                    $qty = isset($item['qty']) ? (int) $item['qty'] : 1;
+                    if (!isset($productIdToQty[$pid])) $productIdToQty[$pid] = 0;
+                    $productIdToQty[$pid] += max(0, $qty);
+                }
+            }
+        }
+
+        // Sort by quantity desc and take top 5
+        arsort($productIdToQty);
+        $topFive = array_slice($productIdToQty, 0, 5, true);
+
+        // Get product names preserving order
+        $productIds = array_keys($topFive);
+        $products = Product::whereIn('id', $productIds)->get(['id', 'name'])->keyBy('id');
+
+        $labels = [];
+        $data = [];
+        foreach ($topFive as $pid => $qty) {
+            $labels[] = $products->get($pid)->name ?? ('Produit #' . $pid);
+            $data[] = (int) $qty;
+        }
 
         return response()->json([
             'labels' => $labels,
