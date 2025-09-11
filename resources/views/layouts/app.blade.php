@@ -281,7 +281,7 @@
             transform: scale(1.05);
             opacity: .25;
             pointer-events: none;
-            z-index: -1;
+            z-index: 0;
         }
         .app-root { position: relative; z-index: 1; }
         :root {
@@ -339,7 +339,7 @@
 </head>
 <body class="gradient-bg vignette-bg min-h-screen">
     <div class="site-bg" style="background-image: url('{{ asset('images/background.jpg') }}')"></div>
-    <div class="min-h-screen">
+    <div class="min-h-screen app-root">
         <div class="flex flex-col min-h-screen">
                                                 <!-- Header Mobile avec Menu à gauche et Logo centré -->
             <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-lg border-b border-white/20">
