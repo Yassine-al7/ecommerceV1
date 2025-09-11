@@ -25,16 +25,8 @@
             font-family: 'Cairo', 'Inter', sans-serif;
         }
 
-        /* Dark mode variables */
+        /* Dark mode variables (enforced) */
         :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-        }
-
-        [data-theme="dark"] {
             --bg-primary: #1f2937;
             --bg-secondary: #111827;
             --text-primary: #f9fafb;
@@ -143,25 +135,7 @@
             border-color: var(--border-color);
         }
 
-                    /* Theme toggle button */
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
 
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .theme-toggle i {
-            color: white;
-            font-size: 16px;
-        }
 
         /* Affilook Logo Styles */
         .affilook-logo {
@@ -254,10 +228,6 @@
 
                 <!-- Desktop Actions -->
                 <div class="hidden md:flex items-center space-x-4">
-                    <!-- Theme Toggle Button -->
-                    <div class="theme-toggle" onclick="toggleTheme()">
-                        <i id="theme-icon" class="fas fa-moon"></i>
-                    </div>
                     <a href="{{ route('login') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                         تسجيل الدخول
                     </a>
@@ -268,10 +238,6 @@
 
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center space-x-2">
-                    <!-- Theme Toggle Button -->
-                    <div class="theme-toggle" onclick="toggleTheme()">
-                        <i id="theme-icon-mobile" class="fas fa-moon"></i>
-                    </div>
                     <button id="mobile-menu-button" class="text-white hover:text-gray-200 p-2 rounded-md transition-colors">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
@@ -348,26 +314,6 @@
     </footer>
 
     <script>
-        // Theme toggle functionality
-        function toggleTheme() {
-            const body = document.body;
-            const themeIcon = document.getElementById('theme-icon');
-            const themeIconMobile = document.getElementById('theme-icon-mobile');
-            const currentTheme = body.getAttribute('data-theme');
-
-            if (currentTheme === 'dark') {
-                body.removeAttribute('data-theme');
-                themeIcon.className = 'fas fa-moon';
-                themeIconMobile.className = 'fas fa-moon';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'fas fa-sun';
-                themeIconMobile.className = 'fas fa-sun';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-
         // Mobile menu toggle
         function toggleMobileMenu() {
             const mobileMenu = document.getElementById('mobile-menu');
@@ -388,27 +334,10 @@
             }
         }
 
-        // Load saved theme (dark mode by default)
+        // Enforce dark theme on load
         document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme');
-            const themeIcon = document.getElementById('theme-icon');
-            const themeIconMobile = document.getElementById('theme-icon-mobile');
-
-            // If no theme is saved, default to dark mode
-            if (savedTheme === 'light') {
-                document.body.removeAttribute('data-theme');
-                themeIcon.className = 'fas fa-moon';
-                themeIconMobile.className = 'fas fa-moon';
-            } else {
-                // Default to dark mode
-                document.body.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'fas fa-sun';
-                themeIconMobile.className = 'fas fa-sun';
-                // Save dark theme as default if no theme was saved
-                if (!savedTheme) {
-                    localStorage.setItem('theme', 'dark');
-                }
-            }
+            document.body.setAttribute('data-theme', 'dark');
+            try { localStorage.setItem('theme', 'dark'); } catch (e) {}
 
             // Add event listener to mobile menu button
             const mobileMenuButton = document.getElementById('mobile-menu-button');
