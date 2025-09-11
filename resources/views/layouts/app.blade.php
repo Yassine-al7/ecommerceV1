@@ -338,7 +338,7 @@
     </style>
 </head>
 <body class="gradient-bg vignette-bg min-h-screen">
-    <div class="site-bg" style="background-image: url('{{ asset('images/background.jpg') }}')"></div>
+    <div class="site-bg" style="background-image: url('{{ asset('images/background.png') }}')"></div>
     <div class="min-h-screen app-root">
         <div class="flex flex-col min-h-screen">
                                                 <!-- Header Mobile avec Menu à gauche et Logo centré -->

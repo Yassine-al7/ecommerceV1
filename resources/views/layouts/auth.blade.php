@@ -164,7 +164,7 @@
     </style>
 </head>
 <body class="gradient-bg vignette-bg mesh-bg">
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.jpg') }}'); background-size:cover; background-position:center; filter:blur(10px); transform:scale(1.05); opacity:.25"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; filter:blur(10px); transform:scale(1.05); opacity:.25"></div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
             @yield('content')
