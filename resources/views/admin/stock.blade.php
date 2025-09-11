@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المخزون</title>
-    @section('title', 'إدارة المخزون')
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-</head>
-<body>
-    @extends('layouts.app')
+@extends('layouts.app')
 
-    @section('content')
+@section('title', 'إدارة المخزون')
+
+@section('content')
+<body>
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
         <div class="bg-white rounded-lg shadow-lg p-6">
