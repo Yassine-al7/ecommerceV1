@@ -56,8 +56,8 @@
             font-family: 'Inter', 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
             margin: 0;
             padding: 0;
-            background-color: #f8fafc;
-            color: #1a202c;
+            background-color: #0b1220;
+            color: #e5e7eb;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
@@ -71,16 +71,17 @@
 
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Inter', 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-            color: #1a202c;
+            color: #f1f5f9;
             margin: 0 0 1rem 0;
         }
 
         /* Product cards */
         .product-card {
-            background: white;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             margin-bottom: 20px;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -95,7 +96,7 @@
             height: 200px;
             object-fit: cover;
             border-radius: 4px;
-            background-color: #f1f5f9;
+            background-color: #0f172a;
         }
 
         .product-title {
@@ -105,7 +106,7 @@
         }
 
         .product-category {
-            color: #666;
+            color: #94a3b8;
             font-size: 0.9em;
             margin-bottom: 10px;
         }
@@ -150,24 +151,27 @@
             align-items: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: white;
+            background: rgba(255,255,255,0.05);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
 
         .btn-primary {
-            background-color: #3b82f6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .btn-primary:hover {
-            background-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.35);
         }
 
         /* Login page styles */
@@ -181,17 +185,18 @@
         }
 
         .login-card {
-            background: white;
+            background: rgba(255,255,255,0.05);
             border-radius: 12px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.35);
             width: 100%;
             max-width: 400px;
         }
 
         .login-title {
             text-align: center;
-            color: #1a202c;
+            color: #e5e7eb;
             margin-bottom: 30px;
             font-size: 2em;
         }
@@ -203,28 +208,30 @@
         .form-label {
             display: block;
             margin-bottom: 8px;
-            color: #374151;
+            color: #cbd5e1;
             font-weight: 500;
         }
 
         .form-input {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e5e7eb;
+            background-color: #0b1220;
+            border: 2px solid #334155;
+            color: #e5e7eb;
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
         }
 
         .btn-login {
             width: 100%;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             padding: 12px;
             border: none;
@@ -232,11 +239,12 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .btn-login:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.35);
         }
 
         .login-links {
@@ -245,7 +253,7 @@
         }
 
         .login-links a {
-            color: #3b82f6;
+            color: #8b5cf6;
             text-decoration: none;
         }
 
@@ -331,11 +339,11 @@
                                 <div class="flex items-center justify-between px-4 py-3 h-16">
                     <!-- Bouton toggle sidebar mobile - À gauche, aligné en haut -->
                     <div class="flex items-start pt-1">
-                        <button id="sidebarToggle" class="hamburger-button bg-blue-600/80 text-white p-2.5 rounded-lg shadow-lg hover:bg-blue-700/80 transition-all duration-200 group">
+                        <button id="sidebarToggle" class="hamburger-button bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-2.5 rounded-lg shadow-lg hover:shadow-indigo-700/30 transition-all duration-200 group">
                             <div class="flex flex-col items-center justify-center w-5 h-5">
-                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100"></span>
-                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
-                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white/90 rounded-full transition-all duration-200"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white/90 rounded-full transition-all duration-200 mt-1"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white/90 rounded-full transition-all duration-200 mt-1"></span>
                             </div>
                         </button>
                     </div>
