@@ -205,8 +205,8 @@
         }
     </style>
 </head>
-<body class="dark-mode-bg scroll-smooth">
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.jpg') }}'); background-size:cover; background-position:center; filter:blur(10px); transform:scale(1.05); opacity:.25"></div>
+<body class="dark-mode-bg has-bg-image scroll-smooth">
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; filter:blur(10px); transform:scale(1.05); opacity:.25"></div>
         <!-- Navigation -->
     <nav class="fixed top-0 w-full z-50 glass-effect">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

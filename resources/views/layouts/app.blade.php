@@ -337,7 +337,7 @@
         }
     </style>
 </head>
-<body class="gradient-bg vignette-bg min-h-screen">
+<body class="gradient-bg has-bg-image vignette-bg min-h-screen">
     <div class="site-bg" style="background-image: url('{{ asset('images/background.png') }}')"></div>
     <div class="min-h-screen app-root">
         <div class="flex flex-col min-h-screen">
