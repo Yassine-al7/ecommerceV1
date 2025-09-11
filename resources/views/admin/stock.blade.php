@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة المخزون</title>
+    @section('title', 'إدارة المخزون')
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
     @extends('layouts.app')
-
-    @section('title', 'إدارة المخزون')
 
     @section('content')
 <div class="container mx-auto px-4 py-8">
