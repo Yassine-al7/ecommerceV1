@@ -132,7 +132,7 @@ class StatisticsController extends Controller
     public function topProducts()
     {
         $topProducts = Product::select('produits.*')
-            ->selectRaw('(SELECT COUNT(*) FROM commandes WHERE JSON_CONTAINS(produits, JSON_OBJECT("product_id", produits.id))) as total_sales')
+            ->selectRaw('(SELECT COUNT(*) FROM commandes WHERE status = "livré" AND JSON_CONTAINS(produits, JSON_OBJECT("product_id", produits.id))) as total_sales')
             ->orderBy('total_sales', 'desc')
             ->take(5)
             ->get(['id', 'name', \DB::raw('total_sales')]);
