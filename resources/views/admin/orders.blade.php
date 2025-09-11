@@ -235,7 +235,7 @@ use App\Helpers\OrderHelper;
                                 {{ __('admin_orders.table.client') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                                {{ __('admin_orders.table.seller') }}
+                                {{ __('ui.fields.store_name') }}
                             </th>
                             <th class="px-6 py-3 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
                                 {{ __('admin_orders.table.city') }}
@@ -272,7 +272,7 @@ use App\Helpers\OrderHelper;
                                     <div class="text-sm leading-5 text-gray-500">{{ $order->numero_telephone_client }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                                    <div class="text-sm leading-5 text-gray-900">{{ $order->seller->name ?? 'N/A' }}</div>
+                                    <div class="text-sm leading-5 text-gray-900">{{ $order->seller->store_name ?? ($order->seller->name ?? 'store') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                                     <div class="text-sm leading-5 text-gray-900">{{ $order->ville }}</div>
