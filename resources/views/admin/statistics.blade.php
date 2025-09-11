@@ -188,39 +188,20 @@
 document.addEventListener('DOMContentLoaded', function() {
     const colors = { primary: '#3b82f6', secondary: '#10b981', accent: '#f59e0b', danger: '#ef4444', purple: '#8b5cf6', pink: '#ec4899' };
 
-    // Dynamic Top 5 Products chart
-    const productsCtx = document.getElementById('productsChart').getContext('2d');
-    const productsChart = new Chart(productsCtx, {
+    new Chart(document.getElementById('productsChart').getContext('2d'), {
         type: 'bar',
-        data: { labels: [], datasets: [{
-            label: 'عدد المبيعات',
-            data: [],
-            backgroundColor: [colors.primary, colors.secondary, colors.accent, colors.purple, colors.pink],
-            borderColor: [colors.primary, colors.secondary, colors.accent, colors.purple, colors.pink],
-            borderWidth: 2,
-            borderRadius: 8
-        }]},
+        data: {
+            labels: {!! json_encode($topProducts->pluck('name')) !!},
+            datasets: [{
+                label: 'عدد المبيعات',
+                data: {!! json_encode($topProducts->pluck('total_sales')) !!},
+                backgroundColor: [colors.primary, colors.secondary, colors.accent, colors.purple, colors.pink],
+                borderColor: [colors.primary, colors.secondary, colors.accent, colors.purple, colors.pink],
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-    });
-
-    async function loadTopProducts() {
-        try {
-            const res = await fetch('{{ route('admin.statistics.top-products') }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-            if (!res.ok) throw new Error('Network');
-            const json = await res.json();
-            productsChart.data.labels = json.labels || [];
-            productsChart.data.datasets[0].data = json.data || [];
-            productsChart.update();
-        } catch (e) {
-            // keep silent to avoid breaking the page
-        }
-    }
-
-    // initial load and auto-refresh
-    loadTopProducts();
-    setInterval(loadTopProducts, 60000);
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) loadTopProducts();
     });
 
     new Chart(document.getElementById('sellersChart').getContext('2d'), {

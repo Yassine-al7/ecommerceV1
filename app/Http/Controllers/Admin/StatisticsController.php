@@ -135,11 +135,11 @@ class StatisticsController extends Controller
             ->selectRaw('(SELECT COUNT(*) FROM commandes WHERE JSON_CONTAINS(produits, JSON_OBJECT("product_id", produits.id))) as total_sales')
             ->orderBy('total_sales', 'desc')
             ->take(5)
-            ->get(['id', 'name']);
+            ->get(['id', 'name', \DB::raw('total_sales')]);
 
         // Ensure names and totals are present
         $labels = $topProducts->pluck('name')->values();
-        $data = $topProducts->pluck('total_sales')->map(function ($v) { return (int) $v; })->values();
+        $data = $topProducts->pluck('total_sales')->map(function ($v) { return (int) ($v ?? 0); })->values();
 
         return response()->json([
             'labels' => $labels,
