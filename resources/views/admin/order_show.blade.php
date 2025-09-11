@@ -36,7 +36,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">سعر الطلب</p>
-                    <p class="text-lg text-gray-900">{{ number_format($order->prix_commande, 2) }} €</p>
+                    <p class="text-lg text-gray-900">{{ number_format($order->prix_commande, 2) }} MAD</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">الحالة</p>
