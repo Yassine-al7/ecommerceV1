@@ -52,15 +52,24 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-color: #374151;
+        }
+
         body {
             font-family: 'Inter', 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
             margin: 0;
             padding: 0;
-            background-color: #f8fafc;
-            color: #1a202c;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Prefer Cairo for RTL (Arabic) contexts */
@@ -71,7 +80,7 @@
 
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Inter', 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-            color: #1a202c;
+            color: var(--text-primary);
             margin: 0 0 1rem 0;
         }
 
@@ -95,7 +104,7 @@
             height: 200px;
             object-fit: cover;
             border-radius: 4px;
-            background-color: #f1f5f9;
+            background-color: #1f2937;
         }
 
         .product-title {
@@ -127,8 +136,8 @@
 
         /* Admin interface */
         .admin-header {
-            background: #1a202c;
-            color: white;
+            background: #111827;
+            color: var(--text-primary);
             padding: 20px;
             margin-bottom: 30px;
         }
@@ -150,13 +159,13 @@
             align-items: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: white;
+            background: rgba(255,255,255,0.05);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .btn-primary {
-            background-color: #3b82f6;
+            background-color: var(--sidebar-link);
             color: white;
             padding: 10px 20px;
             border: none;
@@ -167,7 +176,7 @@
         }
 
         .btn-primary:hover {
-            background-color: #2563eb;
+            background-color: var(--sidebar-link-hover);
         }
 
         /* Login page styles */
@@ -176,7 +185,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #111827 0%, #0b1220 100%);
             padding: 20px;
         }
 
@@ -337,7 +346,7 @@
         }
     </style>
 </head>
-<body class="gradient-bg has-bg-image vignette-bg min-h-screen">
+<body class="dark-mode-bg has-bg-image vignette-bg min-h-screen">
     <div class="site-bg" style="background-image: url('{{ asset('images/background.png') }}')"></div>
     <div class="min-h-screen app-root">
         <div class="flex flex-col min-h-screen">
@@ -346,11 +355,11 @@
                                 <div class="flex items-center justify-between px-4 py-3 h-16">
                     <!-- Bouton toggle sidebar mobile - À gauche, aligné en haut -->
                     <div class="flex items-start pt-1">
-                        <button id="sidebarToggle" class="hamburger-button bg-blue-600/80 text-white p-2.5 rounded-lg shadow-lg hover:bg-blue-700/80 transition-all duration-200 group">
+                        <button id="sidebarToggle" class="hamburger-button bg-black/40 text-white p-2.5 rounded-lg shadow-lg hover:bg-black/60 transition-all duration-200">
                             <div class="flex flex-col items-center justify-center w-5 h-5">
-                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100"></span>
-                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
-                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 group-hover:bg-blue-100 mt-1"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 mt-1"></span>
+                                <span class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-200 mt-1"></span>
                             </div>
                         </button>
                     </div>
