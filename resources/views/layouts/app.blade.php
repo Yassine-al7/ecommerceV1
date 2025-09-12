@@ -284,13 +284,13 @@
             position: fixed;
             inset: 0;
             background-position: center;
-            background-size: cover;
+            background-size: contain;
             background-repeat: no-repeat;
-            background-color: #ffffff; /* light tint */
-            background-blend-mode: screen; /* lighten image */
-            filter: blur(12px) saturate(0.5) brightness(1.05);
+            background-color: #0b1220; /* tint to dark */
+            background-blend-mode: multiply; /* blend image with dark tint */
+            filter: blur(10px) saturate(0) brightness(0.85);
             transform: scale(1.05);
-            opacity: .28;
+            opacity: .22;
             pointer-events: none;
             z-index: 0;
         }
@@ -362,7 +362,7 @@
     </style>
 </head>
 <body class="dark-mode-bg has-bg-image vignette-bg min-h-screen">
-    <div class="site-bg" style="background-image: url('{{ asset('images/background.png') }}')"></div>
+    <div class="site-bg" style="background-image: url('{{ asset('images/logo.png') }}')"></div>
     <div class="min-h-screen app-root">
         <div class="flex flex-col min-h-screen">
                                                 <!-- Header Mobile avec Menu à gauche et Logo centré -->
