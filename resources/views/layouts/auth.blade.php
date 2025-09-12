@@ -209,6 +209,38 @@
             opacity: .6;
             --glow: rgba(37,99,235,0.85);
         }
+        .space-lines .line-4 { top: 12%; transform: rotate(-4deg); }
+        .space-lines .line-4 span {
+            background: linear-gradient(90deg, rgba(147,197,253,0) 0%, rgba(147,197,253,0.8) 50%, rgba(147,197,253,0) 100%);
+            animation-duration: 18s;
+            animation-delay: .6s;
+            opacity: .55;
+            --glow: rgba(147,197,253,0.9);
+        }
+        .space-lines .line-5 { top: 68%; transform: rotate(-6deg); }
+        .space-lines .line-5 span {
+            background: linear-gradient(90deg, rgba(29,78,216,0) 0%, rgba(29,78,216,0.8) 50%, rgba(29,78,216,0) 100%);
+            animation-duration: 22s;
+            animation-delay: 1.2s;
+            opacity: .6;
+            --glow: rgba(29,78,216,0.9);
+        }
+        .space-lines .line-6 { bottom: 14%; transform: rotate(10deg); }
+        .space-lines .line-6 span {
+            background: linear-gradient(90deg, rgba(125,211,252,0) 0%, rgba(125,211,252,0.8) 50%, rgba(125,211,252,0) 100%);
+            animation-duration: 26s;
+            animation-delay: .9s;
+            opacity: .5;
+            --glow: rgba(125,211,252,0.85);
+        }
+        .space-lines .line-7 { top: 85%; transform: rotate(-1deg); }
+        .space-lines .line-7 span {
+            background: linear-gradient(90deg, rgba(37,99,235,0) 0%, rgba(59,130,246,0.75) 50%, rgba(37,99,235,0) 100%);
+            animation-duration: 28s;
+            animation-delay: 1.8s;
+            opacity: .5;
+            --glow: rgba(59,130,246,0.85);
+        }
         @keyframes lineDrift {
             0% { transform: translateX(-35%); }
             100% { transform: translateX(35%); }
@@ -225,6 +257,10 @@
         <div class="line line-1"><span></span></div>
         <div class="line line-2"><span></span></div>
         <div class="line line-3"><span></span></div>
+        <div class="line line-4"><span></span></div>
+        <div class="line line-5"><span></span></div>
+        <div class="line line-6"><span></span></div>
+        <div class="line line-7"><span></span></div>
     </div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
