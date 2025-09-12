@@ -166,7 +166,7 @@
         .space-lines {
             position: fixed;
             inset: 0;
-            z-index: 1; /* above vignette/mesh and bg image, below content */
+            z-index: 5; /* clearly above background overlays, below content (z-10) */
             pointer-events: none;
             overflow: hidden;
         }
@@ -174,16 +174,17 @@
             position: absolute;
             left: -30%;
             width: 160%;
-            height: 2px;
-            opacity: 0.25;
-            filter: drop-shadow(0 0 6px rgba(255,255,255,0.06));
+            height: 3px;
+            opacity: 0.5;
+            mix-blend-mode: screen;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.12));
             will-change: transform;
         }
         .space-lines .line span {
             display: block;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%);
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%);
             animation: lineDrift 14s linear infinite;
         }
         .space-lines .line-1 { top: 22%; transform: rotate(8deg); }
@@ -191,8 +192,8 @@
         .space-lines .line-2 { bottom: 26%; transform: rotate(-12deg); }
         .space-lines .line-2 span { animation-duration: 20s; opacity: .28; }
         @keyframes lineDrift {
-            0% { transform: translateX(-10%); }
-            100% { transform: translateX(10%); }
+            0% { transform: translateX(-35%); }
+            100% { transform: translateX(35%); }
         }
     </style>
 </head>
