@@ -161,10 +161,47 @@
         }
         .btn-brand:focus { outline: 2px solid var(--sidebar-link); outline-offset: 2px; }
         .btn-brand:hover { color: var(--sidebar-link-hover); }
+
+        /* Animated background lines */
+        .space-lines {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .space-lines .line {
+            position: absolute;
+            left: -30%;
+            width: 160%;
+            height: 2px;
+            opacity: 0.25;
+            filter: drop-shadow(0 0 6px rgba(255,255,255,0.06));
+            will-change: transform;
+        }
+        .space-lines .line span {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%);
+            animation: lineDrift 14s linear infinite;
+        }
+        .space-lines .line-1 { top: 22%; transform: rotate(8deg); }
+        .space-lines .line-1 span { animation-duration: 16s; opacity: .35; }
+        .space-lines .line-2 { bottom: 26%; transform: rotate(-12deg); }
+        .space-lines .line-2 span { animation-duration: 20s; opacity: .28; }
+        @keyframes lineDrift {
+            0% { transform: translateX(-10%); }
+            100% { transform: translateX(10%); }
+        }
     </style>
 </head>
 <body class="dark-mode-bg has-bg-image vignette-bg mesh-bg">
     <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#0b1220; background-blend-mode:multiply; filter:blur(10px) saturate(0.2) brightness(0.85); transform:scale(1.05); opacity:.22"></div>
+    <div class="space-lines">
+        <div class="line line-1"><span></span></div>
+        <div class="line line-2"><span></span></div>
+    </div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
             @yield('content')
