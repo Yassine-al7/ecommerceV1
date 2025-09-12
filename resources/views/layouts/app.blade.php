@@ -286,11 +286,11 @@
             background-position: center;
             background-size: contain;
             background-repeat: no-repeat;
-            background-color: #0b1220; /* tint to dark */
-            background-blend-mode: multiply; /* blend image with dark tint */
-            filter: blur(10px) saturate(0) brightness(0.85);
+            background-color: #ffffff; /* light tint */
+            background-blend-mode: screen; /* lighten image */
+            filter: blur(12px) saturate(0) brightness(1.05);
             transform: scale(1.05);
-            opacity: .22;
+            opacity: .24;
             pointer-events: none;
             z-index: 0;
         }

@@ -164,7 +164,7 @@
     </style>
 </head>
 <body class="dark-mode-bg has-bg-image vignette-bg mesh-bg">
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/logo.png') }}'); background-size:contain; background-position:center; background-repeat:no-repeat; background-color:#0b1220; background-blend-mode:multiply; filter:blur(10px) saturate(0) brightness(0.85); transform:scale(1.05); opacity:.22"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#0b1220; background-blend-mode:multiply; filter:blur(10px) saturate(0.2) brightness(0.85); transform:scale(1.05); opacity:.22"></div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
             @yield('content')
