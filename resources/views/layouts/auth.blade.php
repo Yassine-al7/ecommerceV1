@@ -166,7 +166,7 @@
         .space-lines {
             position: fixed;
             inset: 0;
-            z-index: 0;
+            z-index: 1; /* above vignette/mesh and bg image, below content */
             pointer-events: none;
             overflow: hidden;
         }
