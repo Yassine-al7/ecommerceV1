@@ -175,43 +175,52 @@
             left: -30%;
             width: 160%;
             height: 3px;
-            opacity: 0.5;
+            opacity: 0.65;
             mix-blend-mode: screen;
-            filter: drop-shadow(0 0 8px rgba(255,255,255,0.12));
+            filter: none;
             will-change: transform;
         }
         .space-lines .line span {
             display: block;
             width: 100%;
             height: 100%;
-            animation: lineDrift 14s linear infinite;
+            --glow: rgba(59,130,246,0.7);
+            filter: drop-shadow(0 0 10px var(--glow));
+            animation: lineDrift 14s linear infinite, glowPulse 3.6s ease-in-out infinite;
         }
         .space-lines .line-1 { top: 22%; transform: rotate(8deg); }
         .space-lines .line-1 span {
             background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(59,130,246,0.85) 50%, rgba(59,130,246,0) 100%);
             animation-duration: 16s;
-            opacity: .6;
+            opacity: .7;
+            --glow: rgba(59,130,246,0.8);
         }
         .space-lines .line-2 { bottom: 26%; transform: rotate(-12deg); }
         .space-lines .line-2 span {
             background: linear-gradient(90deg, rgba(96,165,250,0) 0%, rgba(96,165,250,0.8) 50%, rgba(96,165,250,0) 100%);
             animation-duration: 20s;
-            opacity: .55;
+            opacity: .65;
+            --glow: rgba(96,165,250,0.8);
         }
         .space-lines .line-3 { top: 50%; transform: rotate(2deg); }
         .space-lines .line-3 span {
             background: linear-gradient(90deg, rgba(37,99,235,0) 0%, rgba(37,99,235,0.75) 50%, rgba(37,99,235,0) 100%);
             animation-duration: 24s;
-            opacity: .5;
+            opacity: .6;
+            --glow: rgba(37,99,235,0.85);
         }
         @keyframes lineDrift {
             0% { transform: translateX(-35%); }
             100% { transform: translateX(35%); }
         }
+        @keyframes glowPulse {
+            0%, 100% { filter: drop-shadow(0 0 8px var(--glow)); }
+            50% { filter: drop-shadow(0 0 20px var(--glow)); }
+        }
     </style>
 </head>
 <body class="dark-mode-bg has-bg-image vignette-bg mesh-bg">
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#0b1220; background-blend-mode:multiply; filter:blur(12px) saturate(0) brightness(0.75); transform:scale(1.05); opacity:.28"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#0b1220; background-blend-mode:multiply; filter:blur(16px) saturate(0) brightness(0.6); transform:scale(1.06); opacity:.32"></div>
     <div class="space-lines">
         <div class="line line-1"><span></span></div>
         <div class="line line-2"><span></span></div>
