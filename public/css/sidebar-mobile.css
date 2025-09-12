@@ -24,11 +24,11 @@
 .hamburger-button {
     position: relative !important;
     z-index: 10001 !important; /* Toujours au-dessus de l'overlay */
-    background-color: rgba(37, 99, 235, 0.8) !important; /* Background bleu */
+    background-color: rgba(0, 0, 0, 0.4) !important; /* Dark translucent */
     color: white !important;
     padding: 0.625rem !important; /* p-2.5 */
     border-radius: 0.5rem !important;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
     transition: all 0.2s ease !important;
     border: none !important;
     cursor: pointer !important;
@@ -42,9 +42,9 @@
 }
 
 .hamburger-button:hover {
-    background-color: rgba(29, 78, 216, 0.9) !important; /* Bleu plus foncé au hover */
+    background-color: rgba(0, 0, 0, 0.6) !important; /* Darker on hover */
     transform: scale(1.05) !important;
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5) !important;
 }
 
 .hamburger-button.sidebar-open {
@@ -298,8 +298,8 @@
 
 /* Unification parfaite de la luminosité de la page */
 body:not(.gradient-bg) {
-    background-color: var(--brand-gradient-end, #e2e8f0) !important; /* Utilise la couleur de marque si dispo */
-    color: #334155 !important; /* Texte équilibré et lisible */
+    background-color: var(--bg-primary, #0b1220) !important; /* Align with dark theme */
+    color: var(--text-primary, #f9fafb) !important;
     position: relative !important; /* Position relative pour le z-index */
     z-index: 1 !important; /* Z-index de base pour le contenu */
 }
