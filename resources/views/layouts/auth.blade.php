@@ -174,8 +174,8 @@
             position: absolute;
             left: -30%;
             width: 160%;
-            height: 3px;
-            opacity: 0.65;
+            height: 4px;
+            opacity: 0.8;
             mix-blend-mode: screen;
             filter: none;
             will-change: transform;
@@ -185,8 +185,8 @@
             width: 100%;
             height: 100%;
             --glow: rgba(59,130,246,0.7);
-            filter: drop-shadow(0 0 10px var(--glow));
-            animation: lineDrift 14s linear infinite, glowPulse 3.6s ease-in-out infinite;
+            filter: drop-shadow(0 0 14px var(--glow)) drop-shadow(0 0 28px var(--glow));
+            animation: lineDrift 14s linear infinite, glowPulse 3.2s ease-in-out infinite;
         }
         .space-lines .line-1 { top: 22%; transform: rotate(8deg); }
         .space-lines .line-1 span {
@@ -246,8 +246,34 @@
             100% { transform: translateX(35%); }
         }
         @keyframes glowPulse {
-            0%, 100% { filter: drop-shadow(0 0 8px var(--glow)); }
-            50% { filter: drop-shadow(0 0 20px var(--glow)); }
+            0%, 100% { filter: drop-shadow(0 0 12px var(--glow)) drop-shadow(0 0 24px var(--glow)); }
+            50% { filter: drop-shadow(0 0 26px var(--glow)) drop-shadow(0 0 40px var(--glow)); }
+        }
+        /* Additional lines with varied hues and timings */
+        .space-lines .line-8 { top: 35%; transform: rotate(14deg); }
+        .space-lines .line-8 span {
+            background: linear-gradient(90deg, rgba(56,189,248,0) 0%, rgba(56,189,248,0.85) 50%, rgba(56,189,248,0) 100%);
+            animation-duration: 18s; animation-delay: .4s; opacity: .7; --glow: rgba(56,189,248,0.9);
+        }
+        .space-lines .line-9 { bottom: 40%; transform: rotate(-8deg); }
+        .space-lines .line-9 span {
+            background: linear-gradient(90deg, rgba(14,165,233,0) 0%, rgba(14,165,233,0.85) 50%, rgba(14,165,233,0) 100%);
+            animation-duration: 21s; animation-delay: 1.1s; opacity: .7; --glow: rgba(14,165,233,0.9);
+        }
+        .space-lines .line-10 { top: 5%; transform: rotate(3deg); }
+        .space-lines .line-10 span {
+            background: linear-gradient(90deg, rgba(147,197,253,0) 0%, rgba(147,197,253,0.85) 50%, rgba(147,197,253,0) 100%);
+            animation-duration: 25s; animation-delay: .9s; opacity: .65; --glow: rgba(147,197,253,0.9);
+        }
+        .space-lines .line-11 { bottom: 8%; transform: rotate(6deg); }
+        .space-lines .line-11 span {
+            background: linear-gradient(90deg, rgba(99,102,241,0) 0%, rgba(99,102,241,0.8) 50%, rgba(99,102,241,0) 100%);
+            animation-duration: 27s; animation-delay: 1.6s; opacity: .65; --glow: rgba(99,102,241,0.85);
+        }
+        .space-lines .line-12 { top: 75%; transform: rotate(-14deg); }
+        .space-lines .line-12 span {
+            background: linear-gradient(90deg, rgba(2,132,199,0) 0%, rgba(2,132,199,0.85) 50%, rgba(2,132,199,0) 100%);
+            animation-duration: 30s; animation-delay: 2.2s; opacity: .65; --glow: rgba(2,132,199,0.9);
         }
     </style>
 </head>
@@ -261,6 +287,11 @@
         <div class="line line-5"><span></span></div>
         <div class="line line-6"><span></span></div>
         <div class="line line-7"><span></span></div>
+        <div class="line line-8"><span></span></div>
+        <div class="line line-9"><span></span></div>
+        <div class="line line-10"><span></span></div>
+        <div class="line line-11"><span></span></div>
+        <div class="line line-12"><span></span></div>
     </div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
