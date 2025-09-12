@@ -184,13 +184,26 @@
             display: block;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%);
             animation: lineDrift 14s linear infinite;
         }
         .space-lines .line-1 { top: 22%; transform: rotate(8deg); }
-        .space-lines .line-1 span { animation-duration: 16s; opacity: .35; }
+        .space-lines .line-1 span {
+            background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(59,130,246,0.85) 50%, rgba(59,130,246,0) 100%);
+            animation-duration: 16s;
+            opacity: .6;
+        }
         .space-lines .line-2 { bottom: 26%; transform: rotate(-12deg); }
-        .space-lines .line-2 span { animation-duration: 20s; opacity: .28; }
+        .space-lines .line-2 span {
+            background: linear-gradient(90deg, rgba(96,165,250,0) 0%, rgba(96,165,250,0.8) 50%, rgba(96,165,250,0) 100%);
+            animation-duration: 20s;
+            opacity: .55;
+        }
+        .space-lines .line-3 { top: 50%; transform: rotate(2deg); }
+        .space-lines .line-3 span {
+            background: linear-gradient(90deg, rgba(37,99,235,0) 0%, rgba(37,99,235,0.75) 50%, rgba(37,99,235,0) 100%);
+            animation-duration: 24s;
+            opacity: .5;
+        }
         @keyframes lineDrift {
             0% { transform: translateX(-35%); }
             100% { transform: translateX(35%); }
@@ -198,10 +211,11 @@
     </style>
 </head>
 <body class="dark-mode-bg has-bg-image vignette-bg mesh-bg">
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#0b1220; background-blend-mode:multiply; filter:blur(10px) saturate(0.2) brightness(0.85); transform:scale(1.05); opacity:.22"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#0b1220; background-blend-mode:multiply; filter:blur(12px) saturate(0) brightness(0.75); transform:scale(1.05); opacity:.28"></div>
     <div class="space-lines">
         <div class="line line-1"><span></span></div>
         <div class="line line-2"><span></span></div>
+        <div class="line line-3"><span></span></div>
     </div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
