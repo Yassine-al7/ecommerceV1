@@ -55,8 +55,8 @@
         :root {
             --bg-primary: #1f2937;
             --bg-secondary: #111827;
-            --text-primary: #f9fafb;
-            --text-secondary: #d1d5db;
+            --text-primary: rgb(77, 137, 198);
+            --text-secondary: rgb(77, 137, 198);
             --border-color: #374151;
         }
 
@@ -286,9 +286,11 @@
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
-            filter: blur(10px);
+            background-color: #0b1220; /* tint to dark */
+            background-blend-mode: multiply; /* blend image with dark tint */
+            filter: blur(10px) saturate(0.2) brightness(0.85);
             transform: scale(1.05);
-            opacity: .25;
+            opacity: .22;
             pointer-events: none;
             z-index: 0;
         }
