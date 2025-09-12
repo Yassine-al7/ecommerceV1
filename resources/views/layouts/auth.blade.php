@@ -285,36 +285,7 @@
             background: linear-gradient(90deg, rgba(96,165,250,0) 0%, rgba(96,165,250,0.9) 50%, rgba(96,165,250,0) 100%);
             animation-duration: 23s; animation-delay: 1.3s; opacity: .75; --glow: rgba(96,165,250,0.95);
         }
-        .space-lines .line-15 { top: 8%; transform: rotate(-9deg); }
-        .space-lines .line-15 span {
-            background: linear-gradient(90deg, rgba(37,99,235,0) 0%, rgba(37,99,235,0.9) 50%, rgba(37,99,235,0) 100%);
-            animation-duration: 26s; animation-delay: 1.9s; opacity: .7; --glow: rgba(37,99,235,0.95);
-        }
-        .space-lines .line-16 { bottom: 18%; transform: rotate(4deg); }
-        .space-lines .line-16 span {
-            background: linear-gradient(90deg, rgba(28,100,242,0) 0%, rgba(28,100,242,0.9) 50%, rgba(28,100,242,0) 100%);
-            animation-duration: 29s; animation-delay: 2.5s; opacity: .7; --glow: rgba(28,100,242,0.95);
-        }
-        .space-lines .line-17 { top: 60%; transform: rotate(1deg); }
-        .space-lines .line-17 span {
-            background: linear-gradient(90deg, rgba(2,132,199,0) 0%, rgba(2,132,199,0.9) 50%, rgba(2,132,199,0) 100%);
-            animation-duration: 24s; animation-delay: 2.9s; opacity: .7; --glow: rgba(2,132,199,0.95);
-        }
-        .space-lines .line-18 { top: 30%; transform: rotate(-16deg); }
-        .space-lines .line-18 span {
-            background: linear-gradient(90deg, rgba(14,165,233,0) 0%, rgba(59,130,246,0.9) 50%, rgba(14,165,233,0) 100%);
-            animation-duration: 27s; animation-delay: 3.4s; opacity: .7; --glow: rgba(59,130,246,1);
-        }
-        .space-lines .line-19 { bottom: 32%; transform: rotate(12deg); }
-        .space-lines .line-19 span {
-            background: linear-gradient(90deg, rgba(125,211,252,0) 0%, rgba(125,211,252,0.9) 50%, rgba(125,211,252,0) 100%);
-            animation-duration: 31s; animation-delay: 3.9s; opacity: .7; --glow: rgba(125,211,252,1);
-        }
-        .space-lines .line-20 { top: 92%; transform: rotate(-5deg); }
-        .space-lines .line-20 span {
-            background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(147,197,253,0.9) 50%, rgba(59,130,246,0) 100%);
-            animation-duration: 33s; animation-delay: 4.2s; opacity: .7; --glow: rgba(147,197,253,1);
-        }
+        /* Lines 15-20 removed to slightly reduce density */
     </style>
 </head>
 <body class="dark-mode-bg has-bg-image vignette-bg mesh-bg">
@@ -334,12 +305,7 @@
         <div class="line line-12"><span></span></div>
         <div class="line line-13"><span></span></div>
         <div class="line line-14"><span></span></div>
-        <div class="line line-15"><span></span></div>
-        <div class="line line-16"><span></span></div>
-        <div class="line line-17"><span></span></div>
-        <div class="line line-18"><span></span></div>
-        <div class="line line-19"><span></span></div>
-        <div class="line line-20"><span></span></div>
+
     </div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
