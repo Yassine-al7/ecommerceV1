@@ -55,7 +55,7 @@
         :root {
             --bg-primary: #1f2937;
             --bg-secondary: #111827;
-            --text-primary: rgb(77, 137, 198);
+            --text-primary: rgb(20, 41, 62);
             --text-secondary: rgb(77, 137, 198);
             --border-color: #374151;
         }
@@ -288,7 +288,7 @@
             background-repeat: no-repeat;
             background-color: #0b1220; /* tint to dark */
             background-blend-mode: multiply; /* blend image with dark tint */
-            filter: blur(10px) saturate(0.2) brightness(0.85);
+            filter: blur(10px) saturate(0) brightness(0.85);
             transform: scale(1.05);
             opacity: .22;
             pointer-events: none;
@@ -313,6 +313,19 @@
         .brand-text { color: var(--brand-on-primary); }
         .brand-bg { background-color: var(--brand-primary); }
         .brand-border { border-color: var(--brand-primary); }
+
+        /* Force dark background for app pages, overriding external CSS */
+        html { background-color: var(--bg-primary) !important; }
+        body.dark-mode-bg {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Force dark background for app pages, overriding external CSS */
+        body.dark-mode-bg {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+        }
 
         /* Subtle vignette overlay */
         .vignette-bg::before {
