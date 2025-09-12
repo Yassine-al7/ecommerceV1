@@ -1,33 +1,34 @@
 @extends('layouts.auth')
 
 @section('content')
-<div class="max-w-md w-full space-y-8 card-gradient card-frame rounded-2xl shadow-2xl p-8">
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
         <div>
-            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-white/10 border border-white/20">
-                <i class="fas fa-envelope text-white/80 text-xl"></i>
+            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
+                <i class="fas fa-envelope text-blue-600 text-xl"></i>
             </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-white">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
                 Vérification du Code
             </h2>
-            <p class="mt-2 text-center text-sm text-blue-200">
+            <p class="mt-2 text-center text-sm text-gray-600">
                 Nous avons envoyé un code de vérification à 6 chiffres à votre adresse email
             </p>
         </div>
 
         @if(session('success'))
-            <div class="bg-green-500/20 border border-green-500/30 text-green-200 px-4 py-3 rounded">
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
-            <div class="bg-red-500/20 border border-red-500/30 text-red-200 px-4 py-3 rounded">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                 {{ session('error') }}
             </div>
         @endif
 
         @if(session('info'))
-            <div class="bg-blue-500/20 border border-blue-500/30 text-blue-200 px-4 py-3 rounded">
+            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
                 {{ session('info') }}
             </div>
         @endif
@@ -49,31 +50,31 @@
                 <label for="verification_code" class="sr-only">Code de vérification</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-key text-white/60"></i>
+                        <i class="fas fa-key text-gray-400"></i>
                     </div>
                     <input id="verification_code" name="verification_code" type="text" required
-                           class="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-white/20 placeholder-blue-300 text-white bg-white/10 focus:outline-none focus:ring-white/50 focus:border-transparent focus:z-10 sm:text-sm text-center tracking-widest"
+                           class="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm text-center tracking-widest"
                            placeholder="000000" maxlength="6" pattern="[0-9]{6}" autocomplete="off" autofocus>
                 </div>
                 @error('verification_code')
-                    <p class="mt-2 text-sm text-red-300">{{ $message }}</p>
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
                 <button type="submit"
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[color:var(--sidebar-link)] hover:bg-[color:var(--sidebar-link-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--sidebar-link)]">
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <i class="fas fa-check text-white/70 group-hover:text-white"></i>
+                        <i class="fas fa-check text-blue-500 group-hover:text-blue-400"></i>
                     </span>
                     Vérifier le Code
                 </button>
             </div>
 
             <div class="text-center">
-                <p class="text-sm text-blue-200">
+                <p class="text-sm text-gray-600">
                     Vous n'avez pas reçu le code ?
-                    <a href="{{ route('register') }}" class="font-medium text-white hover:text-blue-200">
+                    <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-500">
                         Recommencer l'inscription
                     </a>
                 </p>
@@ -83,7 +84,7 @@
                         <div class="mt-4">
                             <form method="POST" action="{{ route('register.resend-code') }}" class="inline">
                                 @csrf
-                                <button type="submit" class="text-sm text-white hover:text-blue-200 underline">
+                                <button type="submit" class="text-sm text-blue-600 hover:text-blue-500 underline">
                                     Renvoyer un nouveau code
                                 </button>
                             </form>
@@ -94,11 +95,12 @@
         </form>
 
         <div class="mt-6 text-center">
-            <p class="text-xs text-blue-200">
+            <p class="text-xs text-gray-500">
                 Le code est valide pendant 15 minutes
             </p>
         </div>
     </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

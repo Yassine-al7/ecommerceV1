@@ -286,11 +286,11 @@
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
-            background-color: #0b1220; /* tint to dark */
-            background-blend-mode: multiply; /* blend image with dark tint */
-            filter: blur(10px) saturate(0) brightness(0.85);
+            background-color: #ffffff; /* light tint */
+            background-blend-mode: screen; /* lighten image */
+            filter: blur(12px) saturate(0.5) brightness(1.05);
             transform: scale(1.05);
-            opacity: .22;
+            opacity: .28;
             pointer-events: none;
             z-index: 0;
         }
@@ -337,20 +337,6 @@
             z-index: 0;
         }
 
-        /* Professional mesh glow overlay */
-        .mesh-bg::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(60% 40% at 50% 110%, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0.1) 35%, transparent 70%),
-                radial-gradient(45% 35% at 88% 15%, rgba(59, 130, 246, 0.14) 0%, transparent 60%),
-                radial-gradient(40% 30% at 12% 18%, rgba(29, 78, 216, 0.12) 0%, transparent 60%);
-            filter: blur(16px);
-            z-index: 0;
-        }
-
         /* Modern Product Card Styles */
         .modern-product-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -375,7 +361,7 @@
         }
     </style>
 </head>
-<body class="dark-mode-bg has-bg-image vignette-bg mesh-bg min-h-screen">
+<body class="dark-mode-bg has-bg-image vignette-bg min-h-screen">
     <div class="site-bg" style="background-image: url('{{ asset('images/background.png') }}')"></div>
     <div class="min-h-screen app-root">
         <div class="flex flex-col min-h-screen">

@@ -120,18 +120,16 @@
             background: radial-gradient(120% 120% at 50% 40%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%);
             z-index: 0;
         }
-        /* Auth glow background inspired style */
+        /* Gradient mesh blobs (brand blue + deep navy) */
         .mesh-bg::after {
             content: "";
             position: fixed;
             inset: 0;
             pointer-events: none;
             background:
-                radial-gradient(60% 40% at 50% 110%, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0.15) 35%, transparent 70%), /* cyan glow bottom center */
-                radial-gradient(45% 35% at 85% 18%, rgba(59, 130, 246, 0.20) 0%, transparent 60%), /* soft blue at top-right */
-                radial-gradient(40% 30% at 12% 22%, rgba(29, 78, 216, 0.18) 0%, transparent 60%), /* soft blue at top-left */
-                linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75)); /* overall darkening */
-            filter: blur(14px);
+                radial-gradient(600px 420px at 22% 28%, color-mix(in srgb, var(--sidebar-link) 28%, transparent) 0%, transparent 60%),
+                radial-gradient(700px 480px at 78% 72%, rgba(15,23,42,0.35) 0%, transparent 60%);
+            filter: blur(12px);
             z-index: 0;
         }
         /* Gentle center dim to blend card with background (auth pages only) */
@@ -166,7 +164,7 @@
     </style>
 </head>
 <body class="dark-mode-bg has-bg-image vignette-bg mesh-bg">
-    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#0b1220; background-blend-mode:multiply; filter:blur(10px) saturate(0.2) brightness(0.85); transform:scale(1.05); opacity:.22"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none" style="background-image:url('{{ asset('images/background.png') }}'); background-size:cover; background-position:center; background-color:#ffffff; background-blend-mode:screen; filter:blur(12px) saturate(0.5) brightness(1.05); transform:scale(1.05); opacity:.28"></div>
     <div class="auth-container py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-md w-full space-y-8">
             @yield('content')
