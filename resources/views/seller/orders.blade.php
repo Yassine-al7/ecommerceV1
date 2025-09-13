@@ -66,14 +66,14 @@
                     </div>
                 </div>
 
-                <!-- Expédition -->
+                <!-- Expédition / قيد الشحن -->
                 <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-400">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-purple-100 text-purple-600">
                             <i class="fas fa-shipping-fast text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Expédition</p>
+                            <p class="text-sm font-medium text-gray-600">{{ __('seller_orders.stats.shipping') }}</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ $stats['expedition'] ?? 0 }}</p>
                         </div>
                     </div>
