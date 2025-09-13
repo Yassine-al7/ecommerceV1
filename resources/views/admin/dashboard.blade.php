@@ -62,7 +62,7 @@
             </div>
 
             <!-- Statistiques rapides -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-6 text-center">
                     <i class="fas fa-receipt text-2xl md:text-3xl text-blue-600 mb-3"></i>
                     <h3 class="text-xl md:text-2xl font-bold text-blue-900">{{ $totalOrders }}</h3>
@@ -95,7 +95,7 @@
             </div>
 
             <!-- Actions rapides -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8">
                 <a href="{{ route('admin.products.index') }}" class="bg-white rounded-xl p-4 md:p-6 border shadow-sm hover:shadow-md transition hover:bg-gray-50">
                     <i class="fas fa-box text-2xl md:text-3xl text-blue-600 mb-3 md:mb-4"></i>
                     <h3 class="text-lg md:text-xl font-semibold text-gray-800 mb-1">{{ __('admin_dashboard.quick.products.title') }}</h3>

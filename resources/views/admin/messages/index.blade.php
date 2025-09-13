@@ -19,7 +19,7 @@
         </div>
 
         <!-- إحصائيات -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
                 <div class="text-2xl font-bold text-blue-600">{{ $stats['total'] }}</div>
                 <div class="text-sm text-gray-600">إجمالي الرسائل</div>
