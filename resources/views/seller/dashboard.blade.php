@@ -170,13 +170,13 @@
         </div>
 
         <!-- Statistiques Paiements -->
-        <div class="grid grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-green-100 text-green-600">
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
-                    <div class="ml-4">
+                    <div class="ml-3 md:ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('seller.stats.paid_profits') }}</p>
                         <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalPaid, 0) }} MAD</p>
                         <p class="text-xs text-gray-500">{{ __('seller.stats.paid_orders') }}</p>
@@ -184,12 +184,12 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-orange-100 text-orange-600">
                         <i class="fas fa-clock text-2xl"></i>
                     </div>
-                    <div class="ml-4">
+                    <div class="ml-3 md:ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('seller.stats.pending_profits') }}</p>
                         <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$totalPending, 0) }} MAD</p>
                         <p class="text-xs text-gray-500">{{ __('seller.stats.unpaid_orders') }}</p>
