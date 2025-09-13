@@ -8,7 +8,7 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-8">الإحصائيات - الرسوم البيانية</h1>
 
         <!-- Statistiques générales -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Chiffre d'affaires total -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">إجمالي رقم المعاملات</h3>

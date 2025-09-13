@@ -96,7 +96,7 @@ use Illuminate\Support\Facades\DB;
             @endif
 
             <!-- Statistiques globales -->
-            <div class="card-grid mb-6 md:mb-8">
+            <div class="card-grid grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                     <div class="flex items-center">
                         <div class="p-2 md:p-3 bg-blue-100 rounded-lg">
