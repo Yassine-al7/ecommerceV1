@@ -7,6 +7,7 @@ return [
         'total' => 'الإجمالي',
         'pending' => 'قيد الانتظار',
         'confirmed' => 'مؤكد',
+        'shipping' => 'قيد الشحن',
         'delivered' => 'تم التسليم',
         'issue' => 'مشاكل',
         'no_answer' => 'لا يوجد رد',
