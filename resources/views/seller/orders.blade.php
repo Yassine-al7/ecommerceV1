@@ -26,7 +26,7 @@
             </div>
 
             <!-- Cartes de Statistiques -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <!-- Total Commandes -->
                 <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-400">
                     <div class="flex items-center">
@@ -106,7 +106,7 @@
                 </div>
 
                 <!-- Pas de Réponse -->
-                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-400">
+                <div class="col-span-2 lg:col-span-1 bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-400">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-orange-100 text-orange-600">
                             <i class="fas fa-phone text-2xl"></i>

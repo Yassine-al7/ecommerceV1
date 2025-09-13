@@ -22,7 +22,7 @@
     @endif
 
         <!-- Cartes de Statistiques -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-blue-100 text-blue-600">

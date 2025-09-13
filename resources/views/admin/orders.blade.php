@@ -10,7 +10,7 @@ use App\Helpers\OrderHelper;
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-7xl mx-auto">
         <!-- Cartes de statistiques -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <!-- Commande en attente -->
             <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-yellow-400">
                 <div class="flex items-center">
@@ -116,7 +116,7 @@ use App\Helpers\OrderHelper;
             </div>
 
             <!-- Commande problématique (total) -->
-            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-400">
+            <div class="col-span-2 lg:col-span-1 bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-400">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-red-100 text-red-600">
                         <i class="fas fa-exclamation-triangle text-2xl"></i>
