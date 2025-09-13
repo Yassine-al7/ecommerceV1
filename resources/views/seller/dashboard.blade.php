@@ -63,7 +63,7 @@
         @endif
 
         <!-- Statistiques Principales -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
             <!-- Produits Assignés -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                 <div class="flex items-center">
@@ -107,7 +107,7 @@
         </div>
 
         <!-- Statistiques Commandes -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
@@ -170,7 +170,7 @@
         </div>
 
         <!-- Statistiques Paiements -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div class="grid grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-green-100 text-green-600">
@@ -199,7 +199,7 @@
         </div>
 
         <!-- Actions Rapides -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
             <a href="{{ route('seller.products.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-4 md:p-6 text-center transition-colors group">
                 <i class="fas fa-box text-2xl md:text-3xl mb-2 md:mb-3 group-hover:scale-110 transition-transform"></i>
                 <h3 class="text-base md:text-lg font-semibold">{{ __('seller.quick.my_products') }}</h3>
