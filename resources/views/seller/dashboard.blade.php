@@ -91,7 +91,7 @@
             </div>
 
             <!-- Chiffre d'Affaires -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
+            <div class="col-span-2 lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
                 <div class="flex items-center">
                     <div class="p-2 md:p-3 rounded-full bg-green-100 text-green-600">
                         <i class="fas fa-coins text-lg md:text-2xl"></i>
@@ -156,7 +156,7 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="col-span-2 lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-red-100 text-red-600">
                         <i class="fas fa-times-circle text-2xl"></i>
