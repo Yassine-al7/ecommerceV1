@@ -515,28 +515,28 @@
                                     <a href="{{ route('seller.orders.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.orders.index') && !request()->has('status') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-list text-gray-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.all_orders') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=en%20attente') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'en attente' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-clock text-yellow-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.pending') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=confirmé') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'confirmé' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-check text-blue-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.confirmed') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=livré') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'livré' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-check-circle text-green-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.delivered') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=expédition') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'expédition' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-shipping-fast text-purple-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.shipped') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=annulé') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'annulé' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-times-circle text-red-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.cancelled') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=reporté') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'reporté' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-exclamation-triangle text-orange-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.postponed') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=retourné') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'retourné' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-undo text-gray-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.returned') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=pas%20de%20réponse') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->get('status') == 'pas de réponse' ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-question-circle text-gray-500 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.no_answer') }}</span>
                                     </a>
                                 </div>
