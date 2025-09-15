@@ -168,6 +168,10 @@ use Illuminate\Support\Facades\DB;
                                 class="btn bg-gray-600 hover:bg-gray-700 text-white">
                             <i class="fas fa-refresh mr-2"></i>إعادة التعيين
                         </button>
+                        <button onclick="toggleGrouping()" id="groupingBtn"
+                                class="btn bg-blue-600 hover:bg-blue-700 text-white">
+                            <i class="fas fa-users mr-2"></i>تجميع حسب البائع
+                        </button>
                     </div>
 
                     <!-- Résumé des filtres actifs -->
@@ -177,7 +181,7 @@ use Illuminate\Support\Facades\DB;
                 </div>
 
                 <!-- Filtres -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="form-group">
                         <label class="form-label">البائع *</label>
                         <select id="sellerFilter" class="form-input">
@@ -202,10 +206,83 @@ use Illuminate\Support\Facades\DB;
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">التجميع</label>
+                        <select id="groupByFilter" class="form-input">
+                            <option value="none">بدون تجميع</option>
+                            <option value="seller">حسب البائع</option>
+                            <option value="payment_status">حسب حالة الدفع</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">بحث</label>
                         <input type="text" id="searchFilter" placeholder="اسم العميل..."
                                class="form-input">
                     </div>
+                </div>
+            </div>
+
+            <!-- Résumé des paiements par vendeur -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6" id="sellerSummarySection">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-users text-blue-600 mr-2"></i>ملخص المدفوعات حسب البائع
+                    </h3>
+                    <span class="text-sm text-gray-500">{{ $sellerTotals->count() }} بائع</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($sellerTotals as $seller)
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-user text-blue-600"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h4 class="font-medium text-gray-900">{{ $seller->seller_name }}</h4>
+                                        <p class="text-xs text-gray-500">ID: {{ $seller->seller_id }}</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                    {{ $seller->total_orders }} طلب
+                                </span>
+                            </div>
+
+                            @if($seller->seller_rib)
+                                <div class="mb-3">
+                                    <p class="text-xs text-gray-600">RIB:</p>
+                                    <p class="text-sm font-mono bg-gray-100 px-2 py-1 rounded">{{ $seller->seller_rib }}</p>
+                                </div>
+                            @endif
+
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">إجمالي المبيعات:</span>
+                                    <span class="font-medium">{{ number_format($seller->total_revenue, 0) }} MAD</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">إجمالي الربح:</span>
+                                    <span class="font-medium text-green-600">{{ number_format($seller->total_profit, 0) }} MAD</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">مدفوع:</span>
+                                    <span class="font-medium text-blue-600">{{ number_format($seller->paid_profit, 0) }} MAD</span>
+                                </div>
+                                <div class="flex justify-between items-center border-t pt-2">
+                                    <span class="text-sm font-medium text-gray-800">المبلغ المستحق:</span>
+                                    <span class="font-bold text-red-600">{{ number_format($seller->unpaid_profit, 0) }} MAD</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 pt-3 border-t">
+                                <button onclick="filterBySeller({{ $seller->seller_id }})"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded-lg transition-colors">
+                                    <i class="fas fa-eye mr-1"></i>عرض تفاصيل البائع
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
 
@@ -705,6 +782,153 @@ use Illuminate\Support\Facades\DB;
         statCards.forEach(card => {
             card.classList.remove('loading-opacity', 'opacity-75');
         });
+    }
+
+    // Nouvelles fonctions pour le groupement et les filtres
+    function toggleGrouping() {
+        const sellerSummarySection = document.getElementById('sellerSummarySection');
+        const groupingBtn = document.getElementById('groupingBtn');
+
+        if (sellerSummarySection.classList.contains('hidden')) {
+            sellerSummarySection.classList.remove('hidden');
+            groupingBtn.innerHTML = '<i class="fas fa-eye-slash mr-2"></i>إخفاء التجميع';
+            groupingBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            groupingBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+        } else {
+            sellerSummarySection.classList.add('hidden');
+            groupingBtn.innerHTML = '<i class="fas fa-users mr-2"></i>تجميع حسب البائع';
+            groupingBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+            groupingBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }
+    }
+
+    function filterBySeller(sellerId) {
+        document.getElementById('sellerFilter').value = sellerId;
+        filterInvoices();
+    }
+
+    // Gestion du filtre de groupement
+    document.getElementById('groupByFilter').addEventListener('change', function() {
+        const groupBy = this.value;
+        const tableBody = document.getElementById('invoicesTableBody');
+        const rows = tableBody.querySelectorAll('.invoice-row');
+
+        // Réinitialiser l'affichage
+        rows.forEach(row => {
+            row.style.display = 'table-row';
+        });
+
+        if (groupBy === 'seller') {
+            groupBySeller(rows);
+        } else if (groupBy === 'payment_status') {
+            groupByPaymentStatus(rows);
+        }
+    });
+
+    function groupBySeller(rows) {
+        const sellerGroups = {};
+
+        // Grouper les lignes par vendeur
+        rows.forEach(row => {
+            const sellerId = row.dataset.sellerId;
+            if (!sellerGroups[sellerId]) {
+                sellerGroups[sellerId] = [];
+            }
+            sellerGroups[sellerId].push(row);
+        });
+
+        // Réorganiser l'affichage avec des en-têtes de groupe
+        const tableBody = document.getElementById('invoicesTableBody');
+        tableBody.innerHTML = '';
+
+        Object.keys(sellerGroups).forEach(sellerId => {
+            const sellerRows = sellerGroups[sellerId];
+            const firstRow = sellerRows[0];
+            const sellerName = firstRow.querySelector('.text-sm.font-medium').textContent;
+
+            // Ajouter l'en-tête du groupe
+            const groupHeader = createGroupHeader(sellerName, sellerRows.length, sellerId);
+            tableBody.appendChild(groupHeader);
+
+            // Ajouter les lignes du groupe
+            sellerRows.forEach(row => {
+                tableBody.appendChild(row);
+            });
+        });
+    }
+
+    function groupByPaymentStatus(rows) {
+        const statusGroups = {
+            'payé': [],
+            'non payé': []
+        };
+
+        // Grouper les lignes par statut de paiement
+        rows.forEach(row => {
+            const paymentStatus = row.dataset.paymentStatus;
+            if (paymentStatus === 'payé') {
+                statusGroups['payé'].push(row);
+            } else {
+                statusGroups['non payé'].push(row);
+            }
+        });
+
+        // Réorganiser l'affichage avec des en-têtes de groupe
+        const tableBody = document.getElementById('invoicesTableBody');
+        tableBody.innerHTML = '';
+
+        // Afficher d'abord les non payés, puis les payés
+        ['non payé', 'payé'].forEach(status => {
+            const statusRows = statusGroups[status];
+            if (statusRows.length > 0) {
+                const statusLabel = status === 'payé' ? 'مدفوع' : 'غير مدفوع';
+                const groupHeader = createGroupHeader(statusLabel, statusRows.length, null, status);
+                tableBody.appendChild(groupHeader);
+
+                statusRows.forEach(row => {
+                    tableBody.appendChild(row);
+                });
+            }
+        });
+    }
+
+    function createGroupHeader(title, count, sellerId, status = null) {
+        const headerRow = document.createElement('tr');
+        headerRow.className = 'bg-blue-50 border-b-2 border-blue-200';
+
+        let totalRevenue = 0;
+        let totalProfit = 0;
+
+        // Calculer les totaux si c'est un groupe de vendeur
+        if (sellerId) {
+            const rows = document.querySelectorAll(`[data-seller-id="${sellerId}"]`);
+            rows.forEach(row => {
+                totalRevenue += parseFloat(row.dataset.prixCommande) || 0;
+                totalProfit += parseFloat(row.dataset.margeBenefice) || 0;
+            });
+        }
+
+        headerRow.innerHTML = `
+            <td colspan="8" class="px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-layer-group text-blue-600 mr-2"></i>
+                        <h3 class="font-semibold text-blue-900">${title}</h3>
+                        <span class="ml-2 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                            ${count} طلب
+                        </span>
+                    </div>
+                    ${sellerId ? `
+                        <div class="text-sm text-gray-600">
+                            <span class="mr-4">المبيعات: ${numberFormat(totalRevenue)} MAD</span>
+                            <span class="text-green-600 font-medium">الربح: ${numberFormat(totalProfit)} MAD</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </td>
+        `;
+
+        return headerRow;
     }
     </script>
     @endsection

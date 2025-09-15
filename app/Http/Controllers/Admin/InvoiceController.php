@@ -14,6 +14,7 @@ class InvoiceController extends Controller
     {
         // Récupérer le vendeur sélectionné
         $selectedSellerId = $request->get('seller_id');
+        $groupBy = $request->get('group_by', 'none'); // none, seller, payment_status
 
         // Construire la requête de base
         $query = Order::with(['seller'])
@@ -35,7 +36,10 @@ class InvoiceController extends Controller
             ->whereHas('deliveredOrders')
             ->get();
 
-        return view('admin.invoices', compact('orders', 'stats', 'sellers', 'selectedSellerId'));
+        // Calculer les totaux par vendeur pour le groupement
+        $sellerTotals = $this->calculateSellerTotals($selectedSellerId);
+
+        return view('admin.invoices', compact('orders', 'stats', 'sellers', 'selectedSellerId', 'groupBy', 'sellerTotals'));
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -48,6 +52,38 @@ class InvoiceController extends Controller
         $order->save();
 
         return back()->with('success', 'Statut de facturation mis à jour avec succès.');
+    }
+
+    /**
+     * Calculer les totaux par vendeur
+     */
+    private function calculateSellerTotals($sellerId = null)
+    {
+        $query = DB::table('commandes')
+            ->join('users', 'commandes.seller_id', '=', 'users.id')
+            ->where('commandes.status', 'livré')
+            ->where('users.role', 'seller');
+
+        if ($sellerId) {
+            $query->where('commandes.seller_id', $sellerId);
+        }
+
+        $sellerTotals = $query
+            ->select([
+                'users.id as seller_id',
+                'users.name as seller_name',
+                'users.rib as seller_rib',
+                DB::raw('COUNT(commandes.id) as total_orders'),
+                DB::raw('SUM(commandes.prix_commande) as total_revenue'),
+                DB::raw('SUM(commandes.marge_benefice) as total_profit'),
+                DB::raw('SUM(CASE WHEN commandes.facturation_status = "payé" THEN commandes.marge_benefice ELSE 0 END) as paid_profit'),
+                DB::raw('SUM(CASE WHEN commandes.facturation_status != "payé" OR commandes.facturation_status IS NULL THEN commandes.marge_benefice ELSE 0 END) as unpaid_profit')
+            ])
+            ->groupBy('users.id', 'users.name', 'users.rib')
+            ->orderBy('total_profit', 'desc')
+            ->get();
+
+        return $sellerTotals;
     }
 
     /**
