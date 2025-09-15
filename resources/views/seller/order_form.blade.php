@@ -5,9 +5,24 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">{{ isset($order) ? __('seller_order_form.title_edit') : __('seller_order_form.title_create') }}</h1>
-            <p class="text-gray-600 mt-2">{{ isset($order) ? __('seller_order_form.subtitle_edit') : __('seller_order_form.subtitle_create') }}</p>
+        <!-- Header -->
+        <div class="mb-6 md:mb-8">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 md:p-6 text-blue-900 shadow-sm text-center" dir="rtl">
+                <h1 class="text-2xl md:text-3xl font-extrabold mb-1">
+                    @if(isset($order))
+                        {{ __('seller_order_form.title_edit') }}
+                    @else
+                        {{ __('seller_order_form.title_create') }}
+                    @endif
+                </h1>
+                <p class="text-sm md:text-base leading-relaxed">
+                    @if(isset($order))
+                        {{ __('seller_order_form.subtitle_edit') }}
+                    @else
+                        {{ __('seller_order_form.subtitle_create') }}
+                    @endif
+                </p>
+            </div>
         </div>
 
         @if($errors->any())
