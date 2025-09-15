@@ -394,15 +394,15 @@
                 @auth
                     @if(auth()->user()->isAdmin())
                         <div class="flex flex-col space-y-2">
-                            <a href="{{ route('admin.dashboard') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
-                            <a href="{{ route('admin.products.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Produits</a>
-                            <a href="{{ route('admin.categories.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Catégories</a>
-                            <a href="{{ route('admin.orders.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Commandes</a>
-                            <a href="{{ route('admin.statistics.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Statistiques</a>
-                            <a href="{{ route('admin.stock.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Stock</a>
-                            <a href="{{ route('admin.invoices.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Facturation</a>
-                            <a href="{{ route('admin.users.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Vendeurs</a>
-                            <a href="{{ route('admin.admins.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Administrateurs</a>
+                            <a href="{{ route('admin.dashboard') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.dashboard') }}</a>
+                            <a href="{{ route('admin.products.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.products') }}</a>
+                            <a href="{{ route('admin.categories.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.categories') }}</a>
+                            <a href="{{ route('admin.orders.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.orders') }}</a>
+                            <a href="{{ route('admin.statistics.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.statistics') }}</a>
+                            <a href="{{ route('admin.stock.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.stock') }}</a>
+                            <a href="{{ route('admin.invoices.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.invoices') }}</a>
+                            <a href="{{ route('admin.users.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.sellers') }}</a>
+                            <a href="{{ route('admin.admins.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.admins') }}</a>
                             <form method="POST" action="{{ route('logout') }}" class="pt-2 border-t border-white/20">
                                 @csrf
                                 <button type="submit" class="w-full text-left text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.admin.logout') }}</button>
@@ -410,21 +410,21 @@
                         </div>
                     @else
                         <div class="flex flex-col space-y-2">
-                            <a href="{{ route('seller.dashboard') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
-                            <a href="{{ route('seller.products.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Mes Produits</a>
+                            <a href="{{ route('seller.dashboard') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.dashboard') }}</a>
+                            <a href="{{ route('seller.products.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.my_products') }}</a>
                             <div class="border-t border-white/20 my-2"></div>
-                            <a href="{{ route('seller.orders.create') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Nouvelle commande</a>
-                            <a href="{{ route('seller.orders.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Toutes les commandes</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">En attente</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Confirmé</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Livré</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Expédition</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Annulé</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Reporté</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Retourné</a>
-                            <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Pas de réponse</a>
+                            <a href="{{ route('seller.orders.create') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.new_order') }}</a>
+                            <a href="{{ route('seller.orders.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.all_orders') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.pending') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'confirmé']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.confirmed') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'livré']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.delivered') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'expédition']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.shipped') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'annulé']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.cancelled') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'reporté']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.postponed') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'retourné']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.returned') }}</a>
+                            <a href="{{ route('seller.orders.index', ['status' => 'pas de réponse']) }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.no_answer') }}</a>
                             <div class="border-t border-white/20 my-2"></div>
-                            <a href="{{ route('seller.invoices.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Facturation</a>
+                            <a href="{{ route('seller.invoices.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.invoices') }}</a>
                             <form method="POST" action="{{ route('logout') }}" class="pt-2 border-t border-white/20">
                                 @csrf
                                 <button type="submit" class="w-full text-left text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">{{ __('nav.seller.logout') }}</button>
@@ -433,8 +433,8 @@
                     @endif
                 @else
                     <div class="flex flex-col space-y-2">
-                        <a href="{{ route('login') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Login</a>
-                        <a href="{{ route('register') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">Register</a>
+                        <a href="{{ route('login') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">تسجيل الدخول</a>
+                        <a href="{{ route('register') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">إنشاء حساب</a>
                     </div>
                 @endauth
             </div>
