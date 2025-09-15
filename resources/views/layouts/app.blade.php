@@ -512,7 +512,7 @@
                                     <a href="{{ route('seller.orders.create') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.orders.create') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-plus text-blue-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.new_order') }}</span>
                                     </a>
-                                    <a href="{{ route('seller.orders.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.orders.index') ? 'active' : '' }}" style="color: var(--sidebar-link)">
+                                    <a href="{{ route('seller.orders.index') }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->routeIs('seller.orders.index') && !request()->has('status') ? 'active' : '' }}" style="color: var(--sidebar-link)">
                                         <i class="fas fa-list text-gray-400 text-sm"></i><span class="text-xs md:text-sm">{{ __('nav.seller.all_orders') }}</span>
                                     </a>
                                     <a href="{{ route('seller.orders.index', ['status' => 'en attente']) }}" class="nav-link flex items-center space-x-2 md:space-x-3 p-3 rounded-lg transition-colors {{ request()->fullUrlIs('*status=en%20attente') ? 'active' : '' }}" style="color: var(--sidebar-link)">
