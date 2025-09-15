@@ -24,7 +24,8 @@ class ProductController extends Controller
         }
 
         // FORCER LE RECHARGEMENT DES DONNÉES DEPUIS LA BASE
-        $products = $query->get()->fresh();
+        // Trier par les plus récents (nouveaux produits en premier)
+        $products = $query->orderBy('created_at', 'desc')->get()->fresh();
 
         Log::info("🔄 Chargement de la liste des produits:", [
             'nombre_produits' => $products->count(),
