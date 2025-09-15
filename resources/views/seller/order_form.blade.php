@@ -601,6 +601,13 @@ function updateRemoveButtons() {
 }
 
 function setupProductEvents(productItem) {
+    // Initialize searchable select for this product item
+    const searchableSelect = productItem.querySelector('.searchable-select');
+    if (searchableSelect) {
+        initSearchableSelect(searchableSelect);
+        console.log('✅ Searchable select initialized for product item');
+    }
+
     const productSelect = productItem.querySelector('.product-select');
     const sizeSelect = productItem.querySelector('.size-select');
     const quantityInput = productItem.querySelector('.quantity-input');
