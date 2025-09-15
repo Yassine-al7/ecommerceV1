@@ -2326,7 +2326,17 @@ function initSearchableSelect(container) {
         select.value = value;
         updateLabelFromSelect();
         panel.classList.add('hidden');
+        // Fire existing listeners
         select.dispatchEvent(new Event('change', { bubbles: true }));
+        select.dispatchEvent(new Event('input', { bubbles: true }));
+        // Recalculate for this product item (price, totals) if applicable
+        const productItem = container.closest('.product-item');
+        if (productItem && typeof calculatePurchasePrice === 'function') {
+            try { calculatePurchasePrice(productItem); } catch (_) {}
+        }
+        if (typeof safeCalculateTotals === 'function') {
+            try { safeCalculateTotals(); } catch (_) {}
+        }
     }
 
     // Build once
