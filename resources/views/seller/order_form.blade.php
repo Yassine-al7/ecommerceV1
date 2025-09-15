@@ -48,27 +48,37 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.city') }}</label>
-                            <input type="text" id="villeLookup" class="w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" list="villeDatalist" placeholder="ابحث...">
-                            <datalist id="villeDatalist"></datalist>
-                            <select name="ville" id="villeSelect" class="hidden" required>
-                                <option value="">{{ __('seller_order_form.select_city') }}</option>
-                                <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
-                                <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
-                                <option value="Fès" @selected(old('ville', $order->ville ?? '') == 'Fès')>Fès - 25 DH (2-3 jours)</option>
-                                <option value="Marrakech" @selected(old('ville', $order->ville ?? '') == 'Marrakech')>Marrakech - 25 DH (2-3 jours)</option>
-                                <option value="Agadir" @selected(old('ville', $order->ville ?? '') == 'Agadir')>Agadir - 30 DH (2-3 jours)</option>
-                                <option value="Tanger" @selected(old('ville', $order->ville ?? '') == 'Tanger')>Tanger - 30 DH (2-3 jours)</option>
-                                <option value="Meknès" @selected(old('ville', $order->ville ?? '') == 'Meknès')>Meknès - 25 DH (2-3 jours)</option>
-                                <option value="Oujda" @selected(old('ville', $order->ville ?? '') == 'Oujda')>Oujda - 35 DH (3-4 jours)</option>
-                                <option value="Tétouan" @selected(old('ville', $order->ville ?? '') == 'Tétouan')>Tétouان - 30 DH (2-3 jours)</option>
-                                <option value="El Jadida" @selected(old('ville', $order->ville ?? '') == 'El Jadida')>El Jadida - 20 DH (1-2 jours)</option>
-                                <option value="Safi" @selected(old('ville', $order->ville ?? '') == 'Safi')>Safi - 25 DH (2-3 jours)</option>
-                                <option value="Béni Mellal" @selected(old('ville', $order->ville ?? '') == 'Béni Mellal')>Béni Mellal - 25 DH (2-3 jours)</option>
-                                <option value="Kénitra" @selected(old('ville', $order->ville ?? '') == 'Kénitra')>Kénitra - 20 DH (1-2 jours)</option>
-                                <option value="Témara" @selected(old('ville', $order->ville ?? '') == 'Témara')>Témara - 18 DH (1-2 jours)</option>
-                                <option value="Mohammedia" @selected(old('ville', $order->ville ?? '') == 'Mohammedia')>Mohammedia - 18 DH (1-2 jours)</option>
-                                <option value="Autre" @selected(old('ville', $order->ville ?? '') == 'Autre')>Autre - 40 DH (3-5 jours)</option>
-                            </select>
+                            <div class="searchable-select" data-placeholder="{{ __('seller_order_form.select_city') }}" data-search-placeholder="ابحث...">
+                                <select name="ville" id="villeSelect" class="hidden" required>
+                                    <option value="">{{ __('seller_order_form.select_city') }}</option>
+                                    <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
+                                    <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
+                                    <option value="Fès" @selected(old('ville', $order->ville ?? '') == 'Fès')>Fès - 25 DH (2-3 jours)</option>
+                                    <option value="Marrakech" @selected(old('ville', $order->ville ?? '') == 'Marrakech')>Marrakech - 25 DH (2-3 jours)</option>
+                                    <option value="Agadir" @selected(old('ville', $order->ville ?? '') == 'Agadir')>Agadir - 30 DH (2-3 jours)</option>
+                                    <option value="Tanger" @selected(old('ville', $order->ville ?? '') == 'Tanger')>Tanger - 30 DH (2-3 jours)</option>
+                                    <option value="Meknès" @selected(old('ville', $order->ville ?? '') == 'Meknès')>Meknès - 25 DH (2-3 jours)</option>
+                                    <option value="Oujda" @selected(old('ville', $order->ville ?? '') == 'Oujda')>Oujda - 35 DH (3-4 jours)</option>
+                                    <option value="Tétouان" @selected(old('ville', $order->ville ?? '') == 'Tétouان')>Tétouان - 30 DH (2-3 jours)</option>
+                                    <option value="El Jadida" @selected(old('ville', $order->ville ?? '') == 'El Jadida')>El Jadida - 20 DH (1-2 jours)</option>
+                                    <option value="Safi" @selected(old('ville', $order->ville ?? '') == 'Safi')>Safi - 25 DH (2-3 jours)</option>
+                                    <option value="Béni Mellal" @selected(old('ville', $order->ville ?? '') == 'Béni Mellal')>Béni Mellal - 25 DH (2-3 jours)</option>
+                                    <option value="Kénitra" @selected(old('ville', $order->ville ?? '') == 'Kénitra')>Kénitra - 20 DH (1-2 jours)</option>
+                                    <option value="Témara" @selected(old('ville', $order->ville ?? '') == 'Témara')>Témara - 18 DH (1-2 jours)</option>
+                                    <option value="Mohammedia" @selected(old('ville', $order->ville ?? '') == 'Mohammedia')>Mohammedia - 18 DH (1-2 jours)</option>
+                                    <option value="Autre" @selected(old('ville', $order->ville ?? '') == 'Autre')>Autre - 40 DH (3-5 jours)</option>
+                                </select>
+                                <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                                    <span class="ss-label text-gray-600">{{ __('seller_order_form.select_city') }}</span>
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                                <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                                    <div class="p-2 border-b">
+                                        <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                                    </div>
+                                    <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                                </div>
+                            </div>
                             <p class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.delivery_select_city') }}</p>
                         </div>
                         <div>
@@ -110,8 +120,11 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
                                     <input type="text" class="product-lookup w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" list="productDatalist-0" placeholder="ابحث...">
                                     <datalist id="productDatalist-0"></datalist>
-                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500 hidden" required>
+                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hidden" required>
                                         <option value="">{{ __('seller_order_form.select_product') }}</option>
+                                        @foreach(($products ?? []) as $p)
+                                            <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
 
@@ -426,11 +439,21 @@ function addProduct() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
-                <input type="text" class="product-lookup w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" list="productDatalist-${productCounter}" placeholder="ابحث...">
-                <datalist id="productDatalist-${productCounter}"></datalist>
-                <select name="products[${productCounter}][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500 hidden" required>
-                    <option value="">{{ __('seller_order_form.select_product') }}</option>
-                </select>
+                <div class="searchable-select" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                    <select name="products[${productCounter}][product_id]" class="product-select hidden" required>
+                        <option value="">{{ __('seller_order_form.select_product') }}</option>
+                    </select>
+                    <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                        <span class="ss-label text-gray-600">{{ __('seller_order_form.select_product') }}</span>
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                    <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <div class="p-2 border-b">
+                            <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                        </div>
+                        <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                    </div>
+                </div>
             </div>
 
             <div>
@@ -498,61 +521,6 @@ function addProduct() {
 
     // Mettre à jour l'affichage du bouton de suppression
     updateRemoveButtons();
-
-    // Lightweight datalist binders (keep existing logic untouched)
-    function bindDatalistToSelect(inputEl, datalistEl, selectEl) {
-        function populateDatalist() {
-            datalistEl.innerHTML = '';
-            Array.from(selectEl.options).forEach((opt, idx) => {
-                if (idx === 0) return;
-                const optionEl = document.createElement('option');
-                optionEl.value = opt.textContent || '';
-                optionEl.dataset.value = opt.value;
-                datalistEl.appendChild(optionEl);
-            });
-        }
-        populateDatalist();
-
-        inputEl.addEventListener('change', function() {
-            const match = Array.from(datalistEl.options).find(o => (o.value || '') === inputEl.value);
-            if (match) {
-                selectEl.value = match.dataset.value || '';
-                selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // City
-        const villeInput = document.getElementById('villeLookup');
-        const villeDatalist = document.getElementById('villeDatalist');
-        const villeSelect = document.getElementById('villeSelect');
-        if (villeInput && villeDatalist && villeSelect) {
-            bindDatalistToSelect(villeInput, villeDatalist, villeSelect);
-        }
-
-        // First product
-        const p0Container = document.querySelector('[data-product-index="0"]');
-        if (p0Container) {
-            const input = p0Container.querySelector('.product-lookup');
-            const datalist = p0Container.querySelector('datalist');
-            const select = p0Container.querySelector('.product-select');
-            if (input && datalist && select) bindDatalistToSelect(input, datalist, select);
-        }
-    });
-
-    // Extend dynamic setup to bind datalist for added products
-    function addProduct() {
-        // ... existing code ...
-        // After options are appended to productSelect
-        (function bindProductDatalist() {
-            const input = newProduct.querySelector('.product-lookup');
-            const datalist = newProduct.querySelector('datalist');
-            const select = newProduct.querySelector('.product-select');
-            if (input && datalist && select) bindDatalistToSelect(input, datalist, select);
-        })();
-        // ... existing code ...
-    }
 }
 
 function editProduct(button) {
