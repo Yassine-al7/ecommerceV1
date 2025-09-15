@@ -118,14 +118,24 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
-                                    <input type="text" class="product-lookup w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" list="productDatalist-0" placeholder="ابحث...">
-                                    <datalist id="productDatalist-0"></datalist>
-                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hidden" required>
-                                        <option value="">{{ __('seller_order_form.select_product') }}</option>
-                                        @foreach(($products ?? []) as $p)
-                                            <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="searchable-select" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                                        <select name="products[0][product_id]" class="product-select hidden" required>
+                                            <option value="">{{ __('seller_order_form.select_product') }}</option>
+                                            @foreach(($products ?? []) as $p)
+                                                <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                                            <span class="ss-label text-gray-600">{{ __('seller_order_form.select_product') }}</span>
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                        <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                                            <div class="p-2 border-b">
+                                                <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                                            </div>
+                                            <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
