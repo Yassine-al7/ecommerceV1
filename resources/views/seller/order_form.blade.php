@@ -2266,24 +2266,32 @@ function updateColorOptions(productSelect, productData) {
 function filterOptionsByText(selectEl, query) {
     const normalized = (query || '').toLowerCase().trim();
     const options = Array.from(selectEl.options);
+    const listItems = selectEl.parentElement.querySelectorAll('.ss-option');
     let visibleCount = 0;
 
     options.forEach((opt, idx) => {
         if (idx === 0) {
             // keep placeholder visible
             opt.hidden = false;
+            if (listItems[idx]) {
+                listItems[idx].style.display = 'block';
+            }
             return;
         }
         const text = (opt.textContent || '').toLowerCase();
         const match = text.includes(normalized);
         opt.hidden = !match;
 
-        if (match) {
-            visibleCount++;
-            // Add highlight class for visual feedback
-            opt.classList.add('search-match');
-        } else {
-            opt.classList.remove('search-match');
+        // Update corresponding list item
+        if (listItems[idx]) {
+            if (match) {
+                listItems[idx].style.display = 'block';
+                listItems[idx].classList.add('search-match');
+                visibleCount++;
+            } else {
+                listItems[idx].style.display = 'none';
+                listItems[idx].classList.remove('search-match');
+            }
         }
     });
 
@@ -2327,14 +2335,10 @@ function initSearchableSelect(container) {
         label.textContent = selected && selected.value ? (selected.textContent || '') : placeholder;
     }
 
-    // Move the REAL select into the panel and show it
+    // Move the REAL select into the panel but keep it hidden
     if (select && panel && select.parentElement !== panel) {
         panel.appendChild(select);
-        select.classList.remove('hidden');
-        // Make it look nice within the panel
-        if (!select.className.includes('w-full')) {
-            select.className += ' w-full px-3 py-2 border-0 focus:ring-0';
-        }
+        select.classList.add('hidden'); // Keep select hidden, we use the list
         // When user changes selection in the REAL select, update label, close panel, and fire events
         select.addEventListener('change', () => {
             updateLabelFromSelect();
@@ -2345,8 +2349,28 @@ function initSearchableSelect(container) {
         });
     }
 
-    // Build once (UL not used anymore, but harmless to keep empty)
-    if (list) list.innerHTML = '';
+    // Build options list in the panel
+    if (list) {
+        list.innerHTML = '';
+        // Populate the list with options from the select
+        Array.from(select.options).forEach((option, index) => {
+            const li = document.createElement('li');
+            li.className = 'ss-option px-3 py-2 cursor-pointer hover:bg-gray-100 rounded text-sm';
+            li.textContent = option.textContent;
+            li.dataset.value = option.value;
+            li.dataset.index = index;
+
+            // Add click handler
+            li.addEventListener('click', () => {
+                select.selectedIndex = index;
+                updateLabelFromSelect();
+                panel.classList.add('hidden');
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            list.appendChild(li);
+        });
+    }
     updateLabelFromSelect();
 
     // Filter REAL select options as user types
@@ -2405,28 +2429,32 @@ function initSearchableSelect(container) {
 
         // Keyboard navigation
         search.addEventListener('keydown', (e) => {
-            const visibleOptions = Array.from(select.options).filter(opt => !opt.hidden && opt.value);
+            const visibleListItems = Array.from(list.querySelectorAll('.ss-option')).filter(li => li.style.display !== 'none');
 
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                selectedIndex = Math.min(selectedIndex + 1, visibleOptions.length - 1);
-                if (visibleOptions[selectedIndex]) {
-                    select.selectedIndex = visibleOptions[selectedIndex].index;
-                    select.focus();
+                selectedIndex = Math.min(selectedIndex + 1, visibleListItems.length - 1);
+                if (visibleListItems[selectedIndex]) {
+                    // Remove previous highlight
+                    visibleListItems.forEach(li => li.classList.remove('bg-blue-100', 'text-blue-900'));
+                    // Add highlight to current
+                    visibleListItems[selectedIndex].classList.add('bg-blue-100', 'text-blue-900');
+                    select.selectedIndex = parseInt(visibleListItems[selectedIndex].dataset.index);
                 }
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 selectedIndex = Math.max(selectedIndex - 1, 0);
-                if (visibleOptions[selectedIndex]) {
-                    select.selectedIndex = visibleOptions[selectedIndex].index;
-                    select.focus();
+                if (visibleListItems[selectedIndex]) {
+                    // Remove previous highlight
+                    visibleListItems.forEach(li => li.classList.remove('bg-blue-100', 'text-blue-900'));
+                    // Add highlight to current
+                    visibleListItems[selectedIndex].classList.add('bg-blue-100', 'text-blue-900');
+                    select.selectedIndex = parseInt(visibleListItems[selectedIndex].dataset.index);
                 }
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
-                    select.selectedIndex = visibleOptions[selectedIndex].index;
-                    select.dispatchEvent(new Event('change'));
-                    panel.classList.add('hidden');
+                if (selectedIndex >= 0 && visibleListItems[selectedIndex]) {
+                    visibleListItems[selectedIndex].click();
                 }
             } else if (e.key === 'Escape') {
                 e.preventDefault();
@@ -2598,6 +2626,31 @@ if (document.readyState === 'loading') {
             opacity: 1;
             transform: translateY(0);
         }
+    }
+
+    /* List options styling */
+    .ss-option {
+        transition: all 0.2s ease;
+        border-radius: 4px;
+        margin: 2px 0;
+    }
+
+    .ss-option:hover {
+        background-color: #f3f4f6 !important;
+        transform: translateX(2px);
+    }
+
+    .ss-option.bg-blue-100 {
+        background-color: #dbeafe !important;
+        color: #1e40af !important;
+        font-weight: 600;
+    }
+
+    .ss-option.search-match {
+        background-color: #fef3c7 !important;
+        border-left: 3px solid #f59e0b;
+        padding-left: 8px;
+        font-weight: 600;
     }
 </style>
 
