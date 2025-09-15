@@ -2159,6 +2159,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     @endif
 
+    // Setup events for the first product item
+    const firstProductItem = document.querySelector('.product-item[data-product-index="0"]');
+    if (firstProductItem) {
+        setupProductEvents(firstProductItem);
+        console.log('✅ Événements configurés pour le premier produit');
+    }
+
     console.log('=== Initialisation terminée ===');
 });
 
@@ -2306,16 +2313,16 @@ function initSearchableSelect(container) {
     if (select && panel && select.parentElement !== panel) {
         panel.appendChild(select);
         select.classList.remove('hidden');
-        // Make it look like a list with multiple visible rows
-        select.setAttribute('size', String(Math.min(8, Math.max(2, select.options.length))));
+        // Make it look nice within the panel
         if (!select.className.includes('w-full')) {
-            select.className += ' w-full px-3 py-2 border-0 focus:ring-0 bg-white';
+            select.className += ' w-full px-3 py-2 border-0 focus:ring-0';
         }
         // When user changes selection in the REAL select, update label, close panel, and fire events
         select.addEventListener('change', () => {
             updateLabelFromSelect();
             panel.classList.add('hidden');
-            // Existing listeners downstream rely on change/input
+            // Dispatch both change and input events to ensure all listeners are triggered
+            select.dispatchEvent(new Event('change', { bubbles: true }));
             select.dispatchEvent(new Event('input', { bubbles: true }));
         });
     }
@@ -2323,15 +2330,6 @@ function initSearchableSelect(container) {
     // Build once (UL not used anymore, but harmless to keep empty)
     if (list) list.innerHTML = '';
     updateLabelFromSelect();
-
-    // Keep size in sync when options change (dynamic rows)
-    const mo = new MutationObserver(() => {
-        try {
-            select.setAttribute('size', String(Math.min(8, Math.max(2, select.options.length))));
-        } catch(_) {}
-        updateLabelFromSelect();
-    });
-    mo.observe(select, { childList: true });
 
     // Filter REAL select options as user types
     if (search) {
@@ -2375,11 +2373,7 @@ if (document.readyState === 'loading') {
 }
 
 // Initialize for dynamically added product blocks
-function setupProductEvents(productItem) {
-    const ss = productItem.querySelector('.searchable-select');
-    if (ss) initSearchableSelect(ss);
-    // ... existing code ...
-}
+// Note: The complete setupProductEvents function is defined above
 </script>
 
 <style>
