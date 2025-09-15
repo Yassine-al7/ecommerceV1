@@ -2277,7 +2277,14 @@ function filterOptionsByText(selectEl, query) {
         const text = (opt.textContent || '').toLowerCase();
         const match = text.includes(normalized);
         opt.hidden = !match;
-        if (match) visibleCount++;
+
+        if (match) {
+            visibleCount++;
+            // Add highlight class for visual feedback
+            opt.classList.add('search-match');
+        } else {
+            opt.classList.remove('search-match');
+        }
     });
 
     console.log(`🔍 Filtered options: ${visibleCount} visible for query "${query}"`);
@@ -2345,15 +2352,68 @@ function initSearchableSelect(container) {
     // Filter REAL select options as user types
     if (search) {
         console.log('✅ Adding search input event listener');
+
+        // Track selected option index for keyboard navigation
+        let selectedIndex = -1;
+
         search.addEventListener('input', () => {
             console.log('🔍 Search input changed:', search.value);
+            selectedIndex = -1; // Reset selection when searching
             try {
-                filterOptionsByText(select, search.value);
+                const visibleCount = filterOptionsByText(select, search.value);
+
+                // Show/hide "no results" message
+                let noResultsMsg = panel.querySelector('.no-results-message');
+                if (visibleCount === 0 && search.value.trim() !== '') {
+                    if (!noResultsMsg) {
+                        noResultsMsg = document.createElement('div');
+                        noResultsMsg.className = 'no-results-message text-center py-4 text-gray-500 text-sm';
+                        noResultsMsg.innerHTML = '<i class="fas fa-search mr-2"></i>Aucun résultat trouvé';
+                        panel.appendChild(noResultsMsg);
+                    }
+                    noResultsMsg.style.display = 'block';
+                } else if (noResultsMsg) {
+                    noResultsMsg.style.display = 'none';
+                }
+
                 console.log('✅ Search filtering applied');
             } catch (error) {
                 console.error('❌ Search filtering error:', error);
             }
         });
+
+        // Keyboard navigation
+        search.addEventListener('keydown', (e) => {
+            const visibleOptions = Array.from(select.options).filter(opt => !opt.hidden && opt.value);
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, visibleOptions.length - 1);
+                if (visibleOptions[selectedIndex]) {
+                    select.selectedIndex = visibleOptions[selectedIndex].index;
+                    select.focus();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, 0);
+                if (visibleOptions[selectedIndex]) {
+                    select.selectedIndex = visibleOptions[selectedIndex].index;
+                    select.focus();
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && visibleOptions[selectedIndex]) {
+                    select.selectedIndex = visibleOptions[selectedIndex].index;
+                    select.dispatchEvent(new Event('change'));
+                    panel.classList.add('hidden');
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                panel.classList.add('hidden');
+                search.blur();
+            }
+        });
+
     } else {
         console.error('❌ No search input found for searchable select');
     }
@@ -2370,7 +2430,13 @@ function initSearchableSelect(container) {
             if (!panel.classList.contains('hidden')) {
                 if (search) {
                     search.value = '';
-                    try { filterOptionsByText(select, ''); } catch (_) {}
+                    selectedIndex = -1; // Reset selection
+                    try {
+                        filterOptionsByText(select, '');
+                        // Hide any "no results" message
+                        const noResultsMsg = panel.querySelector('.no-results-message');
+                        if (noResultsMsg) noResultsMsg.style.display = 'none';
+                    } catch (_) {}
                     search.focus();
                 }
             }
@@ -2432,6 +2498,55 @@ if (document.readyState === 'loading') {
     @keyframes pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.7; }
+    }
+
+    /* Dynamic search highlighting */
+    .search-match {
+        background-color: #fef3c7 !important;
+        font-weight: 600;
+        border-left: 3px solid #f59e0b;
+        padding-left: 8px;
+    }
+
+    /* Search input focus effects */
+    .ss-search:focus {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Dropdown panel animations */
+    .ss-panel {
+        transform: translateY(-10px);
+        opacity: 0;
+        transition: all 0.2s ease-out;
+    }
+
+    .ss-panel:not(.hidden) {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    /* Option hover effects */
+    select option:hover {
+        background-color: #f3f4f6 !important;
+    }
+
+    /* Search icon animation */
+    .ss-search:focus + .fas.fa-search {
+        color: #3b82f6;
+        transform: scale(1.1);
+    }
+
+    /* Loading state for search */
+    .ss-search:focus {
+        background-image: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
     }
 </style>
 
