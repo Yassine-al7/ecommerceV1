@@ -135,18 +135,18 @@
                 $prixVente = $product->prix_vente ?? 0;
 
                 if (!empty($prixAdminArray)) {
-                    $margeMin = $prixVente - max($prixAdminArray);
-                    $margeMax = $prixVente - min($prixAdminArray);
+                    $margeMin = abs($prixVente - max($prixAdminArray));
+                    $margeMax = abs($prixVente - min($prixAdminArray));
 
                     if (count($prixAdminArray) > 1) {
-                        $margeDisplay = $margeMin > 0 ? "+{$margeMin}" : "{$margeMin}";
+                        $margeDisplay = "+{$margeMin}";
                         if ($margeMin != $margeMax) {
-                            $margeDisplay .= " à " . ($margeMax > 0 ? "+{$margeMax}" : "{$margeMax}");
+                            $margeDisplay .= " à +{$margeMax}";
                         }
                         $margeDisplay .= " درهم ربح";
                     } else {
-                        $marge = $prixVente - $prixAdminArray[0];
-                        $margeDisplay = $marge > 0 ? "+{$marge} درهم ربح" : "{$marge} درهم ربح";
+                        $marge = abs($prixVente - $prixAdminArray[0]);
+                        $margeDisplay = "+{$marge} درهم ربح";
                     }
                 } else {
                     $margeDisplay = "0 درهم ربح";
