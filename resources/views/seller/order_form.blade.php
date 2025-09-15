@@ -74,7 +74,10 @@
                                 </div>
                                 <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
                                     <div class="p-2 border-b">
-                                        <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                                        <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                            <input type="text" class="ss-search w-full pl-10 pr-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث...">
+                                        </div>
                                     </div>
                                     <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
                                 </div>
@@ -131,7 +134,10 @@
                                         </div>
                                         <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
                                             <div class="p-2 border-b">
-                                                <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                                                <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                            <input type="text" class="ss-search w-full pl-10 pr-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث...">
+                                        </div>
                                             </div>
                                             <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
                                         </div>
@@ -459,7 +465,10 @@ function addProduct() {
                     </div>
                     <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
                         <div class="p-2 border-b">
-                            <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                                                <div class="relative">
+                                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                                    <input type="text" class="ss-search w-full pl-10 pr-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث...">
+                                                </div>
                         </div>
                         <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
                     </div>
@@ -2257,24 +2266,26 @@ function updateColorOptions(productSelect, productData) {
 function filterOptionsByText(selectEl, query) {
     const normalized = (query || '').toLowerCase().trim();
     const options = Array.from(selectEl.options);
+    let visibleCount = 0;
+
     options.forEach((opt, idx) => {
-        if (idx === 0) return; // keep placeholder visible
+        if (idx === 0) {
+            // keep placeholder visible
+            opt.hidden = false;
+            return;
+        }
         const text = (opt.textContent || '').toLowerCase();
         const match = text.includes(normalized);
         opt.hidden = !match;
+        if (match) visibleCount++;
     });
+
+    console.log(`🔍 Filtered options: ${visibleCount} visible for query "${query}"`);
+    return visibleCount;
 }
 
-// City search binding
-(function bindCitySearch(){
-    const cityInput = document.getElementById('villeSearch');
-    const citySelect = document.getElementById('villeSelect');
-    if (cityInput && citySelect) {
-        cityInput.addEventListener('input', function(){
-            filterOptionsByText(citySelect, cityInput.value);
-        });
-    }
-})();
+// City search binding - handled by searchable select initialization
+// The search input is automatically bound in initSearchableSelect function
 
 // Searchable select initializer
 function initSearchableSelect(container) {
@@ -2333,9 +2344,18 @@ function initSearchableSelect(container) {
 
     // Filter REAL select options as user types
     if (search) {
+        console.log('✅ Adding search input event listener');
         search.addEventListener('input', () => {
-            try { filterOptionsByText(select, search.value); } catch (_) {}
+            console.log('🔍 Search input changed:', search.value);
+            try {
+                filterOptionsByText(select, search.value);
+                console.log('✅ Search filtering applied');
+            } catch (error) {
+                console.error('❌ Search filtering error:', error);
+            }
         });
+    } else {
+        console.error('❌ No search input found for searchable select');
     }
 
     // Events
