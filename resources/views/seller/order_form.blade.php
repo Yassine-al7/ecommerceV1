@@ -600,7 +600,6 @@ function setupProductEvents(productItem) {
     const margeProduitDisplay = productItem.querySelector('.marge-produit-display');
     const productImage = productItem.querySelector('.product-image');
     const productImageImg = productItem.querySelector('.product-image img');
-    const productSearch = productItem.querySelector('.product-search');
 
     console.log('🔍 Debug éléments image:', {
         productItem: productItem,
@@ -1116,11 +1115,7 @@ function setupProductEvents(productItem) {
         productSelect.dispatchEvent(new Event('change'));
     }
 
-    if (productSearch && productSelect) {
-        productSearch.addEventListener('input', function(){
-            filterOptionsByText(productSelect, productSearch.value);
-        });
-    }
+    // Search is handled by the searchable-select panel input (.ss-search)
 }
 
 // Disponible = stock initial (du produit sélectionné) - somme des quantités des AUTRES lignes sur la même (productId,couleur)
