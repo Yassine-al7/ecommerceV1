@@ -2323,7 +2323,17 @@ function initSearchableSelect(container) {
     }
 
     function selectValue(value, text) {
-        select.value = value;
+        // Ensure the option is actually selected on the hidden select
+        let foundIndex = -1;
+        const opts = Array.from(select.options);
+        for (let i = 0; i < opts.length; i++) {
+            if (String(opts[i].value) === String(value)) { foundIndex = i; break; }
+        }
+        if (foundIndex >= 0) {
+            select.selectedIndex = foundIndex;
+        } else {
+            select.value = value; // fallback
+        }
         updateLabelFromSelect();
         panel.classList.add('hidden');
         // Fire existing listeners
