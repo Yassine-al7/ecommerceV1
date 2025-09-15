@@ -2159,12 +2159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     @endif
 
-    // Setup events for the first product item
-    const firstProductItem = document.querySelector('.product-item[data-product-index="0"]');
-    if (firstProductItem) {
-        setupProductEvents(firstProductItem);
-        console.log('✅ Événements configurés pour le premier produit');
-    }
+    // Note: First product events are already set up above in the existing code
 
     console.log('=== Initialisation terminée ===');
 });
@@ -2298,6 +2293,16 @@ function initSearchableSelect(container) {
     const list = container.querySelector('.ss-options');
     const placeholder = container.getAttribute('data-placeholder') || 'Select';
 
+    console.log('🔧 Initializing searchable select:', {
+        container: container,
+        select: select,
+        trigger: trigger,
+        label: label,
+        panel: panel,
+        search: search,
+        list: list
+    });
+
     function closeAllPanelsExcept(current) {
         document.querySelectorAll('.searchable-select .ss-panel').forEach(p => {
             if (p !== current) p.classList.add('hidden');
@@ -2340,10 +2345,13 @@ function initSearchableSelect(container) {
 
     // Events
     if (trigger) {
+        console.log('✅ Adding click event to trigger');
         trigger.addEventListener('click', (e) => {
+            console.log('🎯 Searchable select clicked!');
             e.stopPropagation();
             closeAllPanelsExcept(panel);
             panel.classList.toggle('hidden');
+            console.log('Panel hidden state:', panel.classList.contains('hidden'));
             if (!panel.classList.contains('hidden')) {
                 if (search) {
                     search.value = '';
@@ -2352,6 +2360,8 @@ function initSearchableSelect(container) {
                 }
             }
         });
+    } else {
+        console.error('❌ No trigger found for searchable select');
     }
 
     // Close on outside click
