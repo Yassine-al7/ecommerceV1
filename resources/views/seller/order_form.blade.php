@@ -2659,12 +2659,24 @@ if (document.readyState === 'loading') {
     /* Product image styling */
     .product-image {
         margin: 0 auto;
+        background: transparent !important;
     }
 
     .product-image img {
         transition: transform 0.2s ease;
         object-fit: cover;
         object-position: center;
+        background: transparent !important;
+        background-color: transparent !important;
+        filter: none !important;
+        mix-blend-mode: normal !important;
+        opacity: 1 !important;
+    }
+
+    /* Override any parent blue backgrounds */
+    .product-image * {
+        background: transparent !important;
+        background-color: transparent !important;
     }
 
     .product-image:hover img {
