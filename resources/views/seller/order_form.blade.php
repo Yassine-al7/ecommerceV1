@@ -118,7 +118,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
-                                    <div class="searchable-select" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                                    <div class="searchable-select relative" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
                                         <select name="products[0][product_id]" class="product-select hidden">
                                             <option value="">{{ __('seller_order_form.select_product') }}</option>
                                             @foreach(($products ?? []) as $p)
@@ -449,7 +449,7 @@ function addProduct() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
-                <div class="searchable-select" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                <div class="searchable-select relative" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
                     <select name="products[${productCounter}][product_id]" class="product-select hidden" required>
                         <option value="">{{ __('seller_order_form.select_product') }}</option>
                     </select>
