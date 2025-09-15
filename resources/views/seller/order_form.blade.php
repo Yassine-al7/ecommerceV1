@@ -48,6 +48,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.city') }}</label>
+                            <input type="text" id="villeSearch" class="w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث عن المدينة...">
                             <select name="ville" id="villeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                 <option value="">{{ __('seller_order_form.select_city') }}</option>
                                 <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
@@ -105,12 +106,10 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
-                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
+                                    <input type="text" class="product-search w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث عن المنتج...">
+                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500" required>
                                         <option value="">{{ __('seller_order_form.select_product') }}</option>
-                                        @foreach(($products ?? []) as $p)
-                                            <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
-                                        @endforeach
                                     </select>
                                 </div>
 
@@ -425,6 +424,7 @@ function addProduct() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
+                <input type="text" class="product-search w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث عن المنتج...">
                 <select name="products[${productCounter}][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500" required>
                     <option value="">{{ __('seller_order_form.select_product') }}</option>
                 </select>
@@ -565,6 +565,7 @@ function setupProductEvents(productItem) {
     const margeProduitDisplay = productItem.querySelector('.marge-produit-display');
     const productImage = productItem.querySelector('.product-image');
     const productImageImg = productItem.querySelector('.product-image img');
+    const productSearch = productItem.querySelector('.product-search');
 
     console.log('🔍 Debug éléments image:', {
         productItem: productItem,
@@ -1078,6 +1079,12 @@ function setupProductEvents(productItem) {
     if (productSelect.value) {
         console.log('🔄 Initialisation avec produit déjà sélectionné');
         productSelect.dispatchEvent(new Event('change'));
+    }
+
+    if (productSearch && productSelect) {
+        productSearch.addEventListener('input', function(){
+            filterOptionsByText(productSelect, productSearch.value);
+        });
     }
 }
 
@@ -2214,6 +2221,28 @@ function updateColorOptions(productSelect, productData) {
         }
     }
 }
+
+function filterOptionsByText(selectEl, query) {
+    const normalized = (query || '').toLowerCase().trim();
+    const options = Array.from(selectEl.options);
+    options.forEach((opt, idx) => {
+        if (idx === 0) return; // keep placeholder visible
+        const text = (opt.textContent || '').toLowerCase();
+        const match = text.includes(normalized);
+        opt.hidden = !match;
+    });
+}
+
+// City search binding
+(function bindCitySearch(){
+    const cityInput = document.getElementById('villeSearch');
+    const citySelect = document.getElementById('villeSelect');
+    if (cityInput && citySelect) {
+        cityInput.addEventListener('input', function(){
+            filterOptionsByText(citySelect, cityInput.value);
+        });
+    }
+})();
 </script>
 
 <style>
