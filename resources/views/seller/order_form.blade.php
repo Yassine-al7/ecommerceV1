@@ -48,7 +48,9 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.city') }}</label>
-                            <select name="ville" id="villeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <input type="text" id="villeLookup" class="w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" list="villeDatalist" placeholder="ابحث...">
+                            <datalist id="villeDatalist"></datalist>
+                            <select name="ville" id="villeSelect" class="hidden" required>
                                 <option value="">{{ __('seller_order_form.select_city') }}</option>
                                 <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
                                 <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
@@ -106,11 +108,10 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
-                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                    <input type="text" class="product-lookup w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" list="productDatalist-0" placeholder="ابحث...">
+                                    <datalist id="productDatalist-0"></datalist>
+                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500 hidden" required>
                                         <option value="">{{ __('seller_order_form.select_product') }}</option>
-                                        @foreach(($products ?? []) as $p)
-                                            <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
-                                        @endforeach
                                     </select>
                                 </div>
 
@@ -425,7 +426,9 @@ function addProduct() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
-                <select name="products[${productCounter}][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500" required>
+                <input type="text" class="product-lookup w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" list="productDatalist-${productCounter}" placeholder="ابحث...">
+                <datalist id="productDatalist-${productCounter}"></datalist>
+                <select name="products[${productCounter}][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500 hidden" required>
                     <option value="">{{ __('seller_order_form.select_product') }}</option>
                 </select>
             </div>
@@ -442,7 +445,6 @@ function addProduct() {
                 <select name="products[${productCounter}][taille_produit]" class="size-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                     <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
                 </select>
-                <!-- Les notes d'information des tailles seront ajoutées ici dynamiquement -->
             </div>
 
             <div>
@@ -496,6 +498,61 @@ function addProduct() {
 
     // Mettre à jour l'affichage du bouton de suppression
     updateRemoveButtons();
+
+    // Lightweight datalist binders (keep existing logic untouched)
+    function bindDatalistToSelect(inputEl, datalistEl, selectEl) {
+        function populateDatalist() {
+            datalistEl.innerHTML = '';
+            Array.from(selectEl.options).forEach((opt, idx) => {
+                if (idx === 0) return;
+                const optionEl = document.createElement('option');
+                optionEl.value = opt.textContent || '';
+                optionEl.dataset.value = opt.value;
+                datalistEl.appendChild(optionEl);
+            });
+        }
+        populateDatalist();
+
+        inputEl.addEventListener('change', function() {
+            const match = Array.from(datalistEl.options).find(o => (o.value || '') === inputEl.value);
+            if (match) {
+                selectEl.value = match.dataset.value || '';
+                selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // City
+        const villeInput = document.getElementById('villeLookup');
+        const villeDatalist = document.getElementById('villeDatalist');
+        const villeSelect = document.getElementById('villeSelect');
+        if (villeInput && villeDatalist && villeSelect) {
+            bindDatalistToSelect(villeInput, villeDatalist, villeSelect);
+        }
+
+        // First product
+        const p0Container = document.querySelector('[data-product-index="0"]');
+        if (p0Container) {
+            const input = p0Container.querySelector('.product-lookup');
+            const datalist = p0Container.querySelector('datalist');
+            const select = p0Container.querySelector('.product-select');
+            if (input && datalist && select) bindDatalistToSelect(input, datalist, select);
+        }
+    });
+
+    // Extend dynamic setup to bind datalist for added products
+    function addProduct() {
+        // ... existing code ...
+        // After options are appended to productSelect
+        (function bindProductDatalist() {
+            const input = newProduct.querySelector('.product-lookup');
+            const datalist = newProduct.querySelector('datalist');
+            const select = newProduct.querySelector('.product-select');
+            if (input && datalist && select) bindDatalistToSelect(input, datalist, select);
+        })();
+        // ... existing code ...
+    }
 }
 
 function editProduct(button) {
@@ -565,6 +622,7 @@ function setupProductEvents(productItem) {
     const margeProduitDisplay = productItem.querySelector('.marge-produit-display');
     const productImage = productItem.querySelector('.product-image');
     const productImageImg = productItem.querySelector('.product-image img');
+    const productSearch = productItem.querySelector('.product-search');
 
     console.log('🔍 Debug éléments image:', {
         productItem: productItem,
@@ -1078,6 +1136,12 @@ function setupProductEvents(productItem) {
     if (productSelect.value) {
         console.log('🔄 Initialisation avec produit déjà sélectionné');
         productSelect.dispatchEvent(new Event('change'));
+    }
+
+    if (productSearch && productSelect) {
+        productSearch.addEventListener('input', function(){
+            filterOptionsByText(productSelect, productSearch.value);
+        });
     }
 }
 
@@ -2213,6 +2277,113 @@ function updateColorOptions(productSelect, productData) {
             }
         }
     }
+}
+
+function filterOptionsByText(selectEl, query) {
+    const normalized = (query || '').toLowerCase().trim();
+    const options = Array.from(selectEl.options);
+    options.forEach((opt, idx) => {
+        if (idx === 0) return; // keep placeholder visible
+        const text = (opt.textContent || '').toLowerCase();
+        const match = text.includes(normalized);
+        opt.hidden = !match;
+    });
+}
+
+// City search binding
+(function bindCitySearch(){
+    const cityInput = document.getElementById('villeSearch');
+    const citySelect = document.getElementById('villeSelect');
+    if (cityInput && citySelect) {
+        cityInput.addEventListener('input', function(){
+            filterOptionsByText(citySelect, cityInput.value);
+        });
+    }
+})();
+
+// Searchable select initializer
+function initSearchableSelect(container) {
+    const select = container.querySelector('select');
+    const trigger = container.querySelector('.ss-trigger');
+    const label = container.querySelector('.ss-label');
+    const panel = container.querySelector('.ss-panel');
+    const search = container.querySelector('.ss-search');
+    const list = container.querySelector('.ss-options');
+    const placeholder = container.getAttribute('data-placeholder') || 'Select';
+
+    function closeAllPanelsExcept(current) {
+        document.querySelectorAll('.searchable-select .ss-panel').forEach(p => {
+            if (p !== current) p.classList.add('hidden');
+        });
+    }
+
+    function populateOptions() {
+        list.innerHTML = '';
+        Array.from(select.options).forEach((opt, idx) => {
+            if (idx === 0) return; // skip placeholder
+            const li = document.createElement('li');
+            li.className = 'px-3 py-2 rounded hover:bg-gray-100 cursor-pointer text-sm';
+            li.textContent = opt.textContent || '';
+            li.dataset.value = opt.value;
+            list.appendChild(li);
+        });
+    }
+
+    function filterList(q) {
+        const normalized = (q || '').toLowerCase().trim();
+        Array.from(list.children).forEach(li => {
+            const match = (li.textContent || '').toLowerCase().includes(normalized);
+            li.style.display = match ? '' : 'none';
+        });
+    }
+
+    function selectValue(value, text) {
+        select.value = value;
+        label.textContent = text || placeholder;
+        panel.classList.add('hidden');
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // Build once
+    populateOptions();
+
+    // Events
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAllPanelsExcept(panel);
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) {
+            search.value = '';
+            filterList('');
+            search.focus();
+        }
+    });
+
+    list.addEventListener('click', (e) => {
+        const li = e.target.closest('li');
+        if (!li) return;
+        selectValue(li.dataset.value, li.textContent);
+    });
+
+    search.addEventListener('input', () => filterList(search.value));
+
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+            panel.classList.add('hidden');
+        }
+    });
+}
+
+// Initialize existing searchable selects on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.searchable-select').forEach(initSearchableSelect);
+});
+
+// Initialize for dynamically added product blocks
+function setupProductEvents(productItem) {
+    const ss = productItem.querySelector('.searchable-select');
+    if (ss) initSearchableSelect(ss);
+    // ... existing code ...
 }
 </script>
 
