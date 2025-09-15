@@ -95,7 +95,7 @@
         </form>
 
         <!-- Grille des produits modernes -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productsGrid">
+        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productsGrid">
             @forelse($products as $product)
                 <x-modern-product-card :product="$product" user-type="seller" />
             @empty
