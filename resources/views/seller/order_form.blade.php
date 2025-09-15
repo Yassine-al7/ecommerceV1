@@ -48,26 +48,37 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.city') }}</label>
-                            <input type="text" id="villeSearch" class="w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث عن المدينة...">
-                            <select name="ville" id="villeSelect" class="hidden" required>
-                                <option value="">{{ __('seller_order_form.select_city') }}</option>
-                                <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
-                                <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
-                                <option value="Fès" @selected(old('ville', $order->ville ?? '') == 'Fès')>Fès - 25 DH (2-3 jours)</option>
-                                <option value="Marrakech" @selected(old('ville', $order->ville ?? '') == 'Marrakech')>Marrakech - 25 DH (2-3 jours)</option>
-                                <option value="Agadir" @selected(old('ville', $order->ville ?? '') == 'Agadir')>Agadir - 30 DH (2-3 jours)</option>
-                                <option value="Tanger" @selected(old('ville', $order->ville ?? '') == 'Tanger')>Tanger - 30 DH (2-3 jours)</option>
-                                <option value="Meknès" @selected(old('ville', $order->ville ?? '') == 'Meknès')>Meknès - 25 DH (2-3 jours)</option>
-                                <option value="Oujda" @selected(old('ville', $order->ville ?? '') == 'Oujda')>Oujda - 35 DH (3-4 jours)</option>
-                                <option value="Tétouan" @selected(old('ville', $order->ville ?? '') == 'Tétouan')>Tétouان - 30 DH (2-3 jours)</option>
-                                <option value="El Jadida" @selected(old('ville', $order->ville ?? '') == 'El Jadida')>El Jadida - 20 DH (1-2 jours)</option>
-                                <option value="Safi" @selected(old('ville', $order->ville ?? '') == 'Safi')>Safi - 25 DH (2-3 jours)</option>
-                                <option value="Béni Mellal" @selected(old('ville', $order->ville ?? '') == 'Béni Mellal')>Béni Mellal - 25 DH (2-3 jours)</option>
-                                <option value="Kénitra" @selected(old('ville', $order->ville ?? '') == 'Kénitra')>Kénitra - 20 DH (1-2 jours)</option>
-                                <option value="Témara" @selected(old('ville', $order->ville ?? '') == 'Témara')>Témara - 18 DH (1-2 jours)</option>
-                                <option value="Mohammedia" @selected(old('ville', $order->ville ?? '') == 'Mohammedia')>Mohammedia - 18 DH (1-2 jours)</option>
-                                <option value="Autre" @selected(old('ville', $order->ville ?? '') == 'Autre')>Autre - 40 DH (3-5 jours)</option>
-                            </select>
+                            <div class="searchable-select relative" data-placeholder="{{ __('seller_order_form.select_city') }}" data-search-placeholder="ابحث...">
+                                <select name="ville" id="villeSelect" class="hidden" required>
+                                    <option value="">{{ __('seller_order_form.select_city') }}</option>
+                                    <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
+                                    <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
+                                    <option value="Fès" @selected(old('ville', $order->ville ?? '') == 'Fès')>Fès - 25 DH (2-3 jours)</option>
+                                    <option value="Marrakech" @selected(old('ville', $order->ville ?? '') == 'Marrakech')>Marrakech - 25 DH (2-3 jours)</option>
+                                    <option value="Agadir" @selected(old('ville', $order->ville ?? '') == 'Agadir')>Agadir - 30 DH (2-3 jours)</option>
+                                    <option value="Tanger" @selected(old('ville', $order->ville ?? '') == 'Tanger')>Tanger - 30 DH (2-3 jours)</option>
+                                    <option value="Meknès" @selected(old('ville', $order->ville ?? '') == 'Meknès')>Meknès - 25 DH (2-3 jours)</option>
+                                    <option value="Oujda" @selected(old('ville', $order->ville ?? '') == 'Oujda')>Oujda - 35 DH (3-4 jours)</option>
+                                    <option value="Tétouan" @selected(old('ville', $order->ville ?? '') == 'Tétouan')>Tétouان - 30 DH (2-3 jours)</option>
+                                    <option value="El Jadida" @selected(old('ville', $order->ville ?? '') == 'El Jadida')>El Jadida - 20 DH (1-2 jours)</option>
+                                    <option value="Safi" @selected(old('ville', $order->ville ?? '') == 'Safi')>Safi - 25 DH (2-3 jours)</option>
+                                    <option value="Béni Mellal" @selected(old('ville', $order->ville ?? '') == 'Béni Mellal')>Béni Mellal - 25 DH (2-3 jours)</option>
+                                    <option value="Kénitra" @selected(old('ville', $order->ville ?? '') == 'Kénitra')>Kénitra - 20 DH (1-2 jours)</option>
+                                    <option value="Témara" @selected(old('ville', $order->ville ?? '') == 'Témara')>Témara - 18 DH (1-2 jours)</option>
+                                    <option value="Mohammedia" @selected(old('ville', $order->ville ?? '') == 'Mohammedia')>Mohammedia - 18 DH (1-2 jours)</option>
+                                    <option value="Autre" @selected(old('ville', $order->ville ?? '') == 'Autre')>Autre - 40 DH (3-5 jours)</option>
+                                </select>
+                                <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                                    <span class="ss-label text-gray-600">{{ __('seller_order_form.select_city') }}</span>
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                                <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                                    <div class="p-2 border-b">
+                                        <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                                    </div>
+                                    <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                                </div>
+                            </div>
                             <p class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.delivery_select_city') }}</p>
                         </div>
                         <div>
