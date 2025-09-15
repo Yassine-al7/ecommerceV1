@@ -49,7 +49,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.city') }}</label>
                             <input type="text" id="villeSearch" class="w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث عن المدينة...">
-                            <select name="ville" id="villeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <select name="ville" id="villeSelect" class="hidden" required>
                                 <option value="">{{ __('seller_order_form.select_city') }}</option>
                                 <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
                                 <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
@@ -106,11 +106,25 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
-                                    <input type="text" class="product-search w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث عن المنتج...">
-                                    <select name="products[0][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500" required>
-                                        <option value="">{{ __('seller_order_form.select_product') }}</option>
-                                    </select>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
+                                    <div class="searchable-select" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                                        <select name="products[0][product_id]" class="product-select hidden">
+                                            <option value="">{{ __('seller_order_form.select_product') }}</option>
+                                            @foreach(($products ?? []) as $p)
+                                                <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                                            <span class="ss-label text-gray-600">{{ __('seller_order_form.select_product') }}</span>
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                        <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                                            <div class="p-2 border-b">
+                                                <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                                            </div>
+                                            <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -424,10 +438,21 @@ function addProduct() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
-                <input type="text" class="product-search w-full px-3 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث عن المنتج...">
-                <select name="products[${productCounter}][product_id]" class="product-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-blue-500" required>
-                    <option value="">{{ __('seller_order_form.select_product') }}</option>
-                </select>
+                <div class="searchable-select" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                    <select name="products[${productCounter}][product_id]" class="product-select hidden" required>
+                        <option value="">{{ __('seller_order_form.select_product') }}</option>
+                    </select>
+                    <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                        <span class="ss-label text-gray-600">{{ __('seller_order_form.select_product') }}</span>
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                    <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <div class="p-2 border-b">
+                            <input type="text" class="ss-search w-full px-3 py-2 border rounded" placeholder="ابحث...">
+                        </div>
+                        <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                    </div>
+                </div>
             </div>
 
             <div>
@@ -442,7 +467,6 @@ function addProduct() {
                 <select name="products[${productCounter}][taille_produit]" class="size-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                     <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
                 </select>
-                <!-- Les notes d'information des tailles seront ajoutées ici dynamiquement -->
             </div>
 
             <div>
@@ -2243,6 +2267,91 @@ function filterOptionsByText(selectEl, query) {
         });
     }
 })();
+
+// Searchable select initializer
+function initSearchableSelect(container) {
+    const select = container.querySelector('select');
+    const trigger = container.querySelector('.ss-trigger');
+    const label = container.querySelector('.ss-label');
+    const panel = container.querySelector('.ss-panel');
+    const search = container.querySelector('.ss-search');
+    const list = container.querySelector('.ss-options');
+    const placeholder = container.getAttribute('data-placeholder') || 'Select';
+
+    function closeAllPanelsExcept(current) {
+        document.querySelectorAll('.searchable-select .ss-panel').forEach(p => {
+            if (p !== current) p.classList.add('hidden');
+        });
+    }
+
+    function populateOptions() {
+        list.innerHTML = '';
+        Array.from(select.options).forEach((opt, idx) => {
+            if (idx === 0) return; // skip placeholder
+            const li = document.createElement('li');
+            li.className = 'px-3 py-2 rounded hover:bg-gray-100 cursor-pointer text-sm';
+            li.textContent = opt.textContent || '';
+            li.dataset.value = opt.value;
+            list.appendChild(li);
+        });
+    }
+
+    function filterList(q) {
+        const normalized = (q || '').toLowerCase().trim();
+        Array.from(list.children).forEach(li => {
+            const match = (li.textContent || '').toLowerCase().includes(normalized);
+            li.style.display = match ? '' : 'none';
+        });
+    }
+
+    function selectValue(value, text) {
+        select.value = value;
+        label.textContent = text || placeholder;
+        panel.classList.add('hidden');
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // Build once
+    populateOptions();
+
+    // Events
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAllPanelsExcept(panel);
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) {
+            search.value = '';
+            filterList('');
+            search.focus();
+        }
+    });
+
+    list.addEventListener('click', (e) => {
+        const li = e.target.closest('li');
+        if (!li) return;
+        selectValue(li.dataset.value, li.textContent);
+    });
+
+    search.addEventListener('input', () => filterList(search.value));
+
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+            panel.classList.add('hidden');
+        }
+    });
+}
+
+// Initialize existing searchable selects on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.searchable-select').forEach(initSearchableSelect);
+});
+
+// Initialize for dynamically added product blocks
+function setupProductEvents(productItem) {
+    const ss = productItem.querySelector('.searchable-select');
+    if (ss) initSearchableSelect(ss);
+    // ... existing code ...
+}
 </script>
 
 <style>
