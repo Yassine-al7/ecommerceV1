@@ -2363,6 +2363,16 @@ function setupProductEvents(productItem) {
     if (ss) initSearchableSelect(ss);
     // ... existing code ...
 }
+
+// Initialize searchable selects (handles cases where DOM is already loaded)
+function initAllSearchableSelects() {
+    document.querySelectorAll('.searchable-select').forEach(initSearchableSelect);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAllSearchableSelects);
+} else {
+    initAllSearchableSelects();
+}
 </script>
 
 <style>
