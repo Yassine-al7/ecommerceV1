@@ -22,7 +22,7 @@
     @endif
 
         <!-- Cartes de Statistiques -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-blue-100 text-blue-600">
@@ -55,6 +55,18 @@
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('seller_products.stats.categories') }}</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $products->pluck('category.name')->unique()->filter()->count() }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-star text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">{{ __('seller_products.stats.new_products') }}</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ $products->where('created_at', '>=', now()->subDays(7))->count() }}</p>
                     </div>
                 </div>
             </div>

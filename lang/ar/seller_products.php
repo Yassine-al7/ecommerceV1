@@ -8,6 +8,7 @@ return [
         'total' => 'إجمالي المنتجات',
         'value' => 'القيمة الإجمالية',
         'categories' => 'الفئات',
+        'new_products' => 'المنتجات الجديدة',
     ],
 
     'filters' => [
