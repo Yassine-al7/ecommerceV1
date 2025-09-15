@@ -2362,18 +2362,39 @@ function initSearchableSelect(container) {
             try {
                 const visibleCount = filterOptionsByText(select, search.value);
 
-                // Show/hide "no results" message
-                let noResultsMsg = panel.querySelector('.no-results-message');
-                if (visibleCount === 0 && search.value.trim() !== '') {
-                    if (!noResultsMsg) {
-                        noResultsMsg = document.createElement('div');
-                        noResultsMsg.className = 'no-results-message text-center py-4 text-gray-500 text-sm';
-                        noResultsMsg.innerHTML = '<i class="fas fa-search mr-2"></i>Aucun résultat trouvé';
-                        panel.appendChild(noResultsMsg);
-                    }
-                    noResultsMsg.style.display = 'block';
-                } else if (noResultsMsg) {
-                    noResultsMsg.style.display = 'none';
+                // Show/hide results counter or no results message
+                let resultsMsg = panel.querySelector('.results-message');
+                if (!resultsMsg) {
+                    resultsMsg = document.createElement('div');
+                    resultsMsg.className = 'results-message text-center py-2 text-sm border-b border-gray-100';
+                    panel.insertBefore(resultsMsg, panel.querySelector('ul, select'));
+                }
+
+                if (search.value.trim() === '') {
+                    resultsMsg.style.display = 'none';
+                } else if (visibleCount === 0) {
+                    resultsMsg.innerHTML = '<i class="fas fa-search mr-2 text-gray-400"></i><span class="text-gray-500">Aucun résultat trouvé pour "<strong>' + search.value + '</strong>"</span>';
+                    resultsMsg.className = 'results-message text-center py-2 text-sm border-b border-gray-100 text-red-500';
+                    resultsMsg.style.display = 'block';
+                } else {
+                    const resultText = visibleCount === 1 ? 'résultat' : 'résultats';
+
+                    // Get first few matching options for preview
+                    const visibleOptions = Array.from(select.options).filter(opt => !opt.hidden && opt.value);
+                    const previewOptions = visibleOptions.slice(0, 3).map(opt => opt.textContent).join(', ');
+                    const moreText = visibleOptions.length > 3 ? ` et ${visibleOptions.length - 3} autres...` : '';
+
+                    resultsMsg.innerHTML = `
+                        <i class="fas fa-check-circle mr-2 text-green-500"></i>
+                        <span class="text-gray-600">
+                            <strong>${visibleCount}</strong> ${resultText} trouvé${visibleCount > 1 ? 's' : ''} pour "<strong>${search.value}</strong>"
+                        </span>
+                        <div class="text-xs text-gray-500 mt-1">
+                            ${previewOptions}${moreText}
+                        </div>
+                    `;
+                    resultsMsg.className = 'results-message text-center py-2 text-sm border-b border-gray-100 text-green-600';
+                    resultsMsg.style.display = 'block';
                 }
 
                 console.log('✅ Search filtering applied');
@@ -2433,9 +2454,9 @@ function initSearchableSelect(container) {
                     selectedIndex = -1; // Reset selection
                     try {
                         filterOptionsByText(select, '');
-                        // Hide any "no results" message
-                        const noResultsMsg = panel.querySelector('.no-results-message');
-                        if (noResultsMsg) noResultsMsg.style.display = 'none';
+                        // Hide any results message
+                        const resultsMsg = panel.querySelector('.results-message');
+                        if (resultsMsg) resultsMsg.style.display = 'none';
                     } catch (_) {}
                     search.focus();
                 }
@@ -2547,6 +2568,36 @@ if (document.readyState === 'loading') {
     @keyframes shimmer {
         0% { background-position: -200% 0; }
         100% { background-position: 200% 0; }
+    }
+
+    /* Results message styling */
+    .results-message {
+        animation: slideDown 0.2s ease-out;
+        background: linear-gradient(90deg, #f8fafc, #f1f5f9);
+        border-radius: 6px;
+        margin: 4px 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .results-message.text-green-600 {
+        background: linear-gradient(90deg, #f0fdf4, #dcfce7);
+        border-left: 3px solid #22c55e;
+    }
+
+    .results-message.text-red-500 {
+        background: linear-gradient(90deg, #fef2f2, #fee2e2);
+        border-left: 3px solid #ef4444;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 
