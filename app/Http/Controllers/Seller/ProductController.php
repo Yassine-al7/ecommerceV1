@@ -28,6 +28,9 @@ class ProductController extends Controller
         // Récupérer tous les produits assignés avec leurs catégories
         $query = $user->assignedProducts()->with('category');
 
+        // Trier par les plus récents
+        $query->orderBy('produits.created_at', 'desc');
+
         $products = $query->get();
 
         // Filtrer côté serveur après récupération
