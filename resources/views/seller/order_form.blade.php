@@ -179,8 +179,8 @@
                             <!-- Image du produit -->
                             <div class="product-image mt-4 hidden flex flex-col items-center">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
-                                <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
-                                    <img class="w-full h-full object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
+                                <div class="border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                                    <img class="w-40 h-40 object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
                                 </div>
                             </div>
                         </div>
@@ -510,8 +510,8 @@ function addProduct() {
         <!-- Image du produit -->
         <div class="product-image mt-4 hidden flex flex-col items-center">
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
-            <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
-                <img class="w-full h-full object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
+            <div class="border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                <img class="w-40 h-40 object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
             </div>
         </div>
     `;
@@ -2662,7 +2662,6 @@ if (document.readyState === 'loading') {
 
     /* Product image container styling */
     .product-image {
-        max-width: 120px;
         margin: 0 auto;
     }
 
@@ -2670,10 +2669,26 @@ if (document.readyState === 'loading') {
         transition: transform 0.2s ease;
         object-fit: cover;
         object-position: center;
+        border-radius: 8px;
     }
 
     .product-image:hover img {
         transform: scale(1.05);
+    }
+
+    /* Responsive image sizing */
+    @media (min-width: 768px) {
+        .product-image img {
+            width: 12rem; /* w-48 - 192px */
+            height: 12rem; /* h-48 - 192px */
+        }
+    }
+
+    @media (max-width: 767px) {
+        .product-image img {
+            width: 10rem; /* w-40 - 160px */
+            height: 10rem; /* h-40 - 160px */
+        }
     }
 </style>
 
