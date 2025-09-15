@@ -179,8 +179,8 @@
                             <!-- Image du produit -->
                             <div class="product-image mt-4 hidden flex flex-col items-center">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
-                                <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white flex items-center justify-center shadow-sm">
-                                    <img class="max-w-full max-h-full object-contain" alt="{{ __('seller_order_form.product_image_alt') }}">
+                                <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                                    <img class="w-full h-full object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
                                 </div>
                             </div>
                         </div>
@@ -510,8 +510,8 @@ function addProduct() {
         <!-- Image du produit -->
         <div class="product-image mt-4 hidden flex flex-col items-center">
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
-            <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white flex items-center justify-center shadow-sm">
-                <img class="max-w-full max-h-full object-contain" alt="{{ __('seller_order_form.product_image_alt') }}">
+            <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                <img class="w-full h-full object-cover" alt="{{ __('seller_order_form.product_image_alt') }}">
             </div>
         </div>
     `;
@@ -2668,6 +2668,8 @@ if (document.readyState === 'loading') {
 
     .product-image img {
         transition: transform 0.2s ease;
+        object-fit: cover;
+        object-position: center;
     }
 
     .product-image:hover img {
