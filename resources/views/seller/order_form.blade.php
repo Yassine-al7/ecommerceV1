@@ -2306,9 +2306,10 @@ function initSearchableSelect(container) {
     if (select && panel && select.parentElement !== panel) {
         panel.appendChild(select);
         select.classList.remove('hidden');
-        // Make it look nice within the panel
+        // Make it look like a list with multiple visible rows
+        select.setAttribute('size', String(Math.min(8, Math.max(2, select.options.length))));
         if (!select.className.includes('w-full')) {
-            select.className += ' w-full px-3 py-2 border-0 focus:ring-0';
+            select.className += ' w-full px-3 py-2 border-0 focus:ring-0 bg-white';
         }
         // When user changes selection in the REAL select, update label, close panel, and fire events
         select.addEventListener('change', () => {
@@ -2322,6 +2323,15 @@ function initSearchableSelect(container) {
     // Build once (UL not used anymore, but harmless to keep empty)
     if (list) list.innerHTML = '';
     updateLabelFromSelect();
+
+    // Keep size in sync when options change (dynamic rows)
+    const mo = new MutationObserver(() => {
+        try {
+            select.setAttribute('size', String(Math.min(8, Math.max(2, select.options.length))));
+        } catch(_) {}
+        updateLabelFromSelect();
+    });
+    mo.observe(select, { childList: true });
 
     // Filter REAL select options as user types
     if (search) {
