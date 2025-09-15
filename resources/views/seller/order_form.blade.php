@@ -2281,6 +2281,8 @@ function filterOptionsByText(selectEl, query) {
 
 // Searchable select initializer
 function initSearchableSelect(container) {
+    if (container.dataset.ssInit === '1') return;
+    container.dataset.ssInit = '1';
     const select = container.querySelector('select');
     const trigger = container.querySelector('.ss-trigger');
     const label = container.querySelector('.ss-label');
@@ -2315,15 +2317,28 @@ function initSearchableSelect(container) {
         });
     }
 
+    function updateLabelFromSelect() {
+        const selected = select.options[select.selectedIndex];
+        label.textContent = selected && selected.value ? (selected.textContent || '') : placeholder;
+    }
+
     function selectValue(value, text) {
         select.value = value;
-        label.textContent = text || placeholder;
+        updateLabelFromSelect();
         panel.classList.add('hidden');
         select.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     // Build once
     populateOptions();
+    updateLabelFromSelect();
+
+    // React to option list changes (dynamic rows)
+    const mo = new MutationObserver(() => {
+        populateOptions();
+        updateLabelFromSelect();
+    });
+    mo.observe(select, { childList: true });
 
     // Events
     trigger.addEventListener('click', (e) => {
@@ -2352,10 +2367,15 @@ function initSearchableSelect(container) {
     });
 }
 
-// Initialize existing searchable selects on DOM ready
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize searchable selects (handles cases where DOM is already loaded)
+function initAllSearchableSelects() {
     document.querySelectorAll('.searchable-select').forEach(initSearchableSelect);
-});
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAllSearchableSelects);
+} else {
+    initAllSearchableSelects();
+}
 
 // Initialize for dynamically added product blocks
 function setupProductEvents(productItem) {
