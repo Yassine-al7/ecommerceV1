@@ -2297,89 +2297,56 @@ function initSearchableSelect(container) {
         });
     }
 
-    function populateOptions() {
-        list.innerHTML = '';
-        Array.from(select.options).forEach((opt, idx) => {
-            if (idx === 0) return; // skip placeholder
-            const li = document.createElement('li');
-            li.className = 'px-3 py-2 rounded hover:bg-gray-100 cursor-pointer text-sm';
-            li.textContent = opt.textContent || '';
-            li.dataset.value = opt.value;
-            list.appendChild(li);
-        });
-    }
-
-    function filterList(q) {
-        const normalized = (q || '').toLowerCase().trim();
-        Array.from(list.children).forEach(li => {
-            const match = (li.textContent || '').toLowerCase().includes(normalized);
-            li.style.display = match ? '' : 'none';
-        });
-    }
-
     function updateLabelFromSelect() {
         const selected = select.options[select.selectedIndex];
         label.textContent = selected && selected.value ? (selected.textContent || '') : placeholder;
     }
 
-    function selectValue(value, text) {
-        // Ensure the option is actually selected on the hidden select
-        let foundIndex = -1;
-        const opts = Array.from(select.options);
-        for (let i = 0; i < opts.length; i++) {
-            if (String(opts[i].value) === String(value)) { foundIndex = i; break; }
+    // Move the REAL select into the panel and show it
+    if (select && panel && select.parentElement !== panel) {
+        panel.appendChild(select);
+        select.classList.remove('hidden');
+        // Make it look nice within the panel
+        if (!select.className.includes('w-full')) {
+            select.className += ' w-full px-3 py-2 border-0 focus:ring-0';
         }
-        if (foundIndex >= 0) {
-            select.selectedIndex = foundIndex;
-        } else {
-            select.value = value; // fallback
-        }
-        updateLabelFromSelect();
-        panel.classList.add('hidden');
-        // Fire existing listeners
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-        select.dispatchEvent(new Event('input', { bubbles: true }));
-        // Recalculate for this product item (price, totals) if applicable
-        const productItem = container.closest('.product-item');
-        if (productItem && typeof calculatePurchasePrice === 'function') {
-            try { calculatePurchasePrice(productItem); } catch (_) {}
-        }
-        if (typeof safeCalculateTotals === 'function') {
-            try { safeCalculateTotals(); } catch (_) {}
-        }
+        // When user changes selection in the REAL select, update label, close panel, and fire events
+        select.addEventListener('change', () => {
+            updateLabelFromSelect();
+            panel.classList.add('hidden');
+            // Existing listeners downstream rely on change/input
+            select.dispatchEvent(new Event('input', { bubbles: true }));
+        });
     }
 
-    // Build once
-    populateOptions();
+    // Build once (UL not used anymore, but harmless to keep empty)
+    if (list) list.innerHTML = '';
     updateLabelFromSelect();
 
-    // React to option list changes (dynamic rows)
-    const mo = new MutationObserver(() => {
-        populateOptions();
-        updateLabelFromSelect();
-    });
-    mo.observe(select, { childList: true });
+    // Filter REAL select options as user types
+    if (search) {
+        search.addEventListener('input', () => {
+            try { filterOptionsByText(select, search.value); } catch (_) {}
+        });
+    }
 
     // Events
-    trigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeAllPanelsExcept(panel);
-        panel.classList.toggle('hidden');
-        if (!panel.classList.contains('hidden')) {
-            search.value = '';
-            filterList('');
-            search.focus();
-        }
-    });
+    if (trigger) {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeAllPanelsExcept(panel);
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                if (search) {
+                    search.value = '';
+                    try { filterOptionsByText(select, ''); } catch (_) {}
+                    search.focus();
+                }
+            }
+        });
+    }
 
-    list.addEventListener('click', (e) => {
-        const li = e.target.closest('li');
-        if (!li) return;
-        selectValue(li.dataset.value, li.textContent);
-    });
-
-    search.addEventListener('input', () => filterList(search.value));
-
+    // Close on outside click
     document.addEventListener('click', (e) => {
         if (!container.contains(e.target)) {
             panel.classList.add('hidden');
