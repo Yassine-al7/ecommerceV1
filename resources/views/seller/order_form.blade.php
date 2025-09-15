@@ -177,9 +177,9 @@
                             </div>
 
                             <!-- Image du produit -->
-                            <div class="product-image mt-4 hidden">
+                            <div class="product-image mt-4 hidden flex flex-col items-center">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
-                                <div class="w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden bg-white flex items-center justify-center">
+                                <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white flex items-center justify-center shadow-sm">
                                     <img class="max-w-full max-h-full object-contain" alt="{{ __('seller_order_form.product_image_alt') }}">
                                 </div>
                             </div>
@@ -508,9 +508,9 @@ function addProduct() {
         </div>
 
         <!-- Image du produit -->
-        <div class="product-image mt-4 hidden">
+        <div class="product-image mt-4 hidden flex flex-col items-center">
             <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
-            <div class="w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden bg-white flex items-center justify-center">
+            <div class="w-24 h-24 border-2 border-gray-200 rounded-lg overflow-hidden bg-white flex items-center justify-center shadow-sm">
                 <img class="max-w-full max-h-full object-contain" alt="{{ __('seller_order_form.product_image_alt') }}">
             </div>
         </div>
@@ -2658,6 +2658,20 @@ if (document.readyState === 'loading') {
         border-left: 3px solid #f59e0b;
         padding-left: 8px;
         font-weight: 600;
+    }
+
+    /* Product image container styling */
+    .product-image {
+        max-width: 120px;
+        margin: 0 auto;
+    }
+
+    .product-image img {
+        transition: transform 0.2s ease;
+    }
+
+    .product-image:hover img {
+        transform: scale(1.05);
     }
 </style>
 
