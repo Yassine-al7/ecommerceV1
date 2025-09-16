@@ -371,7 +371,7 @@ class InvoiceController extends Controller
             @mkdir($tempDir, 0755, true);
         }
 
-        $mpdf = new Mpdf([
+        $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
             'orientation' => 'P',
