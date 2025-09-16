@@ -371,13 +371,29 @@ class InvoiceController extends Controller
             @mkdir($tempDir, 0755, true);
         }
 
-        $mpdf = new \Mpdf\Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
-            'orientation' => 'P',
-            'tempDir' => $tempDir,
-            'default_font' => 'dejavusans',
-        ]);
+        // Fallback manual loading for Hostinger
+        if (!class_exists('\Mpdf\Mpdf')) {
+            $autoloadPath = base_path('vendor/autoload.php');
+            if (file_exists($autoloadPath)) {
+                require_once $autoloadPath;
+            }
+        }
+
+        try {
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'orientation' => 'P',
+                'tempDir' => $tempDir,
+                'default_font' => 'dejavusans',
+            ]);
+        } catch (\Exception $e) {
+            // Fallback error handling
+            return response()->json([
+                'error' => 'PDF generation failed: ' . $e->getMessage(),
+                'suggestion' => 'Please run "composer install" on the server'
+            ], 500);
+        }
         $mpdf->autoLangToFont = true;
         $mpdf->SetDirectionality('rtl');
 

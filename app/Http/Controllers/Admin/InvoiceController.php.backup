@@ -1,0 +1,82 @@
+<?php
+// Alternative PDF solution using basic HTML to PDF conversion
+// Add this method to InvoiceController if mPDF continues to fail
+
+public function downloadUnpaidPdfSimple(User $seller)
+{
+    // Get unpaid orders
+    $orders = Order::with('seller')
+        ->where('seller_id', $seller->id)
+        ->where('status', 'livré')
+        ->where(function($q) {
+            $q->where('facturation_status', 'non payé')
+              ->orWhereNull('facturation_status');
+        })
+        ->orderBy('updated_at', 'desc')
+        ->get();
+
+    $totals = [
+        'count' => $orders->count(),
+        'revenue' => $orders->sum('prix_commande'),
+        'marge_benefice' => $orders->sum('marge_benefice'),
+    ];
+
+    // Generate simple HTML content
+    $html = '<!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head>
+        <meta charset="UTF-8">
+        <title>فواتير غير مدفوعة - ' . $seller->name . '</title>
+        <style>
+            body { font-family: Arial, sans-serif; direction: rtl; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+            th { background-color: #f2f2f2; }
+            .header { text-align: center; margin-bottom: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>فواتير غير مدفوعة</h1>
+            <p>البائع: ' . $seller->name . '</p>
+            <p>تاريخ الإنشاء: ' . now()->format('Y-m-d H:i') . '</p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>العميل</th>
+                    <th>المدينة</th>
+                    <th>سعر الطلب</th>
+                    <th>هامش الربح</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+    foreach($orders as $order) {
+        $html .= '<tr>
+            <td>' . ($order->reference ?? $order->id) . '</td>
+            <td>' . $order->nom_client . '</td>
+            <td>' . $order->ville . '</td>
+            <td>' . number_format((float)$order->prix_commande, 2) . ' MAD</td>
+            <td>' . number_format((float)$order->marge_benefice, 2) . ' MAD</td>
+        </tr>';
+    }
+
+    $html .= '</tbody>
+        </table>
+        <div style="margin-top: 20px;">
+            <p><strong>عدد الطلبات: ' . $totals['count'] . '</strong></p>
+            <p><strong>إجمالي المبيعات: ' . number_format((float)$totals['revenue'], 2) . ' MAD</strong></p>
+            <p><strong>إجمالي هامش الربح: ' . number_format((float)$totals['marge_benefice'], 2) . ' MAD</strong></p>
+        </div>
+    </body>
+    </html>';
+
+    // Return as downloadable HTML file (can be printed as PDF)
+    $filename = 'unpaid_invoices_' . str_replace(' ', '_', $seller->name) . '_' . now()->format('Ymd_His') . '.html';
+    
+    return response($html)
+        ->header('Content-Type', 'text/html; charset=utf-8')
+        ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+}
