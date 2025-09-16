@@ -1,4 +1,4 @@
-@extends('layouts.app')
+git @extends('layouts.app')
 
 @section('title', __('seller_products.title'))
 
@@ -15,8 +15,8 @@
 
         <!-- Welcome & Media Links (Arabic) -->
         <div class="mb-6">
-            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-yellow-900 shadow-sm" dir="rtl">
-                <p class="text-base md:text-lg leading-relaxed">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 pro-font" dir="rtl">
+                <p class="text-gray-800 text-sm md:text-base leading-relaxed">
                     مرحباً بكم! إذا أردتم مشاهدة صور أو فيديوهات المنتجات، يُرجى الضغط على هذا الرابط:
                     <a href="https://drive.google.com/drive/u/2/my-drive" target="_blank" rel="noopener" class="text-blue-600 underline">Google Drive</a>.
                     وإذا كنتم ترغبون في فيديوهات إعلانية إبداعية، تواصلوا معنا عبر الواتساب على الرقم:
@@ -173,6 +173,12 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+
+.pro-font {
+    font-family: 'Tajawal', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
