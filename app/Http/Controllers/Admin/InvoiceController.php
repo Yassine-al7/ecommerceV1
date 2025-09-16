@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Mpdf\Mpdf;
 
 class InvoiceController extends Controller
 {
@@ -357,15 +357,37 @@ class InvoiceController extends Controller
             'marge_benefice' => $orders->sum('marge_benefice'),
         ];
 
-        $pdf = Pdf::loadView('admin.pdf.unpaid_invoices', [
+        // Rendre la vue Blade en HTML
+        $html = view('admin.pdf.unpaid_invoices', [
             'seller' => $seller,
             'orders' => $orders,
             'totals' => $totals,
             'generatedAt' => now(),
-        ])->setPaper('a4', 'portrait');
+        ])->render();
+
+        // Configurer mPDF (prise en charge RTL/Arabe)
+        $tempDir = storage_path('app/mpdf');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0755, true);
+        }
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'tempDir' => $tempDir,
+            'default_font' => 'dejavusans',
+        ]);
+        $mpdf->autoLangToFont = true;
+        $mpdf->SetDirectionality('rtl');
+
+        $mpdf->WriteHTML($html);
 
         $filename = 'unpaid_invoices_' . str_replace(' ', '_', $seller->name) . '_' . now()->format('Ymd_His') . '.pdf';
-        return $pdf->download($filename);
+        // Retourner la réponse en téléchargement
+        return response($mpdf->Output($filename, 'S'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 }
 
