@@ -31,6 +31,12 @@
         </div>
     @endif
 
+        @php
+            $totalValue = (float) $products->sum('prix_vente');
+            $amountNoDecimals = number_format($totalValue, 0);
+            $amountWithDecimals = number_format($totalValue, 2);
+        @endphp
+
         <!-- Cartes de Statistiques -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -52,7 +58,10 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">{{ __('seller_products.stats.value') }}</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ number_format((float)$products->sum('prix_vente'), 2) }} MAD</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            <span class="md:hidden">{{ $amountNoDecimals }}</span>
+                            <span class="hidden md:inline">{{ $amountWithDecimals }}</span> MAD
+                        </p>
                     </div>
                 </div>
             </div>
