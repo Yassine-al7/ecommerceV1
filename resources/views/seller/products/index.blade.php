@@ -1,4 +1,4 @@
-git @extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', __('seller_products.title'))
 
