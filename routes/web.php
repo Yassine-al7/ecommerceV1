@@ -54,6 +54,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/invoices/mark-all-paid', [App\Http\Controllers\Admin\InvoiceController::class, 'markAllAsPaid'])->name('invoices.mark-all-paid');
     Route::get('/invoices/export', [App\Http\Controllers\Admin\InvoiceController::class, 'export'])->name('invoices.export');
     Route::get('/invoices/filtered-data', [App\Http\Controllers\Admin\InvoiceController::class, 'getFilteredData'])->name('invoices.filtered-data');
+    Route::get('/invoices/{seller}/unpaid-pdf', [App\Http\Controllers\Admin\InvoiceController::class, 'downloadUnpaidPdf'])->name('invoices.unpaid-pdf');
 
     // Routes pour la gestion des messages admin
     Route::resource('messages', AdminMessageController::class);

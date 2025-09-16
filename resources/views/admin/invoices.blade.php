@@ -485,6 +485,14 @@ use Illuminate\Support\Facades\DB;
                                                 <i class="fas fa-edit"></i> <span class="hidden sm:inline">تعديل</span>
                                             </button>
 
+                                            @if($order->seller)
+                                                <a href="{{ route('admin.invoices.unpaid-pdf', $order->seller_id) }}"
+                                                   class="btn btn-sm text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 ml-2"
+                                                   title="تحميل فواتير غير مدفوعة للبائع">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            @endif
+
                                             <form id="paymentForm{{ $order->id }}" method="POST"
                                                   action="{{ route('admin.invoices.update-status', $order->id) }}"
                                                   class="hidden mt-2">

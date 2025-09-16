@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facades\Pdf;
 
 class InvoiceController extends Controller
 {
@@ -331,6 +332,40 @@ class InvoiceController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Télécharger un PDF des commandes livrées non payées pour un vendeur
+     */
+    public function downloadUnpaidPdf(User $seller)
+    {
+        // Récupérer les commandes livrées non payées (ou null) pour ce vendeur
+        $orders = Order::with('seller')
+            ->where('seller_id', $seller->id)
+            ->where('status', 'livré')
+            ->where(function($q) {
+                $q->where('facturation_status', 'non payé')
+                  ->orWhereNull('facturation_status');
+            })
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        // Générer des totaux
+        $totals = [
+            'count' => $orders->count(),
+            'revenue' => $orders->sum('prix_commande'),
+            'marge_benefice' => $orders->sum('marge_benefice'),
+        ];
+
+        $pdf = Pdf::loadView('admin.pdf.unpaid_invoices', [
+            'seller' => $seller,
+            'orders' => $orders,
+            'totals' => $totals,
+            'generatedAt' => now(),
+        ])->setPaper('a4', 'portrait');
+
+        $filename = 'unpaid_invoices_' . str_replace(' ', '_', $seller->name) . '_' . now()->format('Ymd_His') . '.pdf';
+        return $pdf->download($filename);
     }
 }
 
