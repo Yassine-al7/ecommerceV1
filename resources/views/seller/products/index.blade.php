@@ -19,7 +19,7 @@ git @extends('layouts.app')
                 <p class="text-gray-800 text-sm md:text-base leading-relaxed">
                     مرحباً بكم! إذا أردتم مشاهدة صور أو فيديوهات المنتجات، يُرجى الضغط على هذا الرابط:
                     <a href="https://drive.google.com/drive/u/2/my-drive" target="_blank" rel="noopener" class="text-blue-600 underline">Google Drive</a>.
-                    وإذا كنتم ترغبون في فيديوهات إعلانية إبداعية، تواصلوا معنا عبر الواتساب على الرقم:
+                    وإذا كنتم ترغبون في فيديوهات إعلانية إبداعية من أجل الإعلانات، تواصلوا معنا عبر الواتساب على الرقم:
                     <a href="https://wa.me/212600000000" target="_blank" rel="noopener" class="text-green-600 underline">+212600000000</a>
                 </p>
             </div>
