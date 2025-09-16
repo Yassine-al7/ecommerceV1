@@ -13,7 +13,17 @@
             </div>
         </div>
 
-
+        <!-- Welcome & Media Links (Arabic) -->
+        <div class="mb-6">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-yellow-900 shadow-sm" dir="rtl">
+                <p class="text-base md:text-lg leading-relaxed">
+                    مرحباً بكم! إذا أردتم مشاهدة صور أو فيديوهات المنتجات، يُرجى الضغط على هذا الرابط:
+                    <a href="https://drive.google.com/drive/u/2/my-drive" target="_blank" rel="noopener" class="text-blue-600 underline">Google Drive</a>.
+                    وإذا كنتم ترغبون في فيديوهات إعلانية إبداعية، تواصلوا معنا عبر الواتساب على الرقم:
+                    <a href="https://wa.me/212600000000" target="_blank" rel="noopener" class="text-green-600 underline">+212600000000</a>
+                </p>
+            </div>
+        </div>
 
     @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
