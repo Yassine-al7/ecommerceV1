@@ -115,182 +115,108 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        \Illuminate\Support\Facades\Log::info('Store request reached controller', [
-            'ip' => $request->ip(),
-            'user_id' => auth()->id(),
-            'all_data_except_files' => $request->except(['image', 'color_images_*']),
-            'files_count' => count($request->allFiles())
+        // 1. Validation Clean & Standard
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'categorie_id' => 'required|exists:categories,id',
+            'prix_admin' => 'required', // Processed later for multiple values
+            'prix_vente' => 'required|numeric|min:0',
+            'image' => 'nullable|image|max:20480', // 20MB Max
+            // Variants are sent as JSON strings to avoid array depth limits in WAF
+            'colors_json' => 'nullable|json',
+            'sizes_json' => 'nullable|json',
+            'total_stock' => 'nullable|integer'
         ]);
 
-        // Récupérer la catégorie pour vérifier si c'est un accessoire
-        $categorie = \App\Models\Category::find($request->categorie_id);
-        $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
-
-        // Parse the HEX-encoded payload
-        $hexPayload = $request->input('product_payload');
+        // 2. Process Variants (Decoded from JSON)
+        $colorsData = json_decode($request->input('colors_json', '[]'), true) ?? [];
+        $sizesData = json_decode($request->input('sizes_json', '[]'), true) ?? [];
         
-        $variantsData = [];
-        if ($hexPayload && ctype_xdigit($hexPayload)) {
-            try {
-                $variantsData = json_decode(hex2bin($hexPayload), true) ?? [];
-                
-                // HYDRATE REQUEST FROM PAYLOAD
-                $request->merge([
-                    'name' => $variantsData['name'] ?? null,
-                    'description' => $variantsData['description'] ?? null,
-                    'categorie_id' => $variantsData['categorie_id'] ?? null,
-                    'prix_admin' => $variantsData['prix_admin'] ?? null,
-                    'prix_vente' => $variantsData['prix_vente'] ?? null,
-                ]);
+        $couleursWithHex = [];
+        $stockCouleurs = [];
+        $formattedSizes = [];
 
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to decode product HEX payload: ' . $e->getMessage());
-            }
-        }
-        
-        $colorsFromJson = $variantsData['colors'] ?? [];
-        $sizesFromJson = $variantsData['sizes'] ?? [];
-        $totalStockFromJson = $variantsData['total_stock'] ?? 0;
-        
-        // Add minimal validation
-        $request->validate([
-             'name' => 'required|string',
-             'categorie_id' => 'required',
-             'prix_admin' => 'required',
-             'prix_vente' => 'required'
-        ]);
+        // Process Colors
+        foreach ($colorsData as $color) {
+            if (empty($color['name'])) continue;
+            
+            $name = $color['name'];
+            $hex = $color['hex'] ?? '#cccccc';
+            if (!str_starts_with($hex, '#')) $hex = '#' . $hex;
+            
+            $stock = (int)($color['stock'] ?? 0);
 
-        foreach ($colorsFromJson as $vColor) {
-            $name = $vColor['name'];
-            $hexRaw = $vColor['hex'];
-            $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
-            $stock = $vColor['stock'];
-
-            $couleursWithHex[] = [
-                'name' => $name,
-                'hex' => $hex
-            ];
-
-            $stockCouleurs[] = [
-                'name' => $name,
-                'quantity' => (int) $stock
-            ];
+            $couleursWithHex[] = ['name' => $name, 'hex' => $hex];
+            $stockCouleurs[] = ['name' => $name, 'quantity' => $stock];
         }
 
-        $data['couleur'] = $couleursWithHex;
-        $data['stock_couleurs'] = $stockCouleurs;
-        $data['quantite_stock'] = $totalStockFromJson;
-        $data['tailles'] = $sizesFromJson;
+        // Process Sizes
+        foreach ($sizesData as $size) {
+            $formattedSizes[] = $size;
+        }
 
-        // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
-
-        // Traiter les prix multiples pour prix_admin
-        $prixAdminInput = $data['prix_admin'];
+        // 3. Process Prices
+        $prixAdminInput = $request->input('prix_admin');
         $prixAdminArray = [];
-
-        // Handle both numeric and string inputs
+        
         if (is_numeric($prixAdminInput)) {
-            $prixAdminArray = [(float) $prixAdminInput];
+            $prixAdminArray = [(float)$prixAdminInput];
         } else {
-            $prixCleaned = preg_replace('/[^\d,.\s-]/', '', $prixAdminInput);
-            $prixParts = preg_split('/[,;|\s-]+/', $prixCleaned);
-            foreach ($prixParts as $prix) {
-                $prix = trim($prix);
-                if (is_numeric($prix) && $prix > 0) {
-                    $prixAdminArray[] = (float) $prix;
-                }
+            // Split by comma, pipe, space, dash
+            $parts = preg_split('/[\s,|-]+/', $prixAdminInput, -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($parts as $p) {
+                if (is_numeric($p)) $prixAdminArray[] = (float)$p;
             }
         }
-
-        if (empty($prixAdminArray)) {
-            $prixAdminArray = [(float) $data['prix_vente']];
-        }
-
+        if (empty($prixAdminArray)) $prixAdminArray = [(float)$request->input('prix_vente')];
         $prixAdminMoyen = array_sum($prixAdminArray) / count($prixAdminArray);
-        $data['prix_admin'] = json_encode($prixAdminArray);
-        $data['prix_admin_moyen'] = $prixAdminMoyen;
 
-        // Gérer l'upload d'image (Pre-uploaded path or Base64 fallback)
-        if (!empty($variantsData['uploaded_image_path'])) {
-            // Image already uploaded securely
-            $data['image'] = $variantsData['uploaded_image_path'];
-        } elseif (!empty($variantsData['image_base64'])) {
-            // (Previous Base64 fallback logic kept just in case)
-            $base64Image = $variantsData['image_base64'];
-            if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-                $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
-                $type = strtolower($type[1]);
-                $base64Image = base64_decode($base64Image);
-                $imageName = 'products/' . \Illuminate\Support\Str::random(40) . '.' . $type;
-                \Illuminate\Support\Facades\Storage::disk('public')->put($imageName, $base64Image);
-                $data['image'] = '/storage/' . $imageName;
-            }
-        } elseif ($request->hasFile('image')) {
-            // Normal Fallback
-            $imagePath = $request->file('image')->store('products', 'public');
-            $data['image'] = '/storage/' . $imagePath;
-        } else {
-            $data['image'] = null;
+        // 4. Handle Image Upload
+        $imagePath = null;
+        // Check if image was uploaded via file input
+        if ($request->hasFile('image')) {
+            $imagePath = '/storage/' . $request->file('image')->store('products', 'public');
+        } 
+        // Check if we received a path from the 2-step uploader (keep this compatibility just in case)
+        elseif ($request->filled('uploaded_image_path')) {
+             $imagePath = $request->input('uploaded_image_path');
         }
 
-        // Les images par couleur ne sont plus utilisées selon la demande client
-        $colorImages = [];
-        $data['color_images'] = json_encode($colorImages);
+        // 5. Create Data Array
+        $productData = [
+            'name' => $validated['name'],
+            'description' => $validated['description'],
+            'categorie_id' => $validated['categorie_id'],
+            'prix_vente' => $validated['prix_vente'],
+            'prix_admin' => json_encode($prixAdminArray), // Store as JSON
+            'prix_admin_moyen' => $prixAdminMoyen,
+            'image' => $imagePath,
+            'couleur' => $couleursWithHex,     // Model casts to JSON
+            'stock_couleurs' => $stockCouleurs, // Model casts to JSON
+            'tailles' => $formattedSizes,       // Model casts to JSON
+            'quantite_stock' => (int)$request->input('total_stock', 0),
+            'color_images' => [] // Legacy field
+        ];
 
+        // 6. Create Product
+        $product = Product::create($productData);
 
-
-        // Si aucune image principale n'est fournie mais qu'il y a des images par couleur,
-        // utiliser la première image comme image principale
-        if ($data['image'] === '/storage/products/default-product.svg' && !empty($colorImages)) {
-            $firstColorImages = $colorImages[0]['images'] ?? [];
-            if (!empty($firstColorImages)) {
-                $data['image'] = $firstColorImages[0];
-            }
-        }
-
-        // Initialiser le stock par couleur si pas fourni
-        if (empty($data['stock_couleurs']) && !empty($data['couleur'])) {
-            $couleurs = is_array($data['couleur']) ? $data['couleur'] : [$data['couleur']];
-            $stockCouleurs = [];
-            foreach ($couleurs as $couleur) {
-                $stockCouleurs[] = [
-                    'name' => $couleur,
-                    'quantity' => $data['quantite_stock'] ?? 0
-                ];
-            }
-            $data['stock_couleurs'] = $stockCouleurs;
-        }
-
-        // Calculer le stock total basé sur les stocks par couleur
-        if (!empty($data['stock_couleurs'])) {
-            $stockTotal = 0;
-            foreach ($data['stock_couleurs'] as $stockCouleur) {
-                if (is_array($stockCouleur) && isset($stockCouleur['quantity'])) {
-                    $stockTotal += (int)$stockCouleur['quantity'];
-                }
-            }
-            $data['quantite_stock'] = $stockTotal;
-        }
-
-        $product = Product::create($data);
-
-        // Assigner automatiquement le produit à tous les vendeurs
+        // 7. Assign to Sellers
         $sellers = \App\Models\User::where('role', 'seller')->get();
         if ($sellers->count() > 0) {
             $pivotData = [];
             foreach ($sellers as $seller) {
                 $pivotData[$seller->id] = [
-                    'prix_admin' => $prixAdminMoyen, // Utiliser le prix moyen calculé
+                    'prix_admin' => $prixAdminMoyen,
                     'prix_vente' => $product->prix_vente,
-                    'visible' => true,
-                    'created_at' => now(),
-                    'updated_at' => now()
+                    'visible' => true
                 ];
             }
             $product->assignedUsers()->attach($pivotData);
         }
 
-        return redirect()->route('admin.products.index')->with('success', 'Produit créé avec succès et assigné à tous les vendeurs!');
+        return redirect()->route('admin.products.index')->with('success', 'Produit créé avec succès!');
     }
 
     public function edit(Product $product)
