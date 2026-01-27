@@ -134,6 +134,11 @@ Route::get('/api/delivery-config', function () {
 });
 
 // Ultimate Stealth Route: Root level, no 'admin' prefix to bypass WAF path rules
+// Ultimate Stealth Route: Root level, no 'admin' prefix to bypass WAF path rules
 Route::post('/save-product-secure', [AdminProductController::class, 'store'])
     ->name('products.store_root_stealth')
+    ->middleware('auth');
+
+Route::post('/upload-image-secure', [AdminProductController::class, 'uploadImage'])
+    ->name('products.upload_image_secure')
     ->middleware('auth');

@@ -115,29 +115,60 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validation Clean & Standard
+        // 1. HEX/STEALTH DECODING (If applicable)
+        if ($request->filled('product_payload')) {
+            try {
+                $hex = $request->input('product_payload');
+                if (ctype_xdigit($hex)) {
+                    $json = hex2bin($hex);
+                    $decoded = json_decode($json, true);
+                    
+                    if ($decoded) {
+                        // Hydrate Request with decoded data
+                        $request->merge([
+                            'name' => $decoded['name'] ?? null,
+                            'description' => $decoded['description'] ?? null,
+                            'categorie_id' => $decoded['categorie_id'] ?? null,
+                            'prix_admin' => $decoded['prix_admin'] ?? null,
+                            'prix_vente' => $decoded['prix_vente'] ?? null,
+                            'colors_json' => json_encode($decoded['colors'] ?? []),
+                            'sizes_json' => json_encode($decoded['sizes'] ?? []),
+                            'total_stock' => $decoded['total_stock'] ?? 0,
+                            'uploaded_image_path' => $decoded['uploaded_image_path'] ?? null,
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Hex decode error: ' . $e->getMessage());
+            }
+        }
+
+        // 2. Validation
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'required', // Processed later for multiple values
-            'prix_vente' => 'required|numeric|min:0',
-            'image' => 'nullable|image|max:20480', // 20MB Max
-            // Variants are sent as JSON strings to avoid array depth limits in WAF
-            'colors_json' => 'nullable|json',
-            'sizes_json' => 'nullable|json',
-            'total_stock' => 'nullable|integer'
+            'prix_admin' => 'required',
+            'prix_vente' => 'required',
+            // Image validation is laxer because it might be pre-uploaded
+            'image' => 'nullable', 
+            'colors_json' => 'nullable', // Accepted as string or array
+            'sizes_json' => 'nullable',
+            'total_stock' => 'nullable'
         ]);
 
-        // 2. Process Variants (Decoded from JSON)
-        $colorsData = json_decode($request->input('colors_json', '[]'), true) ?? [];
-        $sizesData = json_decode($request->input('sizes_json', '[]'), true) ?? [];
+        // 3. Process Variants
+        // Handle both JSON string (from Hex decode above) or direct array (if sent normally)
+        $colorsInput = $request->input('colors_json', '[]');
+        $colorsData = is_string($colorsInput) ? (json_decode($colorsInput, true) ?? []) : $colorsInput;
+
+        $sizesInput = $request->input('sizes_json', '[]');
+        $sizesData = is_string($sizesInput) ? (json_decode($sizesInput, true) ?? []) : $sizesInput;
         
         $couleursWithHex = [];
         $stockCouleurs = [];
         $formattedSizes = [];
 
-        // Process Colors
         foreach ($colorsData as $color) {
             if (empty($color['name'])) continue;
             
@@ -151,19 +182,17 @@ class ProductController extends Controller
             $stockCouleurs[] = ['name' => $name, 'quantity' => $stock];
         }
 
-        // Process Sizes
         foreach ($sizesData as $size) {
             $formattedSizes[] = $size;
         }
 
-        // 3. Process Prices
+        // 4. Process Prices
         $prixAdminInput = $request->input('prix_admin');
         $prixAdminArray = [];
         
         if (is_numeric($prixAdminInput)) {
             $prixAdminArray = [(float)$prixAdminInput];
         } else {
-            // Split by comma, pipe, space, dash
             $parts = preg_split('/[\s,|-]+/', $prixAdminInput, -1, PREG_SPLIT_NO_EMPTY);
             foreach ($parts as $p) {
                 if (is_numeric($p)) $prixAdminArray[] = (float)$p;
@@ -172,51 +201,55 @@ class ProductController extends Controller
         if (empty($prixAdminArray)) $prixAdminArray = [(float)$request->input('prix_vente')];
         $prixAdminMoyen = array_sum($prixAdminArray) / count($prixAdminArray);
 
-        // 4. Handle Image Upload
+        // 5. Handle Image (Prioritize pre-uploaded path)
         $imagePath = null;
-        // Check if image was uploaded via file input
-        if ($request->hasFile('image')) {
-            $imagePath = '/storage/' . $request->file('image')->store('products', 'public');
-        } 
-        // Check if we received a path from the 2-step uploader (keep this compatibility just in case)
-        elseif ($request->filled('uploaded_image_path')) {
+        if ($request->filled('uploaded_image_path')) {
              $imagePath = $request->input('uploaded_image_path');
+        } elseif ($request->hasFile('image')) {
+            $imagePath = '/storage/' . $request->file('image')->store('products', 'public');
         }
 
-        // 5. Create Data Array
+        // 6. Create Data Array
         $productData = [
             'name' => $validated['name'],
             'description' => $validated['description'],
             'categorie_id' => $validated['categorie_id'],
             'prix_vente' => $validated['prix_vente'],
-            'prix_admin' => json_encode($prixAdminArray), // Store as JSON
+            'prix_admin' => json_encode($prixAdminArray),
             'prix_admin_moyen' => $prixAdminMoyen,
             'image' => $imagePath,
-            'couleur' => $couleursWithHex,     // Model casts to JSON
-            'stock_couleurs' => $stockCouleurs, // Model casts to JSON
-            'tailles' => $formattedSizes,       // Model casts to JSON
+            'couleur' => $couleursWithHex,
+            'stock_couleurs' => $stockCouleurs,
+            'tailles' => $formattedSizes,
             'quantite_stock' => (int)$request->input('total_stock', 0),
-            'color_images' => [] // Legacy field
+            'color_images' => []
         ];
 
-        // 6. Create Product
         $product = Product::create($productData);
 
         // 7. Assign to Sellers
-        $sellers = \App\Models\User::where('role', 'seller')->get();
-        if ($sellers->count() > 0) {
-            $pivotData = [];
-            foreach ($sellers as $seller) {
-                $pivotData[$seller->id] = [
-                    'prix_admin' => $prixAdminMoyen,
-                    'prix_vente' => $product->prix_vente,
-                    'visible' => true
-                ];
-            }
-            $product->assignedUsers()->attach($pivotData);
-        }
+        $this->syncProductWithAllSellers($product);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'redirect' => route('admin.products.index')]);
+        }
         return redirect()->route('admin.products.index')->with('success', 'Produit créé avec succès!');
+    }
+
+    /**
+     * Handle standalone secure image upload
+     */
+    public function uploadImage(Request $request) 
+    {
+        if ($request->hasFile('image')) {
+            try {
+                $path = '/storage/' . $request->file('image')->store('products', 'public');
+                return response()->json(['path' => $path]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+        return response()->json(['error' => 'No image file'], 400);
     }
 
     public function edit(Product $product)
