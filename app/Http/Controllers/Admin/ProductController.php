@@ -138,7 +138,8 @@ class ProductController extends Controller
             'tailles' => $isAccessoire ? 'nullable|array' : 'required|array|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
             'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'required|string|min:1|regex:/^[\d\s,.-]+$/', // Accepte nombres, virgules, espaces, points, tirets
+            'prix_admin' => 'required|numeric|min:0', // Changed to numeric to match form input type
+            'prix_vente' => 'required|numeric|min:0', // Added missing validation
             'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
             'description' => 'nullable|string',
         ];
@@ -217,14 +218,20 @@ class ProductController extends Controller
         $prixAdminInput = $data['prix_admin'];
         $prixAdminArray = [];
 
-        // Nettoyer et séparer les prix
-        $prixCleaned = preg_replace('/[^\d,.\s-]/', '', $prixAdminInput); // Garder seulement chiffres, virgules, points, espaces, tirets
-        $prixParts = preg_split('/[,;|\s-]+/', $prixCleaned); // Séparer par virgules, points-virgules, pipes, espaces, ou tirets
+        // Handle both numeric and string inputs
+        if (is_numeric($prixAdminInput)) {
+            // Single numeric value from form
+            $prixAdminArray = [(float) $prixAdminInput];
+        } else {
+            // String with multiple prices - parse them
+            $prixCleaned = preg_replace('/[^\d,.\s-]/', '', $prixAdminInput); // Garder seulement chiffres, virgules, points, espaces, tirets
+            $prixParts = preg_split('/[,;|\s-]+/', $prixCleaned); // Séparer par virgules, points-virgules, pipes, espaces, ou tirets
 
-        foreach ($prixParts as $prix) {
-            $prix = trim($prix);
-            if (is_numeric($prix) && $prix > 0) {
-                $prixAdminArray[] = (float) $prix;
+            foreach ($prixParts as $prix) {
+                $prix = trim($prix);
+                if (is_numeric($prix) && $prix > 0) {
+                    $prixAdminArray[] = (float) $prix;
+                }
             }
         }
 

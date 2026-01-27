@@ -17,6 +17,20 @@
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="productForm">
             @csrf
 
+            @if($errors->any())
+                <div class="bg-red-50 border-l-4 border-red-500 p-6 mb-8 rounded-xl">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-exclamation-circle text-red-500 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-red-800">يرجى تصحيح الأخطاء التالية:</h3>
+                    </div>
+                    <ul class="list-disc list-inside space-y-1 text-red-700 text-right" dir="rtl">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="space-y-8">
                 <!-- Section 1: Basic Info -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -288,6 +302,32 @@ function addNewColor() {
     document.getElementById('newColorName').value = '';
     calculateTotal();
 }
+
+// Form validation before submit
+document.getElementById('productForm').addEventListener('submit', function(e) {
+    // Check if at least one color is selected
+    const selectedColors = document.querySelectorAll('.color-toggle:checked');
+    if (selectedColors.length === 0) {
+        e.preventDefault();
+        alert('يرجى اختيار لون واحد على الأقل');
+        return false;
+    }
+    
+    // Check if at least one size is selected (unless it's an accessory)
+    const selectedSizes = document.querySelectorAll('input[name="tailles[]"]:checked');
+    const categorySelect = document.querySelector('select[name="categorie_id"]');
+    const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+    const isAccessory = selectedCategory && selectedCategory.text.toLowerCase().includes('accessoire');
+    
+    if (!isAccessory && selectedSizes.length === 0) {
+        e.preventDefault();
+        alert('يرجى اختيار مقاس واحد على الأقل');
+        return false;
+    }
+    
+    return true;
+});
+
 </script>
 
 <style>
