@@ -1,317 +1,512 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-             <h1 class="h3 mb-0 text-gray-800">Ajouter un nouveau produit</h1>
-        </div>
-    </div>
-
-    <!-- CLEAN FORM IMPLEMENTATION -->
-    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="finalProductForm">
-        @csrf
-        
-        <div class="row">
-            <!-- Left Column: Basic Info -->
-            <div class="col-lg-8">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Informations de base</h6>
-                    </div>
-                    <div class="card-body">
-                        
-                        <!-- Name -->
-                        <div class="form-group mb-3">
-                            <label for="name" class="form-label">Nom du produit <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name" required placeholder="Ex: Robe d'été fleurie">
-                        </div>
-
-                        <!-- Description -->
-                        <div class="form-group mb-3">
-                            <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="description" name="description" rows="5" required placeholder="Description détaillée du produit..."></textarea>
-                            <small class="text-muted">Évitez les caractères spéciaux complexes si possible.</small>
-                        </div>
-
-                        <!-- Category -->
-                        <div class="form-group mb-3">
-                            <label for="categorie_id" class="form-label">Catégorie <span class="text-danger">*</span></label>
-                            <select class="form-select form-control" id="categorie_id" name="categorie_id" required onchange="toggleSizeSection()">
-                                <option value="" disabled selected>Choisir une catégorie...</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Colors & Sizes Section -->
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Couleurs et Tailles</h6>
-                    </div>
-                    <div class="card-body">
-                        
-                        <!-- Color Picker UI -->
-                        <div class="mb-4">
-                            <label class="form-label d-block">Couleurs disponibles</label>
-                            <div class="d-flex flex-wrap gap-2" id="colorPalette">
-                                <!-- Predefined Colors -->
-                                @php
-                                    $basicColors = [
-                                        ['name' => 'Rouge', 'hex' => '#FF0000'],
-                                        ['name' => 'Bleu', 'hex' => '#0000FF'],
-                                        ['name' => 'Vert', 'hex' => '#008000'],
-                                        ['name' => 'Jaune', 'hex' => '#FFFF00'],
-                                        ['name' => 'Noir', 'hex' => '#000000'],
-                                        ['name' => 'Blanc', 'hex' => '#FFFFFF'],
-                                        ['name' => 'Rose', 'hex' => '#FFC0CB'],
-                                        ['name' => 'Gris', 'hex' => '#808080'],
-                                        ['name' => 'Beige', 'hex' => '#F5F5DC'],
-                                        ['name' => 'Marron', 'hex' => '#A52A2A'],
-                                        ['name' => 'Orange', 'hex' => '#FFA500'],
-                                        ['name' => 'Violet', 'hex' => '#800080'],
-                                    ];
-                                @endphp
-                                @foreach($basicColors as $color)
-                                    <div class="color-item" data-name="{{ $color['name'] }}" data-hex="{{ $color['hex'] }}" onclick="toggleColor(this)">
-                                        <div class="color-circle" style="background-color: {{ $color['hex'] }}; border: 1px solid #ddd;"></div>
-                                        <span class="color-name">{{ $color['name'] }}</span>
-                                        <input type="number" class="form-control form-control-sm stock-input d-none" placeholder="Stock" min="0" value="0">
-                                    </div>
-                                @endforeach
-                            </div>
-                            
-                            <!-- Custom Color Input -->
-                            <div class="mt-3 row">
-                                <div class="col-md-4">
-                                    <input type="text" id="customColorName" class="form-control" placeholder="Nom couleur (ex: Turquoise)">
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="color" id="customColorHex" class="form-control form-control-color w-100" value="#563d7c">
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" class="btn btn-secondary w-100" onclick="addCustomColor()">Ajouter</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sizes UI -->
-                        <div id="sizesSection">
-                            <label class="form-label d-block">Tailles disponibles</label>
-                            <div class="btn-group" role="group">
-                                @foreach(['XS','S','M','L','XL','XXL','3XL'] as $size)
-                                    <input type="checkbox" class="btn-check size-option" id="size_{{$size}}" value="{{$size}}" autocomplete="off">
-                                    <label class="btn btn-outline-secondary" for="size_{{$size}}">{{$size}}</label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- HIDDEN INPUTS FOR VARIANTS (JSON payload) -->
-                        <input type="hidden" name="colors_json" id="colors_json">
-                        <input type="hidden" name="sizes_json" id="sizes_json">
-                        <input type="hidden" name="total_stock" id="total_stock">
-
-                    </div>
-                </div>
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">إضافة منتج جديد</h1>
+                <p class="mt-2 text-lg text-gray-600">أدخل تفاصيل المنتج الجديد في متجرك.</p>
             </div>
+            <a href="{{ route('admin.products.index') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gray-800 hover:bg-gray-900 shadow-sm transition-all duration-200">
+                <i class="fas fa-arrow-left mr-2"></i> رجوع
+            </a>
+        </div>
 
-            <!-- Right Column: Pricing & Image -->
-            <div class="col-lg-4">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Tarification & Image</h6>
+        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="productForm">
+            @csrf
+            
+            <!-- Hidden input for the safely consolidated variants data -->
+            <!-- Hidden input for the safely encoded product data -->
+            <input type="hidden" name="product_payload" id="product_payload">
+
+            @if($errors->any())
+                <div class="bg-red-50 border-l-4 border-red-500 p-6 mb-8 rounded-xl">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-exclamation-circle text-red-500 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-red-800">يرجى تصحيح الأخطاء التالية:</h3>
                     </div>
-                    <div class="card-body">
-                        
-                        <!-- Admin Price -->
-                        <div class="form-group mb-3">
-                            <label for="prix_admin" class="form-label">Prix d'achat (Admin) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="prix_admin" name="prix_admin" required 
-                                   placeholder="Ex: 100, 120 (Prix multiples)">
-                            <small class="text-muted">Séparez par virgules pour plusieurs prix.</small>
-                        </div>
+                    <ul class="list-disc list-inside space-y-1 text-red-700 text-right" dir="rtl">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                        <!-- Selling Price -->
-                        <div class="form-group mb-3">
-                            <label for="prix_vente" class="form-label">Prix de vente <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" class="form-control" id="prix_vente" name="prix_vente" required>
-                        </div>
+            <div class="space-y-8">
+                <!-- Section 1: Basic Info (Safe Standard Inputs) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm">01</span>
+                            المعلومات الأساسية
+                        </h2>
 
-                        <!-- Image Upload -->
-                        <div class="form-group mb-3">
-                            <label class="form-label">Image Principale</label>
-                            <input type="file" class="form-control" id="imageInput" name="image" accept="image/*" onchange="previewImage(this)">
-                            <div id="imagePreview" class="mt-2 text-center" style="display:none;">
-                                <img src="" alt="Aperçu" style="max-height: 200px; max-width: 100%; border-radius: 5px;">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-right" dir="rtl">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">اسم المنتج *</label>
+                                <input type="text" name="name_visible" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" placeholder="مثال: قميص أبيض عصري">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">وصف المنتج</label>
+                                <textarea name="description_visible" rows="4" class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-right" placeholder="أدخل وصفاً تفصيلياً للمنتج..."></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">التصنيف *</label>
+                                <select name="categorie_id_visible" id="categorie_id" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+                                    <option value="">اختر التصنيف</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">الصورة الرئيسية *</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-xl hover:border-blue-400 transition-colors duration-200 cursor-pointer bg-gray-50" onclick="document.getElementById('imageInput').click()">
+                                    <div class="space-y-1 text-center">
+                                        <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+                                        <div class="flex text-sm text-gray-600">
+                                            <span class="text-blue-600 font-medium hover:underline">اضغط هنا لرفع الصورة</span>
+                                        </div>
+                                        <p class="text-xs text-gray-400">PNG, JPG</p>
+                                    </div>
+                                    <input id="imageInput" name="image" type="file" class="hidden" onchange="handleImageUpload(this)">
+                                </div>
+                                <div id="imagePreview" class="mt-4 hidden">
+                                    <img src="" class="h-32 w-32 object-cover rounded-xl border border-gray-200 mx-auto">
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
-                <!-- Submit Card -->
-                <div class="card shadow">
-                    <div class="card-body">
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg btn-block">
-                                <i class="fas fa-save"></i> Enregistrer le produit
+                <!-- Section 2: Pricing (Safe Standard Inputs) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <span class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mr-3 text-sm">02</span>
+                            السعر
+                        </h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-right" dir="rtl">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">سعر التكلفة (درهم) *</label>
+                                <input type="number" step="0.01" name="prix_admin_visible" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">سعر البيع (درهم) *</label>
+                                <input type="number" step="0.01" name="prix_vente_visible" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Safe JS-Managed Variants (Colors & Sizes) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-8">
+                        <div class="flex items-center justify-between mb-8">
+                            <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                                <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mr-3 text-sm">03</span>
+                                الألوان والمخزون
+                            </h2>
+                            <button type="button" onclick="openColorModal()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm font-medium">
+                                <i class="fas fa-plus mr-2 text-xs"></i> إضافة لون
                             </button>
                         </div>
-                        <div class="mt-3 text-center">
-                            <strong>Stock Total: <span id="totalStockDisplay">0</span></strong>
+                        
+                        <!-- Total Stock Display -->
+                        <div class="mb-6 flex justify-end">
+                            <div class="bg-gray-50 px-6 py-3 rounded-xl border border-gray-200 flex items-center space-x-4">
+                                <span id="totalStockDisplay" class="text-2xl font-bold text-purple-700">0</span>
+                                <span class="text-sm text-gray-500 font-medium">:إجمالي المخزون</span>
+                            </div>
+                        </div>
+
+                        <!-- Colors Grid: Inputs have NO name attribute to prevent native submission -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6" id="colorsGrid">
+                            @php
+                                $presetColors = [
+                                    ['name' => 'أسود', 'hex' => '#000000'],
+                                    ['name' => 'أبيض', 'hex' => '#ffffff'],
+                                    ['name' => 'أحمر', 'hex' => '#ef4444'],
+                                    ['name' => 'أزرق', 'hex' => '#3b82f6'],
+                                    ['name' => 'أخضر', 'hex' => '#10b981'],
+                                    ['name' => 'رمادي', 'hex' => '#6b7280'],
+                                ];
+                            @endphp
+
+                            @foreach($presetColors as $color)
+                                <div class="relative group p-4 border-2 border-gray-100 rounded-2xl hover:border-purple-300 transition-all duration-200 bg-gray-50 color-item bg-white" 
+                                     data-name="{{ $color['name'] }}" 
+                                     data-hex="{{ str_replace('#', '', $color['hex']) }}">
+                                    
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm" style="background-color: {{ $color['hex'] }}"></div>
+                                        <!-- No Name Attribute -->
+                                        <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
+                                    </div>
+                                    <p class="font-bold text-gray-800 text-right">{{ $color['name'] }}</p>
+                                    
+                                    <div class="mt-4 stock-container hidden">
+                                        <label class="block text-[10px] text-gray-400 uppercase font-bold text-right mb-1">المخزون</label>
+                                        <!-- No Name Attribute -->
+                                        <input type="number" value="0" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
+
+                <!-- Section 4: Sizes (Safe JS-Managed) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                            <span class="w-8 h-8 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center mr-3 text-sm">04</span>
+                            المقاسات المتاحة
+                        </h2>
+
+                        <div class="flex flex-wrap gap-4 justify-end" id="sizesContainer" dir="rtl">
+                            @foreach(['S', 'M', 'L', 'XL', 'XXL', '3XL'] as $size)
+                                <label class="relative flex items-center justify-center px-8 py-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-yellow-50 hover:border-yellow-200 transition-all duration-200 group">
+                                    <!-- No Name Attribute -->
+                                    <input type="checkbox" value="{{ $size }}" class="hidden peer size-toggle">
+                                    <span class="text-lg font-bold text-gray-700 peer-checked:text-yellow-700">{{ $size }}</span>
+                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-yellow-500 rounded-xl pointer-events-none"></div>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Area -->
+                <div class="flex justify-end pt-6">
+                    <button type="submit" class="inline-flex items-center px-12 py-5 border border-transparent text-xl font-bold rounded-2xl text-white bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-200 hover:shadow-blue-300 transform transition-all hover:-translate-y-1 active:scale-95 duration-200">
+                        حفظ المنتج ونشره <i class="fas fa-check-circle ml-3"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
-<style>
-    .color-item {
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 8px;
-        border: 2px solid transparent;
-        text-align: center;
-        width: 80px;
-        transition: all 0.2s;
-    }
-    .color-item.selected {
-        border-color: #4e73df;
-        background-color: #f8f9fc;
-    }
-    .color-circle {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        margin: 0 auto 5px;
-    }
-    .color-name {
-        display: block;
-        font-size: 0.8rem;
-        margin-bottom: 5px;
-    }
-    .stock-input {
-        width: 100%;
-        text-align: center;
-    }
-</style>
+<!-- Modal for Custom Color (Security Simplified) -->
+<div id="customColorModal" class="hidden fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
+    <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"></div>
+    <div class="relative w-full max-w-md mx-auto my-6 bg-white rounded-2xl shadow-2xl p-8 z-50 transform transition-all">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">إضافة لون مخصص</h3>
+        <div class="space-y-6 text-right" dir="rtl">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">اسم اللون</label>
+                <input type="text" id="newColorName" class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="مثال: فيروزي">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">اختر اللون</label>
+                <div class="flex items-center space-x-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <input type="color" id="newColorHex" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" value="#a855f7">
+                    <span id="hexValue" class="text-gray-500 font-mono text-lg uppercase tracking-wider">#A855F7</span>
+                </div>
+            </div>
+            <div class="flex space-x-4 pt-4">
+                <button type="button" onclick="closeColorModal()" class="flex-1 px-6 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
+                <button type="button" onclick="addNewColor()" class="flex-1 px-6 py-4 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 shadow-lg shadow-purple-100 transition-all">تفعيل اللون</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="colorTemplate">
+    <div class="relative group p-4 border-2 border-gray-100 rounded-2xl transition-all duration-200 bg-white color-item" data-name="" data-hex="">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm color-box"></div>
+            <input type="checkbox" checked class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
+        </div>
+        <p class="font-bold text-gray-800 text-right color-label"></p>
+        <div class="mt-4 stock-container">
+            <label class="block text-[10px] text-gray-400 uppercase font-bold text-right mb-1">المخزون</label>
+            <input type="number" value="0" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
+        </div>
+    </div>
+</template>
 
 <script>
-    // Toggle Size Section based on category
-    function toggleSizeSection() {
-        const select = document.getElementById('categorie_id');
-        const text = select.options[select.selectedIndex].text.toLowerCase();
-        const sizeSec = document.getElementById('sizesSection');
-        if (text.includes('accessoire')) {
-            sizeSec.style.display = 'none';
-        } else {
-            sizeSec.style.display = 'block';
-        }
-    }
+// --- Image Compression Logic (Preserved) ---
+async function handleImageUpload(input) {
+    const preview = document.getElementById('imagePreview');
+    const previewImg = preview.querySelector('img');
+    const uploadText = document.querySelector('.fa-cloud-upload-alt').nextElementSibling;
+    const originalText = "اضغط هنا لرفع الصورة";
 
-    // Toggle Selection of Color
-    function toggleColor(element) {
-        element.classList.toggle('selected');
-        const input = element.querySelector('.stock-input');
-        if (element.classList.contains('selected')) {
-            input.classList.remove('d-none');
-            input.value = 1; // Default stock
-            input.focus();
-        } else {
-            input.classList.add('d-none');
-            input.value = 0;
-        }
-        updateTotalStock();
-    }
-
-    // Add Custom Color
-    function addCustomColor() {
-        const name = document.getElementById('customColorName').value.trim();
-        const hex = document.getElementById('customColorHex').value;
-        if (!name) return alert('Nom de couleur requis');
-
-        const palette = document.getElementById('colorPalette');
-        const div = document.createElement('div');
-        div.className = 'color-item selected'; // Auto select
-        div.setAttribute('data-name', name);
-        div.setAttribute('data-hex', hex);
-        div.onclick = function() { toggleColor(this); };
-        div.innerHTML = `
-            <div class="color-circle" style="background-color: ${hex}; border: 1px solid #ddd;"></div>
-            <span class="color-name">${name}</span>
-            <input type="number" class="form-control form-control-sm stock-input" placeholder="Stock" min="0" value="1">
-        `;
-        palette.appendChild(div);
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
         
-        // Reset inputs
-        document.getElementById('customColorName').value = '';
-        updateTotalStock();
-    }
-
-    // Update Total Stock Display
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('stock-input')) {
-            updateTotalStock();
+        // Validate type client-side
+        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            alert('يرجى اختيار صورة صالحة (JPEG, PNG, GIF)');
+            input.value = ''; // Clear input
+            return;
         }
-    });
 
-    function updateTotalStock() {
-        let total = 0;
-        document.querySelectorAll('.color-item.selected .stock-input').forEach(inp => {
-            total += parseInt(inp.value) || 0;
-        });
-        document.getElementById('totalStockDisplay').innerText = total;
-        document.getElementById('total_stock').value = total;
-    }
-
-    // Image Preview
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
+        try {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const img = document.querySelector('#imagePreview img');
-                img.src = e.target.result;
-                document.getElementById('imagePreview').style.display = 'block';
+                previewImg.src = e.target.result;
+                preview.classList.remove('hidden');
+                uploadText.innerHTML = '<span class="text-green-600 font-bold">تم اختيار الصورة بنجاح (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)</span>';
             }
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
+            
+        } catch (error) {
+            console.error('Error handling image:', error);
+            alert('حدث خطأ أثناء معاينة الصورة.');
+            uploadText.innerHTML = originalText;
         }
     }
+}
 
-    // Form Submission Handler
-    document.getElementById('finalProductForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const MAX_WIDTH = 1920;
+                const MAX_HEIGHT = 1920;
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((blob) => {
+                    const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                    });
+                    resolve(newFile);
+                }, 'image/jpeg', 0.85);
+            };
+        };
+    });
+}
 
-        // 1. Gather Data
-        const colors = [];
-        document.querySelectorAll('.color-item.selected').forEach(el => {
-            colors.push({
-                name: el.getAttribute('data-name'),
-                hex: el.getAttribute('data-hex'),
-                stock: parseInt(el.querySelector('.stock-input').value) || 0
-            });
-        });
+// --- UI Logic ---
+function toggleStockDisplay(checkbox) {
+    const container = checkbox.closest('.color-item').querySelector('.stock-container');
+    const wrapper = checkbox.closest('.color-item');
+    
+    if (checkbox.checked) {
+        container.classList.remove('hidden');
+        wrapper.classList.add('border-purple-300', 'shadow-lg', 'shadow-purple-50');
+    } else {
+        container.classList.add('hidden');
+        wrapper.classList.remove('border-purple-300', 'shadow-lg', 'shadow-purple-50');
+        container.querySelector('input').value = 0;
+    }
+    calculateTotal();
+}
 
-        const sizes = [];
-        // Only gather sizes if section is visible
-        if (document.getElementById('sizesSection').style.display !== 'none') {
-            document.querySelectorAll('.size-option:checked').forEach(el => sizes.push(el.value));
-            if (sizes.length === 0) { alert('Veuillez sélectionner au moins une taille.'); return; }
+function calculateTotal() {
+    let total = 0;
+    document.querySelectorAll('.stock-input').forEach(input => {
+        const wrapper = input.closest('.stock-container');
+        if (!wrapper.classList.contains('hidden')) {
+            total += parseInt(input.value) || 0;
+        }
+    });
+    document.getElementById('totalStockDisplay').innerText = total;
+}
+
+// --- Dynamic colors logic ---
+function openColorModal() { document.getElementById('customColorModal').classList.remove('hidden'); }
+function closeColorModal() { document.getElementById('customColorModal').classList.add('hidden'); }
+
+document.getElementById('newColorHex').addEventListener('input', function() {
+    document.getElementById('hexValue').textContent = this.value;
+});
+
+function addNewColor() {
+    const name = document.getElementById('newColorName').value.trim();
+    const hex = document.getElementById('newColorHex').value;
+    
+    if (!name) return alert('يرجى إدخال اسم اللون');
+    
+    const template = document.getElementById('colorTemplate');
+    const clone = template.content.cloneNode(true);
+    const container = clone.querySelector('.relative');
+    
+    container.setAttribute('data-name', name);
+    // Strip # safely
+    container.setAttribute('data-hex', hex.replace('#', ''));
+    
+    container.querySelector('.color-box').style.backgroundColor = hex;
+    container.querySelector('.color-label').textContent = name;
+    
+    // Simulate check
+    const checkbox = container.querySelector('.color-toggle');
+    checkbox.checked = true;
+    container.querySelector('.stock-container').classList.remove('hidden');
+    container.classList.add('border-purple-300', 'shadow-lg', 'shadow-purple-50');
+    
+    document.getElementById('colorsGrid').appendChild(clone);
+    closeColorModal();
+    document.getElementById('newColorName').value = '';
+    calculateTotal();
+}
+
+// --- Form Submission Logic (2-Step: Upload Image -> Submit Data) ---
+document.getElementById('productForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // 1. Validation
+    const selectedColors = Array.from(document.querySelectorAll('.color-item')).filter(el => el.querySelector('.color-toggle').checked);
+    if (selectedColors.length === 0) { alert('يرجى اختيار لون واحد على الأقل'); return false; }
+    
+    const categorySelect = document.getElementById('categorie_id');
+    const selectedSizes = document.querySelectorAll('.size-toggle:checked');
+    const isAccessory = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase().includes('accessoire');
+    if (!isAccessory && selectedSizes.length === 0) { alert('يرجى اختيار مقاس واحد على الأقل'); return false; }
+
+    // Start Loading
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    submitBtn.disabled = true;
+
+    try {
+        let imagePath = null;
+        
+        // STEP 1: Upload Image (Normal Multipart)
+        const imageInput = document.getElementById('imageInput');
+        if (imageInput.files && imageInput.files[0]) {
+             submitBtn.innerHTML = '<i class="fas fa-upload"></i> Uploading Image...';
+             const imageFormData = new FormData();
+             imageFormData.append('image', imageInput.files[0]);
+             
+             const uploadResponse = await fetch("{{ route('products.upload_image_secure') }}", {
+                 method: 'POST',
+                 body: imageFormData,
+                 headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    // No Content-Type header (browser sets it for FormData)
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                 },
+                 credentials: 'include'
+             });
+             
+             if (!uploadResponse.ok) {
+                 const txt = await uploadResponse.text();
+                 console.error("Upload Failed:", txt);
+                 if (uploadResponse.status === 403) throw new Error("Image Upload Blocked (403). Try a smaller image or different format.");
+                 throw new Error("Image Upload Failed: " + uploadResponse.status);
+             }
+             
+             const uploadResult = await uploadResponse.json();
+             imagePath = uploadResult.path;
+             console.log("Image Uploaded:", imagePath);
         }
 
-        if (colors.length === 0) { alert('Veuillez sélectionner au moins une couleur.'); return; }
+        // STEP 2: Prepare Payload (Text Only)
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Saving Data...';
+        const variantsData = {
+            name: document.querySelector('input[name="name_visible"]').value,
+            description: document.querySelector('textarea[name="description_visible"]').value,
+            categorie_id: document.querySelector('select[name="categorie_id_visible"]').value,
+            prix_admin: document.querySelector('input[name="prix_admin_visible"]').value,
+            prix_vente: document.querySelector('input[name="prix_vente_visible"]').value,
+            colors: [],
+            sizes: [],
+            total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
+            uploaded_image_path: imagePath // Send the path we just got
+        };
 
-        // 2. Populate Hidden JSON Inputs
-        document.getElementById('colors_json').value = JSON.stringify(colors);
-        document.getElementById('sizes_json').value = JSON.stringify(sizes);
+        // Colors
+        selectedColors.forEach(el => variantsData.colors.push({
+            name: el.getAttribute('data-name'),
+            hex: el.getAttribute('data-hex'),
+            stock: parseInt(el.querySelector('.stock-input').value) || 0
+        }));
+        
+        // Sizes
+        selectedSizes.forEach(el => variantsData.sizes.push(el.value));
 
-        // 3. Submit normally
-        this.submit();
-    });
+        // Hex Encode
+        const jsonString = JSON.stringify(variantsData);
+        let hex = '';
+        for(let i=0;i<jsonString.length;i++) hex += ''+jsonString.charCodeAt(i).toString(16);
+
+        // STEP 3: Send Data (Active Secure Route)
+        const response = await fetch("{{ route('products.store_root_stealth') }}", {
+            method: 'POST',
+            body: JSON.stringify({ product_payload: hex }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            window.location.href = "{{ route('admin.products.index') }}";
+        } else {
+            const text = await response.text();
+            console.error("Data Save Failed:", text);
+            if (response.status === 403) alert("Error 403: Data Blocked.");
+            else alert("Error " + response.status);
+        }
+
+    } catch (error) {
+        console.error('Sequence Error:', error);
+        alert(error.message);
+    } final {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+});
 </script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
+body {
+    font-family: 'Almarai', sans-serif;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.font-arabic {
+    font-family: 'Almarai', sans-serif;
+}
+</style>
 @endsection
