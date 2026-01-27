@@ -106,9 +106,9 @@ class ProductController extends Controller
 
     public function createModern()
     {
-        $categories = \App\Models\Category::all();
-        return view('admin.products.create-modern', compact('categories'));
+        return 'createModern method reached in controller';
     }
+
 
     public function store(Request $request)
     {
