@@ -26,10 +26,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Products CRUD - Using modern forms as default
     Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
-    Route::get('/products/create', [AdminProductController::class, 'createModern'])->name('products.create');
+    Route::get('/products/create-new', [AdminProductController::class, 'createModern'])->name('products.createModern');
     Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}', [AdminProductController::class, 'show'])->name('products.show');
-    Route::get('/products/{product}/edit', [AdminProductController::class, 'editModern'])->name('products.edit');
+    Route::get('/products/{product}/edit', [AdminProductController::class, 'editModern'])->name('products.editModern');
     Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
     Route::get('/products/{product}/assign', [AdminProductController::class, 'assignForm'])->name('products.assign');
