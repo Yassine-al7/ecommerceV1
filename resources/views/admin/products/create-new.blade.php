@@ -382,89 +382,74 @@ function addNewColor() {
     calculateTotal();
 }
 
-// --- Form Submission Logic (AJAX with Diagnostics) ---
+// --- Form Submission Logic (Pure JSON / No Multipart) ---
 document.getElementById('productForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    // 1. Validate Colors
-    const selectedColors = Array.from(document.querySelectorAll('.color-item'))
-        .filter(el => el.querySelector('.color-toggle').checked);
-        
-    if (selectedColors.length === 0) {
-        alert('يرجى اختيار لون واحد على الأقل');
-        return false;
-    }
+    // 1. Validation
+    const selectedColors = Array.from(document.querySelectorAll('.color-item')).filter(el => el.querySelector('.color-toggle').checked);
+    if (selectedColors.length === 0) { alert('يرجى اختيار لون واحد على الأقل'); return false; }
     
-    // 2. Validate Sizes
     const categorySelect = document.getElementById('categorie_id');
-    const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
-    const isAccessory = selectedCategory && selectedCategory.text.toLowerCase().includes('accessoire');
     const selectedSizes = document.querySelectorAll('.size-toggle:checked');
-    
-    if (!isAccessory && selectedSizes.length === 0) {
-        alert('يرجى اختيار مقاس واحد على الأقل');
-        return false;
-    }
-    
-    // Show Loading State
+    const isAccessory = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase().includes('accessoire');
+    if (!isAccessory && selectedSizes.length === 0) { alert('يرجى اختيار مقاس واحد على الأقل'); return false; }
+
+    // Start Loading
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
     submitBtn.disabled = true;
 
     try {
-        // 3. Construct Payload
+        // 2. Prepare Data Object
         const variantsData = {
-            colors: [],
-            sizes: [],
-            total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
-            // Gather text fields inside payload to hide from WAF
             name: document.querySelector('input[name="name_visible"]').value,
             description: document.querySelector('textarea[name="description_visible"]').value,
             categorie_id: document.querySelector('select[name="categorie_id_visible"]').value,
             prix_admin: document.querySelector('input[name="prix_admin_visible"]').value,
-            prix_vente: document.querySelector('input[name="prix_vente_visible"]').value
+            prix_vente: document.querySelector('input[name="prix_vente_visible"]').value,
+            colors: [],
+            sizes: [],
+            total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
+            image_base64: null // Placeholder
         };
 
-        selectedColors.forEach(el => {
-            variantsData.colors.push({
-                name: el.getAttribute('data-name'),
-                hex: el.getAttribute('data-hex'),
-                stock: parseInt(el.querySelector('.stock-input').value) || 0
-            });
-        });
+        // Colors
+        selectedColors.forEach(el => variantsData.colors.push({
+            name: el.getAttribute('data-name'),
+            hex: el.getAttribute('data-hex'),
+            stock: parseInt(el.querySelector('.stock-input').value) || 0
+        }));
 
+        // Sizes
         selectedSizes.forEach(el => variantsData.sizes.push(el.value));
 
-        // Hex Encode
+        // 3. Handle Image (Base64 Encode)
+        const imageInput = document.getElementById('imageInput');
+        if (imageInput.files && imageInput.files[0]) {
+            const file = imageInput.files[0];
+            variantsData.image_base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 4. Hex Encode the ENTIRE payload
         const jsonString = JSON.stringify(variantsData);
         let hex = '';
         for(let i=0;i<jsonString.length;i++) {
             hex += ''+jsonString.charCodeAt(i).toString(16);
         }
-        document.getElementById('product_payload').value = hex;
 
-        // 4. Prepare FormData
-        const formData = new FormData(this);
-        
-        // Remove "visible" fields from FormData
-        formData.delete('name_visible');
-        formData.delete('description_visible');
-        formData.delete('categorie_id_visible');
-        formData.delete('prix_admin_visible');
-        formData.delete('prix_vente_visible');
-
-        // DEBUG: Remove image to see if it's the trigger for 403
-        if (formData.has('image')) {
-            console.log("Removing image from payload for debugging 403...");
-            formData.delete('image');
-        }
-
-        // 5. Send Request
+        // 5. Send as Standard JSON (Bypasses Multipart WAF Rules)
         const response = await fetch(this.action, {
             method: 'POST',
-            body: formData,
+            body: JSON.stringify({ product_payload: hex }),
             headers: {
+                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -472,39 +457,15 @@ document.getElementById('productForm').addEventListener('submit', async function
         });
 
         // 6. Handle Response
-        const contentType = response.headers.get("content-type");
         if (response.ok) {
             window.location.href = "{{ route('admin.products.index') }}";
         } else {
-            // Error Handling
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const data = await response.json();
-                if (data.errors) {
-                    let msg = "Validation Error:\n";
-                    for (let key in data.errors) msg += data.errors[key].join("\n") + "\n";
-                    alert(msg);
-                } else {
-                    alert('Error: ' + (data.message || 'Unknown error'));
-                }
-            } else {
-                // Non-JSON Error (Likely WAF or Server Error)
-                const text = await response.text();
-                console.error("Server Error Response:", text);
-                
-                // Diagnostic Alert
-                if (response.status === 403) {
-                    if (text.includes("admin")) { 
-                        alert("Error 403 (App): You are not authorized as Admin.");
-                    } else if (text.includes("ModSecurity") || text.includes("Firewall") || text.includes("Forbidden")) {
-                        alert("Error 403 (WAF): The server firewall blocked the request.\nTip: Try removing special characters from description.");
-                    } else {
-                        alert("Error 403: Forbidden.\nCheck console for details.");
-                    }
-                } else {
-                    alert(`Error ${response.status}: An unexpected error occurred.`);
-                }
-            }
+            const text = await response.text();
+            console.error("Server Error:", text);
+            if (response.status === 403) alert("Error 403: WAF/Firewall ignored the request. Check console.");
+            else alert("Error " + response.status + ": See console.");
         }
+
     } catch (error) {
         console.error('Submission error:', error);
         alert('Submission failed: ' + error.message);

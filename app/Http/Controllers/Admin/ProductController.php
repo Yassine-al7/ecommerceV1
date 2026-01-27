@@ -127,17 +127,14 @@ class ProductController extends Controller
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
 
         // Parse the HEX-encoded payload
-        // This input contains the JSON string encoded in hexadecimal to bypass WAF filters
         $hexPayload = $request->input('product_payload');
         
         $variantsData = [];
         if ($hexPayload && ctype_xdigit($hexPayload)) {
             try {
-                $jsonString = hex2bin($hexPayload);
-                $variantsData = json_decode($jsonString, true) ?? [];
+                $variantsData = json_decode(hex2bin($hexPayload), true) ?? [];
                 
                 // HYDRATE REQUEST FROM PAYLOAD
-                // This is critical because the actual form inputs were renamed to '_visible' to avoid WAF
                 $request->merge([
                     'name' => $variantsData['name'] ?? null,
                     'description' => $variantsData['description'] ?? null,
@@ -148,7 +145,6 @@ class ProductController extends Controller
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to decode product HEX payload: ' . $e->getMessage());
-                $variantsData = [];
             }
         }
         
@@ -156,7 +152,7 @@ class ProductController extends Controller
         $sizesFromJson = $variantsData['sizes'] ?? [];
         $totalStockFromJson = $variantsData['total_stock'] ?? 0;
         
-        // Add minimal validation here since we are bypassing standard flow
+        // Add minimal validation
         $request->validate([
              'name' => 'required|string',
              'categorie_id' => 'required',
@@ -166,7 +162,6 @@ class ProductController extends Controller
 
         foreach ($colorsFromJson as $vColor) {
             $name = $vColor['name'];
-            // Add # back if missing (Hex encoding preserves exact string, but frontend might strip it for display)
             $hexRaw = $vColor['hex'];
             $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
             $stock = $vColor['stock'];
@@ -187,9 +182,6 @@ class ProductController extends Controller
         $data['quantite_stock'] = $totalStockFromJson;
         $data['tailles'] = $sizesFromJson;
 
-        // (Sizes logic handled above via $data['tailles'] = $sizesFromJson)
-
-
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
 
         // Traiter les prix multiples pour prix_admin
@@ -198,13 +190,10 @@ class ProductController extends Controller
 
         // Handle both numeric and string inputs
         if (is_numeric($prixAdminInput)) {
-            // Single numeric value from form
             $prixAdminArray = [(float) $prixAdminInput];
         } else {
-            // String with multiple prices - parse them
-            $prixCleaned = preg_replace('/[^\d,.\s-]/', '', $prixAdminInput); // Garder seulement chiffres, virgules, points, espaces, tirets
-            $prixParts = preg_split('/[,;|\s-]+/', $prixCleaned); // Séparer par virgules, points-virgules, pipes, espaces, ou tirets
-
+            $prixCleaned = preg_replace('/[^\d,.\s-]/', '', $prixAdminInput);
+            $prixParts = preg_split('/[,;|\s-]+/', $prixCleaned);
             foreach ($prixParts as $prix) {
                 $prix = trim($prix);
                 if (is_numeric($prix) && $prix > 0) {
@@ -213,24 +202,40 @@ class ProductController extends Controller
             }
         }
 
-        // Si aucun prix valide trouvé, utiliser le prix de vente
         if (empty($prixAdminArray)) {
             $prixAdminArray = [(float) $data['prix_vente']];
         }
 
-        // Calculer le prix moyen pour l'assignation aux vendeurs
         $prixAdminMoyen = array_sum($prixAdminArray) / count($prixAdminArray);
-
-        // Stocker les prix multiples en JSON
         $data['prix_admin'] = json_encode($prixAdminArray);
-        $data['prix_admin_moyen'] = $prixAdminMoyen; // Prix moyen pour les assignations
+        $data['prix_admin_moyen'] = $prixAdminMoyen;
 
-        // Gérer l'upload d'image principale
-        if ($request->hasFile('image')) {
+        // Gérer l'upload d'image (Base64)
+        if (!empty($variantsData['image_base64'])) {
+            $base64Image = $variantsData['image_base64'];
+            // remove data:image/xxx;base64,
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+                $type = strtolower($type[1]); // jpg, png, gif
+                
+                if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                    throw new \Exception('Invalid image type');
+                }
+                
+                $base64Image = base64_decode($base64Image);
+                if ($base64Image === false) {
+                    throw new \Exception('Base64 decode failed');
+                }
+
+                $imageName = 'products/' . \Illuminate\Support\Str::random(40) . '.' . $type;
+                \Illuminate\Support\Facades\Storage::disk('public')->put($imageName, $base64Image);
+                $data['image'] = '/storage/' . $imageName;
+            }
+        } elseif ($request->hasFile('image')) {
+            // Fallback for standard multipart
             $imagePath = $request->file('image')->store('products', 'public');
             $data['image'] = '/storage/' . $imagePath;
         } else {
-            // Si aucune image n'est fournie, laisser null pour afficher le placeholder
             $data['image'] = null;
         }
 
