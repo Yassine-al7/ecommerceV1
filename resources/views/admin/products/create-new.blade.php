@@ -71,7 +71,7 @@
                                         </div>
                                         <p class="text-xs text-gray-400">PNG, JPG حتى 5MB</p>
                                     </div>
-                                    <input id="imageInput" name="image" type="file" class="hidden" onchange="previewMainImage(this)">
+                                    <input id="imageInput" name="image" type="file" class="hidden" onchange="handleImageUpload(this)">
                                 </div>
                                 <div id="imagePreview" class="mt-4 hidden">
                                     <img src="" class="h-32 w-32 object-cover rounded-xl border border-gray-200 mx-auto">
@@ -227,17 +227,103 @@
 </template>
 
 <script>
-function previewMainImage(input) {
+async function handleImageUpload(input) {
     const preview = document.getElementById('imagePreview');
     const previewImg = preview.querySelector('img');
+    const uploadText = document.querySelector('.fa-cloud-upload-alt').nextElementSibling; // Get the text element
+    const originalText = uploadText.innerHTML;
+
     if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewImg.src = e.target.result;
-            preview.classList.remove('hidden');
+        let file = input.files[0];
+        
+        // Show loading state
+        uploadText.innerHTML = '<span class="text-blue-600 animate-pulse">جاري معالجة الصورة...</span>';
+        
+        try {
+            // Compress if image is larger than 1MB to save bandwidth/storage and ensure fast uploads
+            if (file.size > 1024 * 1024) {
+                console.log('Compressing image...', ((file.size / 1024) / 1024).toFixed(2) + ' MB');
+                file = await compressImage(file);
+                console.log('Compressed to:', ((file.size / 1024) / 1024).toFixed(2) + ' MB');
+                
+                // Replace the file in the input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+            }
+
+            // Preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.classList.remove('hidden');
+                uploadText.innerHTML = '<span class="text-green-600 font-bold">تم اختيار الصورة بنجاح</span>';
+            }
+            reader.readAsDataURL(file);
+            
+        } catch (error) {
+            console.error('Error handling image:', error);
+            alert('حدث خطأ أثناء معالجة الصورة. يرجى المحاولة مرة أخرى.');
+            uploadText.innerHTML = originalText;
         }
-        reader.readAsDataURL(input.files[0]);
     }
+}
+
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Max dimensions (Full HD is usually enough)
+                const MAX_WIDTH = 1920;
+                const MAX_HEIGHT = 1920;
+                let width = img.width;
+                let height = img.height;
+                
+                // Maintain aspect ratio
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw white background (for transparent PNGs converted to JPEG)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Compress to JPEG with 85% quality
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        reject(new Error('Canvas is empty'));
+                        return;
+                    }
+                    const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                    });
+                    resolve(newFile);
+                }, 'image/jpeg', 0.85);
+            };
+            img.onerror = (error) => reject(error);
+        };
+        reader.onerror = (error) => reject(error);
+    });
 }
 
 function toggleStockDisplay(checkbox) {

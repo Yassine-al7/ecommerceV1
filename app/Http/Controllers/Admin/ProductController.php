@@ -139,7 +139,7 @@ class ProductController extends Controller
             'couleurs_hex' => 'array',
             'hidden_colors' => 'nullable|array',
             'tailles' => $isAccessoire ? 'nullable|array' : 'required|array|min:1',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:20480', // Augmenté à 20MB pour sécurité
             'categorie_id' => 'required|exists:categories,id',
             'prix_admin' => 'required|numeric|min:0', // Changed to numeric to match form input type
             'prix_vente' => 'required|numeric|min:0', // Added missing validation
@@ -371,7 +371,7 @@ class ProductController extends Controller
             'couleurs' => 'required|array|min:1',
             'couleurs_hex' => 'array',
             'hidden_colors' => 'nullable|array',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:20480', // Augmenté à 20MB pour sécurité
             'categorie_id' => 'required|exists:categories,id',
             'prix_admin' => 'required|string|min:1|regex:/^[\d\s,.-]+$/', // Accepte nombres, virgules, espaces, points, tirets
             'prix_vente' => 'required|numeric|min:0',
