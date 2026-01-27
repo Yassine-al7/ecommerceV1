@@ -173,7 +173,7 @@
                         </h2>
 
                         <div class="flex flex-wrap gap-4 justify-end" id="sizesContainer" dir="rtl">
-                            @foreach(['S', 'M', 'L', 'XL', 'XXL', '3XL'] as $size)
+                            @foreach(['S', 'M', 'L', 'XL', 'XXL', '3XL', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'] as $size)
                                 <label class="relative flex items-center justify-center px-8 py-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-yellow-50 hover:border-yellow-200 transition-all duration-200 group">
                                     <!-- No Name Attribute -->
                                     <input type="checkbox" value="{{ $size }}" class="hidden peer size-toggle">
@@ -382,117 +382,131 @@ function addNewColor() {
     calculateTotal();
 }
 
+
 // --- Form Submission Logic (2-Step: Upload Image -> Submit Data) ---
-document.getElementById('productForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 Secure Product Form v2.1 Loaded");
     
-    // 1. Validation
-    const selectedColors = Array.from(document.querySelectorAll('.color-item')).filter(el => el.querySelector('.color-toggle').checked);
-    if (selectedColors.length === 0) { alert('يرجى اختيار لون واحد على الأقل'); return false; }
-    
-    const categorySelect = document.getElementById('categorie_id');
-    const selectedSizes = document.querySelectorAll('.size-toggle:checked');
-    const isAccessory = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase().includes('accessoire');
-    if (!isAccessory && selectedSizes.length === 0) { alert('يرجى اختيار مقاس واحد على الأقل'); return false; }
+    // Explicitly re-attach listener to be safe
+    const form = document.getElementById('productForm');
+    if(form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log("🚀 Intercepting Form Submission...");
+            
+            // 1. Validation
+            const selectedColors = Array.from(document.querySelectorAll('.color-item')).filter(el => el.querySelector('.color-toggle').checked);
+            if (selectedColors.length === 0) { alert('يرجى اختيار لون واحد على الأقل'); return false; }
+            
+            const categorySelect = document.getElementById('categorie_id');
+            const selectedSizes = document.querySelectorAll('.size-toggle:checked');
+            const isAccessory = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase().includes('accessoire');
+            if (!isAccessory && selectedSizes.length === 0) { alert('يرجى اختيار مقاس واحد على الأقل'); return false; }
 
-    // Start Loading
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-    submitBtn.disabled = true;
+            // Start Loading
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            submitBtn.disabled = true;
 
-    try {
-        let imagePath = null;
-        
-        // STEP 1: Upload Image (Normal Multipart)
-        const imageInput = document.getElementById('imageInput');
-        if (imageInput.files && imageInput.files[0]) {
-             submitBtn.innerHTML = '<i class="fas fa-upload"></i> Uploading Image...';
-             const imageFormData = new FormData();
-             imageFormData.append('image', imageInput.files[0]);
-             
-             const uploadResponse = await fetch("{{ route('products.upload_image_secure') }}", {
-                 method: 'POST',
-                 body: imageFormData,
-                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    // No Content-Type header (browser sets it for FormData)
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                 },
-                 credentials: 'include'
-             });
-             
-             if (!uploadResponse.ok) {
-                 const txt = await uploadResponse.text();
-                 console.error("Upload Failed:", txt);
-                 if (uploadResponse.status === 403) throw new Error("Image Upload Blocked (403). Try a smaller image or different format.");
-                 throw new Error("Image Upload Failed: " + uploadResponse.status);
-             }
-             
-             const uploadResult = await uploadResponse.json();
-             imagePath = uploadResult.path;
-             console.log("Image Uploaded:", imagePath);
-        }
+            try {
+                let imagePath = null;
+                
+                // STEP 1: Upload Image (Normal Multipart)
+                const imageInput = document.getElementById('imageInput');
+                if (imageInput.files && imageInput.files[0]) {
+                     submitBtn.innerHTML = '<i class="fas fa-upload"></i> Uploading Image...';
+                     const imageFormData = new FormData();
+                     imageFormData.append('image', imageInput.files[0]);
+                     
+                     const uploadResponse = await fetch("{{ route('products.upload_image_secure') }}", {
+                         method: 'POST',
+                         body: imageFormData,
+                         headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            // No Content-Type header (browser sets it for FormData)
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                         },
+                         credentials: 'include'
+                     });
+                     
+                     if (!uploadResponse.ok) {
+                         const txt = await uploadResponse.text();
+                         console.error("Upload Failed:", txt);
+                         if (uploadResponse.status === 403) throw new Error("Image Upload Blocked (403). The server rejected the image upload.");
+                         throw new Error("Image Upload Failed: " + uploadResponse.status);
+                     }
+                     
+                     const uploadResult = await uploadResponse.json();
+                     imagePath = uploadResult.path;
+                     console.log("Image Uploaded:", imagePath);
+                }
 
-        // STEP 2: Prepare Payload (Text Only)
-        submitBtn.innerHTML = '<i class="fas fa-save"></i> Saving Data...';
-        const variantsData = {
-            name: document.querySelector('input[name="name_visible"]').value,
-            description: document.querySelector('textarea[name="description_visible"]').value,
-            categorie_id: document.querySelector('select[name="categorie_id_visible"]').value,
-            prix_admin: document.querySelector('input[name="prix_admin_visible"]').value,
-            prix_vente: document.querySelector('input[name="prix_vente_visible"]').value,
-            colors: [],
-            sizes: [],
-            total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
-            uploaded_image_path: imagePath // Send the path we just got
-        };
+                form.querySelector('input[name="product_payload"]').value = "processing"; // Prevent Native submission if somethng fails
 
-        // Colors
-        selectedColors.forEach(el => variantsData.colors.push({
-            name: el.getAttribute('data-name'),
-            hex: el.getAttribute('data-hex'),
-            stock: parseInt(el.querySelector('.stock-input').value) || 0
-        }));
-        
-        // Sizes
-        selectedSizes.forEach(el => variantsData.sizes.push(el.value));
+                // STEP 2: Prepare Payload (Text Only)
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Saving Data...';
+                const variantsData = {
+                    name: document.querySelector('input[name="name_visible"]').value,
+                    description: document.querySelector('textarea[name="description_visible"]').value,
+                    categorie_id: document.querySelector('select[name="categorie_id_visible"]').value,
+                    prix_admin: document.querySelector('input[name="prix_admin_visible"]').value,
+                    prix_vente: document.querySelector('input[name="prix_vente_visible"]').value,
+                    colors: [],
+                    sizes: [],
+                    total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
+                    uploaded_image_path: imagePath // Send the path we just got
+                };
 
-        // Hex Encode
-        const jsonString = JSON.stringify(variantsData);
-        let hex = '';
-        for(let i=0;i<jsonString.length;i++) hex += ''+jsonString.charCodeAt(i).toString(16);
+                // Colors
+                selectedColors.forEach(el => variantsData.colors.push({
+                    name: el.getAttribute('data-name'),
+                    hex: el.getAttribute('data-hex'),
+                    stock: parseInt(el.querySelector('.stock-input').value) || 0
+                }));
+                
+                // Sizes
+                selectedSizes.forEach(el => variantsData.sizes.push(el.value));
 
-        // STEP 3: Send Data (Active Secure Route)
-        const response = await fetch("{{ route('products.store_root_stealth') }}", {
-            method: 'POST',
-            body: JSON.stringify({ product_payload: hex }),
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            credentials: 'include'
+                // Hex Encode (Stealth Mode)
+                const jsonString = JSON.stringify(variantsData);
+                let hex = '';
+                for(let i=0;i<jsonString.length;i++) hex += ''+jsonString.charCodeAt(i).toString(16);
+
+                // STEP 3: Send Data (Active Secure Route)
+                console.log("Sending Payload to {{ route('products.store_root_stealth') }}");
+                const response = await fetch("{{ route('products.store_root_stealth') }}", {
+                    method: 'POST',
+                    body: JSON.stringify({ product_payload: hex }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    window.location.href = "{{ route('admin.products.index') }}";
+                } else {
+                    const text = await response.text();
+                    console.error("Data Save Failed:", text);
+                    if (response.status === 403) alert("Error 403: Data Blocked.");
+                    else alert("Error " + response.status + ": " + text.substring(0, 100));
+                }
+
+            } catch (error) {
+                console.error('Sequence Error:', error);
+                alert(error.message);
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         });
-
-        if (response.ok) {
-            window.location.href = "{{ route('admin.products.index') }}";
-        } else {
-            const text = await response.text();
-            console.error("Data Save Failed:", text);
-            if (response.status === 403) alert("Error 403: Data Blocked.");
-            else alert("Error " + response.status);
-        }
-
-    } catch (error) {
-        console.error('Sequence Error:', error);
-        alert(error.message);
-    } finally {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
     }
 });
+
 </script>
 
 <style>
