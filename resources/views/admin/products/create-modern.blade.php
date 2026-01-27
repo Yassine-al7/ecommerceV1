@@ -884,22 +884,8 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleTaillesSection();
     }
 
-    // Validation du formulaire
-    const form = document.getElementById('productForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const selectedColors = document.querySelectorAll('input[name="couleurs[]"]:checked');
-
-            if (selectedColors.length === 0) {
-                e.preventDefault();
-                alert('من فضلك حدد لونًا واحدًا على الأقل');
-                return;
-            }
-
-            console.log('Formulaire soumis avec succès');
-        });
-    }
-
+    // Validation du formulaire (Gérée par validateProductForm via onsubmit)
+    
     // Initialiser les compteurs
     updateSelectedColorsCount();
 });
@@ -951,11 +937,8 @@ function validateProductForm() {
     
     // Debug: Afficher tous les éléments de couleur
     console.log('🔍 Debug des couleurs:');
-    console.log('- .color-item:', document.querySelectorAll('.color-item').length);
-    console.log('- .color-item.selected:', document.querySelectorAll('.color-item.selected').length);
-    console.log('- [data-selected="true"]:', document.querySelectorAll('[data-selected="true"]').length);
-    console.log('- .selected-color:', document.querySelectorAll('.selected-color').length);
-    console.log('- input[name^="couleurs"]:', document.querySelectorAll('input[name^="couleurs"]').length);
+    console.log('- .color-card:', document.querySelectorAll('.color-card').length);
+    console.log('- .color-card.selected:', document.querySelectorAll('.color-card.selected').length);
     console.log('- input[name^="couleurs"]:checked:', document.querySelectorAll('input[name^="couleurs"]:checked').length);
     const name = form.querySelector('input[name="name"]').value;
     const category = form.querySelector('select[name="categorie_id"]').value;

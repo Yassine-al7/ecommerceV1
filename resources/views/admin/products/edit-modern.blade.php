@@ -970,31 +970,8 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleTaillesSection();
     }
 
-    // Validation du formulaire
-    const form = document.getElementById('productForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const selectedColors = document.querySelectorAll('input[name="couleurs[]"]:checked');
-
-            if (selectedColors.length === 0) {
-                e.preventDefault();
-                alert('من فضلك حدد لونًا واحدًا على الأقل');
-                return;
-            }
-
-            // Ajouter les images supprimées au formulaire
-            if (removedImages.length > 0) {
-                const removedImagesInput = document.createElement('input');
-                removedImagesInput.type = 'hidden';
-                removedImagesInput.name = 'removed_images';
-                removedImagesInput.value = JSON.stringify(removedImages);
-                form.appendChild(removedImagesInput);
-            }
-
-            console.log('Formulaire soumis avec succès');
-        });
-    }
-
+    // Validation du formulaire (Gérée par validateProductForm via onsubmit)
+    
     // Initialiser les compteurs
     updateSelectedColorsCount();
     calculateTotalStock();
@@ -1116,6 +1093,15 @@ function validateProductForm() {
     if (selectedColors.length === 0) {
         alert('يرجى اختيار لون واحد على الأقل');
         return false;
+    }
+
+    // Ajouter les images supprimées au formulaire
+    if (typeof removedImages !== 'undefined' && removedImages.length > 0) {
+        const removedImagesInput = document.createElement('input');
+        removedImagesInput.type = 'hidden';
+        removedImagesInput.name = 'removed_images';
+        removedImagesInput.value = JSON.stringify(removedImages);
+        form.appendChild(removedImagesInput);
     }
 
     console.log('✅ Formulaire valide, soumission en cours...');
