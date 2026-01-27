@@ -19,7 +19,7 @@ class AdminController extends Controller
 
     public function create()
     {
-        return view('admin.admins.createModern');
+        return view('admin.admins.create');
     }
 
     public function store(Request $request)

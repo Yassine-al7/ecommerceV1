@@ -15,6 +15,23 @@ use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\AdminMessageController;
 use App\Http\Controllers\Admin\ColorStockController;
 
+// Debug route - REMOVE THIS AFTER DEBUGGING
+Route::get('/debug-admin', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['status' => 'Not authenticated']);
+    }
+    return response()->json([
+        'user_id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'role' => $user->role,
+        'isAdmin()' => $user->isAdmin(),
+        'role === admin' => $user->role === 'admin'
+    ]);
+})->middleware('web');
+
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/statistics', [App\Http\Controllers\Admin\StatisticsController::class, 'index'])->name('statistics.index');
