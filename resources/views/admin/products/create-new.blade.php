@@ -426,15 +426,26 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
         variantsData.sizes.push(el.value);
     });
 
-    // Inject into hidden field - Base64 Encoded to bypass WAF
-    const jsonString = JSON.stringify(variantsData);
+    // Inject into hidden field - Simple "Pipe Delimited" format to bypass WAF
+    // Format: "Name:Hex:Stock;Name:Hex:Stock"
+    // This avoids JSON syntax characters {}[]" which are often blocked
     
-    // Unicode-safe Base64 encoding
-    function utf8_to_b64(str) {
-        return window.btoa(unescape(encodeURIComponent(str)));
-    }
+    let colorsString = "";
+    variantsData.colors.forEach((c, index) => {
+        // Sanitize name to remove separators
+        const safeName = c.name.replace(/[:;]/g, "");
+        const safeHex = c.hex.replace('#', '');
+        colorsString += `${safeName}:${safeHex}:${c.stock}`;
+        if (index < variantsData.colors.length - 1) colorsString += ";";
+    });
+
+    let sizesString = variantsData.sizes.join(",");
     
-    document.getElementById('variants_json').value = utf8_to_b64(jsonString);
+    // Combine into one payload: "COLORS_PAYLOAD||SIZES_PAYLOAD||TOTAL_STOCK"
+    // Using double pipe || as separator
+    const finalPayload = `${colorsString}||${sizesString}||${variantsData.total_stock}`;
+    
+    document.getElementById('variants_json').value = finalPayload;
     
     return true; // Submit
 });

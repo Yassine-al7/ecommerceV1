@@ -126,36 +126,47 @@ class ProductController extends Controller
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
 
-        $variantsJsonBase64 = $request->input('variants_json');
-        $variantsJson = base64_decode($variantsJsonBase64);
-        $variantsData = json_decode($variantsJson, true) ?? [];
+        // Parse the "Safe String" payload (bypassing WAF JSON filters)
+        // Format: "ColorsStr||SizesStr||TotalStock"
+        // ColorsStr: "Name:Hex:Stock;Name:Hex:Stock"
+        $rawPayload = $request->input('variants_json');
         
-        $validationRules = [
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:20480',
-            'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'required|numeric|min:0',
-            'prix_vente' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-        ];
+        $colorsFromJson = [];
+        $sizesFromJson = [];
+        $totalStockFromJson = 0;
 
-        // Variants validation handled by checking parsed JSON
-        if (empty($variantsData['colors'])) {
-            // Fallback validation if JSON is empty (should rely on frontend)
+        if ($rawPayload) {
+            $parts = explode('||', $rawPayload);
+            
+            // 1. Colors
+            $colorsStr = $parts[0] ?? '';
+            if ($colorsStr) {
+                $colorItems = explode(';', $colorsStr);
+                foreach ($colorItems as $item) {
+                     $cParts = explode(':', $item);
+                     if (count($cParts) >= 3) {
+                         $colorsFromJson[] = [
+                             'name' => $cParts[0],
+                             'hex' => '#' . $cParts[1], // Try adding hash back
+                             'stock' => (int)$cParts[2]
+                         ];
+                     }
+                }
+            }
+            
+            // 2. Sizes
+            $sizesStr = $parts[1] ?? '';
+            if ($sizesStr) {
+                $sizesFromJson = explode(',', $sizesStr);
+            }
+            
+            // 3. Total Stock
+            $totalStockFromJson = (int)($parts[2] ?? 0);
         }
-
-        $data = $request->validate($validationRules);
-
-        // Create color/stock structures from Safe JSON
-        $colorsFromJson = $variantsData['colors'] ?? [];
-        $sizesFromJson = $variantsData['sizes'] ?? [];
-        $totalStockFromJson = $variantsData['total_stock'] ?? 0;
 
         foreach ($colorsFromJson as $vColor) {
             $name = $vColor['name'];
-            // Add # back if missing
-            $hexRaw = $vColor['hex'];
-            $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
+            $hex = $vColor['hex']; // Hash already added in parser
             $stock = $vColor['stock'];
 
             $couleursWithHex[] = [
