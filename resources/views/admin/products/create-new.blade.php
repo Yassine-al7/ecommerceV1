@@ -212,7 +212,7 @@
 
 <!-- Template for adding colors without triggering firewall (hidden in DOM) -->
 <template id="colorTemplate">
-    <div class="relative group p-4 border-2 border-purple-300 rounded-2xl transition-all duration-200 bg-white shadow-lg shadow-purple-50">
+    <div class="relative group p-4 border-2 border-purple-300 rounded-2xl transition-all duration-200 bg-white shadow-lg shadow-purple-50 color-item">
         <div class="flex items-center justify-between mb-4">
             <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm color-box"></div>
             <input type="checkbox" name="couleurs[]" checked class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
@@ -361,6 +361,7 @@ document.getElementById('newColorHex').addEventListener('input', function() {
     document.getElementById('hexValue').textContent = this.value;
 });
 
+function addNewColor() {
     const name = document.getElementById('newColorName').value.trim();
     const hex = document.getElementById('newColorHex').value;
     
