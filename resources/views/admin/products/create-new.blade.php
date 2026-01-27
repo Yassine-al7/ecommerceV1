@@ -275,7 +275,6 @@ document.getElementById('newColorHex').addEventListener('input', function() {
     document.getElementById('hexValue').textContent = this.value;
 });
 
-function addNewColor() {
     const name = document.getElementById('newColorName').value.trim();
     const hex = document.getElementById('newColorHex').value;
     
@@ -287,14 +286,21 @@ function addNewColor() {
     
     container.querySelector('.color-box').style.backgroundColor = hex;
     container.querySelector('.color-label').textContent = name;
-    container.querySelector('.hex-val').value = hex;
-    container.querySelector('.color-toggle').value = name;
     
-    // Assign unique index for custom colors (using timestamp to avoid collision)
-    const timestamp = Date.now();
-    container.querySelector('.color-toggle').name = 'couleurs_personnalisees[' + timestamp + ']';
-    container.querySelector('.hex-val').name = 'couleurs_personnalisees_hex[' + timestamp + ']';
-    container.querySelector('.stock-input').name = 'stock_couleur_custom_' + timestamp;
+    // Create a unique ID for this custom color
+    const uniqueId = 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    
+    // Set names for the inputs
+    const checkbox = container.querySelector('.color-toggle');
+    checkbox.value = name;
+    checkbox.name = 'custom_colors[' + uniqueId + ']';
+    
+    const hexInput = container.querySelector('.hex-val');
+    hexInput.value = hex;
+    hexInput.name = 'custom_colors_hex[' + uniqueId + ']';
+    
+    const stockInput = container.querySelector('.stock-input');
+    stockInput.name = 'stock_custom_' + uniqueId;
     
     document.getElementById('colorsGrid').appendChild(clone);
 

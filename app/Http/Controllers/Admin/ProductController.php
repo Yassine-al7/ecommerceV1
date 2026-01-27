@@ -128,7 +128,8 @@ class ProductController extends Controller
 
         // Récupérer les couleurs pour la validation dynamique
         $couleurs = $request->input('couleurs', []);
-        $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
+        $customColors = $request->input('custom_colors', []);
+        $customColorsHex = $request->input('custom_colors_hex', []);
 
         $validationRules = [
             'name' => 'required|string|max:255',
@@ -150,8 +151,8 @@ class ProductController extends Controller
             $validationRules["stock_couleur_{$index}"] = 'required|integer|min:0';
         }
 
-        foreach ($couleursPersonnalisees as $index => $couleur) {
-            $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:0';
+        foreach ($customColors as $key => $couleur) {
+            $validationRules["stock_custom_{$key}"] = 'required|integer|min:0';
         }
 
         $data = $request->validate($validationRules);
@@ -180,12 +181,14 @@ class ProductController extends Controller
         }
 
         // Traiter les couleurs personnalisées
-        foreach ($couleursPersonnalisees as $index => $couleur) {
-            $stock = $request->input("stock_couleur_custom_{$index}", 0);
+        foreach ($customColors as $key => $couleur) {
+            // Récupérer le stock et le code hexadécimal
+            $stock = $request->input("stock_custom_{$key}", 0);
+            $hex = $customColorsHex[$key] ?? '#cccccc';
 
             $couleursWithHex[] = [
                 'name' => $couleur,
-                'hex' => '#cccccc' // Couleur par défaut pour les couleurs personnalisées
+                'hex' => $hex
             ];
 
             $stockCouleurs[] = [
@@ -371,12 +374,13 @@ class ProductController extends Controller
 
         // Ajouter la validation des stocks par couleur seulement s'ils sont présents
         $couleurs = $request->input('couleurs', []);
-        $couleursPersonnalisees = $request->input('couleurs_personnalisees', []);
+        $customColors = $request->input('custom_colors', []);
+        $customColorsHex = $request->input('custom_colors_hex', []);
 
         // Vérifier si des champs de stock par couleur sont présents
         $hasStockFields = false;
         foreach ($request->all() as $key => $value) {
-            if (str_starts_with($key, 'stock_couleur_')) {
+            if (str_starts_with($key, 'stock_couleur_') || str_starts_with($key, 'stock_custom_')) {
                 $hasStockFields = true;
                 break;
             }
@@ -390,9 +394,9 @@ class ProductController extends Controller
                 }
             }
 
-            foreach ($couleursPersonnalisees as $index => $couleur) {
-                if ($request->has("stock_couleur_custom_{$index}")) {
-                    $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:0';
+            foreach ($customColors as $key => $couleur) {
+                if ($request->has("stock_custom_{$key}")) {
+                    $validationRules["stock_custom_{$key}"] = 'required|integer|min:0';
                 }
             }
         }
@@ -450,12 +454,13 @@ class ProductController extends Controller
             }
 
             // Traiter les couleurs personnalisées
-            foreach ($couleursPersonnalisees as $index => $couleur) {
-                $stock = $request->input("stock_couleur_custom_{$index}", 0);
+            foreach ($customColors as $key => $couleur) {
+                $stock = $request->input("stock_custom_{$key}", 0);
+                $hex = $customColorsHex[$key] ?? '#cccccc';
 
                 $couleursWithHex[] = [
                     'name' => $couleur,
-                    'hex' => '#cccccc' // Couleur par défaut pour les couleurs personnalisées
+                    'hex' => $hex
                 ];
 
                 $stockCouleurs[] = [
