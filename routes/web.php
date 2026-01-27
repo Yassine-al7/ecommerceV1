@@ -27,7 +27,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Products CRUD - Using modern forms as default
     Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [AdminProductController::class, 'createModern'])->name('products.create');
-    Route::post('/products', function() { return 'Store POST route reached'; })->name('products.store');
+    Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}', [AdminProductController::class, 'show'])->name('products.show');
     Route::get('/products/{product}/edit', [AdminProductController::class, 'editModern'])->name('products.edit');
     Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
