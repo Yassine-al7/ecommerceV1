@@ -447,13 +447,18 @@ document.getElementById('productForm').addEventListener('submit', async function
         // 4. Prepare FormData
         const formData = new FormData(this);
         
-        // Remove "visible" fields from FormData to avoid sending them as plain text
-        // (They are already in the payload)
+        // Remove "visible" fields from FormData
         formData.delete('name_visible');
         formData.delete('description_visible');
         formData.delete('categorie_id_visible');
         formData.delete('prix_admin_visible');
         formData.delete('prix_vente_visible');
+
+        // DEBUG: Remove image to see if it's the trigger for 403
+        if (formData.has('image')) {
+            console.log("Removing image from payload for debugging 403...");
+            formData.delete('image');
+        }
 
         // 5. Send Request
         const response = await fetch(this.action, {
