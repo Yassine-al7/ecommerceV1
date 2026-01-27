@@ -1,0 +1,72 @@
+name: 🧪 Test Suite
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.0'
+        extensions: pdo, pdo_mysql, bcmath, ctype, fileinfo, json, mbstring, openssl, tokenizer, xml, gd, zip
+        coverage: xdebug
+
+    - name: 📦 Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: 📦 Install PHP dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+      env:
+        COMPOSER_PROCESS_TIMEOUT: 0
+        COMPOSER_NO_INTERACTION: 1
+        COMPOSER_NO_AUDIT: 1
+
+    - name: 🗂️ Create environment file
+      run: |
+        echo "APP_NAME=Laravel
+        APP_ENV=testing
+        APP_KEY=base64:$(openssl rand -base64 32)
+        APP_DEBUG=true
+        APP_URL=http://localhost
+        DB_CONNECTION=sqlite
+        DB_DATABASE=database/testing.sqlite
+        CACHE_DRIVER=array
+        SESSION_DRIVER=array
+        QUEUE_CONNECTION=sync
+        MAIL_MAILER=array" > .env
+
+    - name: 🔑 Generate application key
+      run: php artisan key:generate --force
+
+    - name: 🗃️ Create SQLite database
+      run: touch database/testing.sqlite
+
+    - name: 🗃️ Run database migrations
+      run: php artisan migrate --force
+
+    - name: 🧪 Run tests
+      run: php artisan test --verbose
+
+    - name: 📊 Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: success()
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella

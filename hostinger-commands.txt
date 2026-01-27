@@ -1,0 +1,50 @@
+HOSTINGER DEPLOYMENT COMMANDS FOR mPDF
+======================================
+
+After you push to your Hostinger repo, run these commands in your Hostinger terminal:
+
+1. Navigate to your project directory:
+   cd public_html/your-project-name
+
+2. Install mPDF and dependencies:
+   composer install --no-dev --optimize-autoloader
+
+3. Clear all caches:
+   php artisan optimize:clear
+   php artisan config:clear
+   php artisan route:clear
+   php artisan view:clear
+
+4. Create mPDF temp directory:
+   mkdir -p storage/app/mpdf
+   chmod -R 755 storage/app/mpdf
+   chmod -R 755 storage/logs
+   chmod -R 755 storage/framework
+
+5. Optimize for production:
+   php artisan config:cache
+   php artisan route:cache
+
+6. Set permissions (if needed):
+   chmod -R 755 storage/
+   chmod -R 755 bootstrap/cache/
+
+TROUBLESHOOTING:
+===============
+If you still get "Class Mpdf\Mpdf not found":
+
+1. Check if composer.json includes mpdf:
+   cat composer.json | grep mpdf
+
+2. Manually require mPDF:
+   composer require mpdf/mpdf:^8.2 --no-interaction
+
+3. Regenerate autoloader:
+   composer dump-autoload --optimize
+
+4. Clear OPcache (if available):
+   php artisan opcache:clear
+   # OR restart PHP service if you have access
+
+ALTERNATIVE: Use require_once in controller if autoloader fails:
+require_once base_path('vendor/mpdf/mpdf/src/Mpdf.php');

@@ -1,0 +1,2717 @@
+@extends('layouts.app')
+
+@section('title', isset($order) ? __('seller_order_form.title_edit') : __('seller_order_form.title_create'))
+
+@section('content')
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6 md:mb-8">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 md:p-6 text-blue-900 shadow-sm text-center" dir="rtl">
+                <h1 class="text-2xl md:text-3xl font-extrabold mb-1">
+                    @if(isset($order))
+                        {{ __('seller_order_form.title_edit') }}
+                    @else
+                        {{ __('seller_order_form.title_create') }}
+                    @endif
+                </h1>
+                <p class="text-sm md:text-base leading-relaxed">
+                    @if(isset($order))
+                        {{ __('seller_order_form.subtitle_edit') }}
+                    @else
+                        {{ __('seller_order_form.subtitle_create') }}
+                    @endif
+                </p>
+            </div>
+        </div>
+
+        @if($errors->any())
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                <div class="font-semibold mb-2">يرجى تصحيح الأخطاء التالية:</div>
+                <ul class="list-disc list-inside">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
+                <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+            </div>
+        @endif
+
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <form method="POST" action="{{ isset($order) ? route('seller.orders.update', $order->id) : route('seller.orders.store') }}" class="space-y-6" onsubmit="return validateFormBeforeSubmit()" id="orderForm">
+                @csrf
+                @if(isset($order))
+                    @method('PUT')
+                @endif
+
+                <!-- Informations client -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-user mr-2 text-blue-600"></i>
+                        {{ __('seller_order_form.client_info') }}
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.client_name') }}</label>
+                            <input type="text" name="nom_client" value="{{ old('nom_client', $order->nom_client ?? '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.city') }}</label>
+                            <div class="searchable-select relative" data-placeholder="{{ __('seller_order_form.select_city') }}" data-search-placeholder="ابحث...">
+                                <select name="ville" id="villeSelect" class="hidden" required>
+                                    <option value="">{{ __('seller_order_form.select_city') }}</option>
+                                    <option value="Casablanca" @selected(old('ville', $order->ville ?? '') == 'Casablanca')>Casablanca - 15 DH (1-2 jours)</option>
+                                    <option value="Rabat" @selected(old('ville', $order->ville ?? '') == 'Rabat')>Rabat - 20 DH (1-2 jours)</option>
+                                    <option value="Fès" @selected(old('ville', $order->ville ?? '') == 'Fès')>Fès - 25 DH (2-3 jours)</option>
+                                    <option value="Marrakech" @selected(old('ville', $order->ville ?? '') == 'Marrakech')>Marrakech - 25 DH (2-3 jours)</option>
+                                    <option value="Agadir" @selected(old('ville', $order->ville ?? '') == 'Agadir')>Agadir - 30 DH (2-3 jours)</option>
+                                    <option value="Tanger" @selected(old('ville', $order->ville ?? '') == 'Tanger')>Tanger - 30 DH (2-3 jours)</option>
+                                    <option value="Meknès" @selected(old('ville', $order->ville ?? '') == 'Meknès')>Meknès - 25 DH (2-3 jours)</option>
+                                    <option value="Oujda" @selected(old('ville', $order->ville ?? '') == 'Oujda')>Oujda - 35 DH (3-4 jours)</option>
+                                    <option value="Tétouan" @selected(old('ville', $order->ville ?? '') == 'Tétouan')>Tétouان - 30 DH (2-3 jours)</option>
+                                    <option value="El Jadida" @selected(old('ville', $order->ville ?? '') == 'El Jadida')>El Jadida - 20 DH (1-2 jours)</option>
+                                    <option value="Safi" @selected(old('ville', $order->ville ?? '') == 'Safi')>Safi - 25 DH (2-3 jours)</option>
+                                    <option value="Béni Mellal" @selected(old('ville', $order->ville ?? '') == 'Béni Mellal')>Béni Mellal - 25 DH (2-3 jours)</option>
+                                    <option value="Kénitra" @selected(old('ville', $order->ville ?? '') == 'Kénitra')>Kénitra - 20 DH (1-2 jours)</option>
+                                    <option value="Témara" @selected(old('ville', $order->ville ?? '') == 'Témara')>Témara - 18 DH (1-2 jours)</option>
+                                    <option value="Mohammedia" @selected(old('ville', $order->ville ?? '') == 'Mohammedia')>Mohammedia - 18 DH (1-2 jours)</option>
+                                    <option value="Autre" @selected(old('ville', $order->ville ?? '') == 'Autre')>Autre - 40 DH (3-5 jours)</option>
+                                </select>
+                                <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                                    <span class="ss-label text-gray-600">{{ __('seller_order_form.select_city') }}</span>
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                                <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                                    <div class="p-2 border-b">
+                                        <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                            <input type="text" class="ss-search w-full pl-10 pr-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث...">
+                                        </div>
+                                    </div>
+                                    <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.delivery_select_city') }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.address') }}</label>
+                            <input type="text" name="adresse_client" value="{{ old('adresse_client', $order->adresse_client ?? '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.phone') }}</label>
+                            <input type="text" name="numero_telephone_client" value="{{ old('numero_telephone_client', $order->numero_telephone_client ?? '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations produits -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center justify-between">
+                        <span><i class="fas fa-box mr-2 text-green-600"></i>{{ __('seller_order_form.products_section') }}</span>
+                        <button type="button" onclick="refreshStockDisplay()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105" title="{{ __('seller_order_form.refresh_stock') }}">
+                            <i class="fas fa-sync-alt mr-2"></i>{{ __('seller_order_form.refresh_stock') }}
+                        </button>
+                    </h3>
+
+                    <div id="productsContainer">
+                        <!-- Premier produit -->
+                        <div class="product-item border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50" data-product-index="0">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-900">{{ __('seller_order_form.product_title', ['num' => 1]) }}</h4>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" class="add-product-btn text-green-600 hover:text-green-800" onclick="addProduct()" title="{{ __('seller_order_form.add_product') }}"><i class="fas fa-plus-circle text-lg"></i></button>
+                                    <button type="button" class="edit-product-btn text-blue-600 hover:text-blue-800" onclick="editProduct(this)" title="{{ __('seller_order_form.edit_product') }}"><i class="fas fa-edit text-lg"></i></button>
+                                    <button type="button" class="remove-product-btn text-red-600 hover:text-red-800" onclick="removeProduct(this)" style="display: none;" title="{{ __('seller_order_form.remove_product') }}"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }}</label>
+                                    <div class="searchable-select relative" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                                        <select name="products[0][product_id]" class="product-select hidden">
+                                            <option value="">{{ __('seller_order_form.select_product') }}</option>
+                                            @foreach(($products ?? []) as $p)
+                                                <option value="{{ $p->id }}" data-image="{{ $p->image }}" data-prix-admin="{{ optional($p->pivot)->prix_vente ?? $p->prix_admin }}" data-tailles="{{ $p->tailles ? json_encode($p->tailles) : '[]' }}">{{ $p->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                                            <span class="ss-label text-gray-600">{{ __('seller_order_form.select_product') }}</span>
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                        <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                                            <div class="p-2 border-b">
+                                                <div class="relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                            <input type="text" class="ss-search w-full pl-10 pr-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث...">
+                                        </div>
+                                            </div>
+                                            <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.color_field') }}</label>
+                                    <select name="products[0][couleur_produit]" class="color-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                        <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.size_field') }}</label>
+                                    <select name="products[0][taille_produit]" class="size-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                        <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.quantity') }}</label>
+                                    <input type="number" name="products[0][quantite_produit]" class="quantity-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="1" min="1" required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.sale_price_client') }}</label>
+                                    <input type="number" name="products[0][prix_vente_client]" class="prix-vente-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" step="0.01" min="0.01" required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.purchase_price') }}</label>
+                                    <input type="text" class="prix-achat-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold" readonly>
+                                </div>
+
+
+                            </div>
+
+                            <!-- Image du produit -->
+                            <div class="product-image mt-4 hidden flex flex-col items-center">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
+                                <img class="w-40 h-40 object-cover rounded-lg shadow-sm" alt="{{ __('seller_order_form.product_image_alt') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculs totaux -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-calculator mr-2 text-purple-600"></i>
+                        {{ __('seller_order_form.totals_section') }}
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.total_order_price') }}</label>
+                            <input type="text" id="prixTotalCommande" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-semibold text-center text-lg" readonly>
+                            <p class="text-xs text-gray-500 mt-1">💡 <strong>Note:</strong> {{ __('seller_order_form.note_total_price') }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.delivery_price') }}</label>
+                            <input type="text" id="prixLivraison" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-yellow-50 text-yellow-700 font-semibold text-center" readonly>
+                            <p id="deliveryInfo" class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.delivery_select_city') }}</p>
+                            <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Note:</strong> {{ __('seller_order_form.delivery_note') }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.total_profit_margin') }}</label>
+                            <input type="text" id="margeBeneficeTotale" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-green-50 text-green-700 font-semibold text-center text-lg" readonly>
+                            <p class="text-xs text-gray-500 mt-1">{{ __('seller_order_form.total_profit_hint') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commentaire -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-comment mr-2 text-purple-600"></i>
+                        {{ __('seller_order_form.comment_section') }}
+                    </h3>
+                    <textarea name="commentaire" rows="3" placeholder="{{ __('seller_order_form.comment_placeholder') }}"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('commentaire', $order->commentaire ?? '') }}</textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                    <a href="{{ route('seller.orders.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>{{ __('seller_order_form.actions_back') }}
+                    </a>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-save mr-2"></i>{{ isset($order) ? __('seller_order_form.actions_submit_update') : __('seller_order_form.actions_submit_create') }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+<script>
+// Fallback config depuis Laravel si l'API n'est pas disponible
+const sellerCitiesConfig = @json(config('delivery.cities', []));
+let deliveryConfig = {
+    default_price: 0,
+    prices: {},
+    zones: {},
+    cities: {},
+    rules: {}
+};
+
+let productCounter = 1;
+
+// Variable globale pour suivre le stock disponible en temps réel
+let availableStockTracker = {};
+
+// Données des produits passées depuis PHP
+const productsData = @json(($products ?? [])->map(function($product) {
+    // Utiliser l'image telle qu'elle est stockée (déjà avec /storage/)
+    $product->image_url = $product->image;
+    return $product;
+}));
+
+// Initialiser le tracker de stock avec les valeurs initiales
+function initializeStockTracker() {
+    console.log('🔄 Initialisation du tracker de stock...');
+    availableStockTracker = {};
+
+    productsData.forEach(product => {
+        if (product.stock_couleurs_filtre && Array.isArray(product.stock_couleurs_filtre)) {
+            product.stock_couleurs_filtre.forEach(colorStock => {
+                const colorName = colorStock.name;
+                const initialStock = parseInt(colorStock.quantity) || 0;
+
+                if (!availableStockTracker[colorName]) {
+                    availableStockTracker[colorName] = initialStock;
+                    console.log(`📦 Stock initial pour ${colorName}: ${initialStock}`);
+                } else {
+                    // Si la couleur existe déjà, prendre le maximum (au cas où elle serait dans plusieurs produits)
+                    availableStockTracker[colorName] = Math.max(availableStockTracker[colorName], initialStock);
+                    console.log(`📦 Stock mis à jour pour ${colorName}: ${availableStockTracker[colorName]}`);
+                }
+            });
+        }
+    });
+
+    console.log('✅ Tracker de stock initialisé:', availableStockTracker);
+}
+
+// Fonction pour mettre à jour le stock disponible
+function updateAvailableStock(colorName, quantityUsed) {
+    if (availableStockTracker[colorName] !== undefined) {
+        availableStockTracker[colorName] -= quantityUsed;
+        console.log(`📊 Stock mis à jour pour ${colorName}: -${quantityUsed} = ${availableStockTracker[colorName]} disponible`);
+    }
+}
+
+// Fonction pour restaurer le stock (quand on change de quantité)
+function restoreAvailableStock(colorName, oldQuantity, newQuantity) {
+    if (availableStockTracker[colorName] !== undefined) {
+        const difference = oldQuantity - newQuantity;
+        availableStockTracker[colorName] += difference;
+        console.log(`🔄 Stock restauré pour ${colorName}: +${difference} = ${availableStockTracker[colorName]} disponible`);
+    }
+}
+
+// Debug des données des produits
+console.log('🔍 Debug productsData:');
+console.log('🔍 Nombre de produits:', productsData.length);
+if (productsData.length === 0) {
+    console.log('❌ PROBLÈME: Aucun produit trouvé dans productsData');
+} else {
+    productsData.forEach((product, index) => {
+        console.log(`  Product ${index}:`, {
+            id: product.id,
+            name: product.name,
+            image: product.image,
+            image_url: product.image_url
+        });
+    });
+}
+
+// Récupérer la configuration des prix de livraison
+async function loadDeliveryConfig() {
+    try {
+        const response = await fetch('/api/delivery-config');
+        deliveryConfig = await response.json();
+        console.log('Configuration de livraison chargée:', deliveryConfig);
+    } catch (error) {
+        console.error('Erreur lors du chargement de la configuration de livraison:', error);
+    }
+    // Initialiser l'affichage si une ville est déjà sélectionnée
+    try { updateDeliveryPrice(); } catch (_) {}
+}
+
+// Normaliser les chaînes pour comparer (insensible à la casse/accents/espaces)
+function normalizeCityKey(str) {
+    return (str || '')
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // enlever accents
+        .replace(/\s+/g, '_');
+}
+
+// Trouver la config ville par clé ou par nom (API ou fallback Laravel)
+function getCityConfigByValue(cityValue) {
+    const apiCities = (deliveryConfig && deliveryConfig.cities) ? deliveryConfig.cities : {};
+    const laravelCities = sellerCitiesConfig || {};
+
+    // 1) Clé exacte API
+    if (apiCities[cityValue]) return apiCities[cityValue];
+    // 2) Clé normalisée API
+    let match = Object.keys(apiCities).find(k => normalizeCityKey(k) === normalizeCityKey(cityValue));
+    if (match) return apiCities[match];
+    // 3) Nom égal API
+    match = Object.keys(apiCities).find(k => normalizeCityKey(apiCities[k]?.name) === normalizeCityKey(cityValue));
+    if (match) return apiCities[match];
+
+    // 4) Clé exacte Laravel
+    if (laravelCities[cityValue]) return laravelCities[cityValue];
+    // 5) Clé normalisée Laravel
+    match = Object.keys(laravelCities).find(k => normalizeCityKey(k) === normalizeCityKey(cityValue));
+    if (match) return laravelCities[match];
+    // 6) Nom égal Laravel
+    match = Object.keys(laravelCities).find(k => normalizeCityKey(laravelCities[k]?.name) === normalizeCityKey(cityValue));
+    if (match) return laravelCities[match];
+
+    return null;
+}
+
+function updateDeliveryPrice() {
+    const villeSelect = document.getElementById('villeSelect');
+    const prixLivraison = document.getElementById('prixLivraison');
+    const deliveryInfo = document.getElementById('deliveryInfo');
+
+    const cityKey = villeSelect.value;
+    const cityConfig = getCityConfigByValue(cityKey);
+
+    // 1) Source de vérité prioritaire: le prix affiché dans l'option (évite les écarts 15 vs 30)
+    let prixFromOption = null;
+    const selectedOption = villeSelect.options[villeSelect.selectedIndex];
+    if (selectedOption) {
+        // Essayer d'abord data-price si présent
+        const dp = selectedOption.getAttribute('data-price');
+        if (dp) {
+            const p = parseFloat((dp + '').replace(',', '.'));
+            if (!isNaN(p)) prixFromOption = p;
+        }
+        // Sinon parser le texte: "Ville - 15 DH (.. )"
+        if (prixFromOption === null) {
+            const txt = selectedOption.textContent || '';
+            const m = txt.match(/(\d+[\.,]?\d*)\s*DH/i);
+            if (m) {
+                const p = parseFloat(m[1].replace(',', '.'));
+                if (!isNaN(p)) prixFromOption = p;
+            }
+        }
+    }
+
+    if (cityKey && (cityConfig || prixFromOption !== null)) {
+        const prix = (prixFromOption !== null)
+            ? prixFromOption
+            : (cityConfig?.price ?? 0);
+        const temps = cityConfig.delivery_time || (cityConfig.name ? cityConfig.name : '');
+        const zone = cityConfig.zone || (cityConfig.type || '');
+
+        prixLivraison.value = prix.toFixed(2);
+        deliveryInfo.textContent = `${temps} - Zone: ${zone}`;
+
+        // Changer la couleur selon la zone
+        if (zone === 'local') {
+            prixLivraison.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-green-50 text-green-700 font-semibold text-center';
+        } else if (zone === 'regional') {
+            prixLivraison.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-yellow-50 text-yellow-700 font-semibold text-center';
+        } else {
+            prixLivraison.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-red-50 text-red-700 font-semibold text-center';
+        }
+    } else {
+        prixLivraison.value = '0.00';
+        deliveryInfo.textContent = 'Sélectionnez une ville';
+        prixLivraison.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold text-center';
+    }
+
+    // Recalculer les totaux avec protection
+    safeCalculateTotals();
+}
+
+function addProduct() {
+    const container = document.getElementById('productsContainer');
+    const newProduct = document.createElement('div');
+    newProduct.className = 'product-item border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50';
+    newProduct.setAttribute('data-product-index', productCounter);
+
+    newProduct.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+            <h4 class="font-medium text-gray-900">Produit #${productCounter + 1}</h4>
+            <div class="flex items-center space-x-2">
+                <button type="button" class="add-product-btn text-green-600 hover:text-green-800" onclick="addProduct()" title="Ajouter un produit">
+                    <i class="fas fa-plus-circle text-lg"></i>
+                </button>
+                <button type="button" class="edit-product-btn text-blue-600 hover:text-blue-800" onclick="editProduct(this)" title="Modifier ce produit">
+                    <i class="fas fa-edit text-lg"></i>
+                </button>
+                <button type="button" class="remove-product-btn text-red-600 hover:text-red-800" onclick="removeProduct(this)" style="display: none;" title="Supprimer ce produit">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_field') }} *</label>
+                <div class="searchable-select relative" data-placeholder="{{ __('seller_order_form.select_product') }}" data-search-placeholder="ابحث...">
+                    <select name="products[${productCounter}][product_id]" class="product-select hidden" required>
+                        <option value="">{{ __('seller_order_form.select_product') }}</option>
+                    </select>
+                    <div class="ss-trigger w-full px-3 py-2 border border-gray-300 rounded-lg bg-white flex items-center justify-between cursor-pointer">
+                        <span class="ss-label text-gray-600">{{ __('seller_order_form.select_product') }}</span>
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                    <div class="ss-panel hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <div class="p-2 border-b">
+                                                <div class="relative">
+                                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                                    <input type="text" class="ss-search w-full pl-10 pr-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="ابحث...">
+                                                </div>
+                        </div>
+                        <ul class="ss-options max-h-60 overflow-auto p-2 space-y-1"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.color_field') }} *</label>
+                <select name="products[${productCounter}][couleur_produit]" class="color-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.size_field') }} *</label>
+                <select name="products[${productCounter}][taille_produit]" class="size-select w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    <option value="">{{ __('seller_order_form.select_color_after_product') }}</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.quantity') }} *</label>
+                <input type="number" name="products[${productCounter}][quantite_produit]" class="quantity-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="1" min="1" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.sale_price_client') }} *</label>
+                <input type="number" name="products[${productCounter}][prix_vente_client]" class="prix-vente-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" step="0.01" min="0.01" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.purchase_price') }}</label>
+                <input type="text" class="prix-achat-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 font-semibold" readonly>
+            </div>
+
+
+        </div>
+
+        <!-- Image du produit -->
+        <div class="product-image mt-4 hidden flex flex-col items-center">
+            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('seller_order_form.product_image_label') }}</label>
+            <img class="w-40 h-40 object-cover rounded-lg shadow-sm" alt="{{ __('seller_order_form.product_image_alt') }}">
+        </div>
+    `;
+
+    container.appendChild(newProduct);
+    productCounter++;
+
+    // Remplir les options des produits
+    const productSelect = newProduct.querySelector('.product-select');
+    productsData.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product.id;
+        option.textContent = product.name;
+        option.setAttribute('data-image', product.image_url || '');
+        option.setAttribute('data-prix-admin', product.pivot?.prix_vente || product.prix_admin || '0');
+        option.setAttribute('data-tailles', product.tailles ? JSON.stringify(product.tailles) : '[]');
+        productSelect.appendChild(option);
+    });
+
+    // Ajouter les événements au nouveau produit
+    console.log(`🆕 Configuration des événements pour le nouveau Produit #${productCounter}`);
+    setupProductEvents(newProduct);
+
+    // Calculer le prix d'achat initial pour le nouveau produit
+    calculatePurchasePrice(newProduct);
+
+    // Mettre à jour l'affichage du bouton de suppression
+    updateRemoveButtons();
+}
+
+function editProduct(button) {
+    const productItem = button.closest('.product-item');
+    const productTitle = productItem.querySelector('h4')?.textContent || 'Produit';
+
+    console.log(`✏️ Modification du ${productTitle}`);
+
+    // Mettre en surbrillance le produit en cours de modification
+    productItem.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+
+    // Afficher un message d'information
+    const infoMessage = document.createElement('div');
+    infoMessage.className = 'bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-lg mb-3 text-sm';
+    infoMessage.innerHTML = `<i class="fas fa-info-circle mr-2"></i>Modification du ${productTitle} - Modifiez les champs ci-dessous puis sauvegardez`;
+
+    // Insérer le message après le titre
+    const titleContainer = productItem.querySelector('.flex.items-center.justify-between');
+    titleContainer.parentNode.insertBefore(infoMessage, titleContainer.nextSibling);
+
+    // Supprimer la surbrillance et le message après 3 secondes
+    setTimeout(() => {
+        productItem.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+        if (infoMessage.parentNode) {
+            infoMessage.remove();
+        }
+    }, 3000);
+
+    // Faire défiler vers le produit
+    productItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function removeProduct(button) {
+    const productItem = button.closest('.product-item');
+    productItem.remove();
+
+    // Mettre à jour l'affichage du bouton de suppression
+    updateRemoveButtons();
+
+    // Recalculer les totaux avec protection
+    safeCalculateTotals();
+}
+
+function updateRemoveButtons() {
+    const productItems = document.querySelectorAll('.product-item');
+    const removeButtons = document.querySelectorAll('.remove-product-btn');
+    const addButtons = document.querySelectorAll('.add-product-btn');
+
+    if (productItems.length === 1) {
+        // Cacher le bouton de suppression pour le premier produit
+        removeButtons.forEach(btn => btn.style.display = 'none');
+        // Garder le bouton d'ajout visible
+        addButtons.forEach(btn => btn.style.display = 'block');
+    } else {
+        // Afficher tous les boutons
+        removeButtons.forEach(btn => btn.style.display = 'block');
+        addButtons.forEach(btn => btn.style.display = 'block');
+    }
+}
+
+function setupProductEvents(productItem) {
+    // Initialize searchable select for this product item
+    const searchableSelect = productItem.querySelector('.searchable-select');
+    if (searchableSelect) {
+        initSearchableSelect(searchableSelect);
+        console.log('✅ Searchable select initialized for product item');
+    }
+
+    const productSelect = productItem.querySelector('.product-select');
+    const sizeSelect = productItem.querySelector('.size-select');
+    const quantityInput = productItem.querySelector('.quantity-input');
+    const prixVenteInput = productItem.querySelector('.prix-vente-input');
+    const prixAchatDisplay = productItem.querySelector('.prix-achat-display');
+    const margeProduitDisplay = productItem.querySelector('.marge-produit-display');
+    const productImage = productItem.querySelector('.product-image');
+    const productImageImg = productItem.querySelector('.product-image img');
+
+    console.log('🔍 Debug éléments image:', {
+        productItem: productItem,
+        productImage: productImage,
+        productImageImg: productImageImg,
+        hasProductImage: !!productImage,
+        hasProductImageImg: !!productImageImg
+    });
+    // Recalculer marge et totaux en temps réel quand le prix de vente change
+    if (prixVenteInput) {
+        prixVenteInput.addEventListener('input', function() {
+            calculateProductMargin(productItem);
+            safeCalculateTotals();
+        });
+        prixVenteInput.addEventListener('change', function() {
+            calculateProductMargin(productItem);
+            safeCalculateTotals();
+        });
+    }
+
+    // Recalculer achat/marge/totaux quand la quantité change
+    if (quantityInput) {
+        // Stocker l'ancienne quantité pour la restauration
+        let oldQuantity = parseInt(quantityInput.value) || 0;
+
+        quantityInput.addEventListener('input', function() {
+            const colorSelect = productItem.querySelector('.color-select');
+            const selectedColor = colorSelect ? colorSelect.value : '';
+            const newQuantity = parseInt(this.value) || 0;
+
+            // Restaurer l'ancienne quantité dans le tracker
+            if (selectedColor && oldQuantity > 0) {
+                restoreAvailableStock(selectedColor, oldQuantity, 0);
+            }
+
+            // Mettre à jour avec la nouvelle quantité
+            if (selectedColor && newQuantity > 0) {
+                updateAvailableStock(selectedColor, newQuantity);
+            }
+
+            // Mettre à jour l'ancienne quantité
+            oldQuantity = newQuantity;
+
+            calculatePurchasePrice(productItem);
+            calculateProductMargin(productItem);
+            setQuantityBounds(productItem);
+            validateStockQuantity(productItem);
+            safeCalculateTotals();
+        });
+
+        quantityInput.addEventListener('change', function() {
+            const colorSelect = productItem.querySelector('.color-select');
+            const selectedColor = colorSelect ? colorSelect.value : '';
+            const newQuantity = parseInt(this.value) || 0;
+
+            // Restaurer l'ancienne quantité dans le tracker
+            if (selectedColor && oldQuantity > 0) {
+                restoreAvailableStock(selectedColor, oldQuantity, 0);
+            }
+
+            // Mettre à jour avec la nouvelle quantité
+            if (selectedColor && newQuantity > 0) {
+                updateAvailableStock(selectedColor, newQuantity);
+            }
+
+            // Mettre à jour l'ancienne quantité
+            oldQuantity = newQuantity;
+
+            calculatePurchasePrice(productItem);
+            calculateProductMargin(productItem);
+            setQuantityBounds(productItem);
+            validateStockQuantity(productItem);
+            safeCalculateTotals();
+        });
+    }
+
+    // Identifier le produit
+    const productTitle = productItem.querySelector('h4')?.textContent || 'Produit inconnu';
+    console.log(`🔧 Configuration des événements pour: ${productTitle}`);
+
+                // Événement de sélection de produit
+            productSelect.addEventListener('change', function() {
+                console.log('🎯 ÉVÉNEMENT: Sélection de produit déclenchée');
+                const selectedOption = this.options[this.selectedIndex];
+                const productName = selectedOption.textContent || 'Produit inconnu';
+                console.log(`📦 Produit sélectionné dans ${productTitle}:`, selectedOption.value);
+                console.log(`📦 Nom du produit: ${productName}`);
+
+                if (selectedOption.value) {
+            const image = selectedOption.getAttribute('data-image');
+            const prixAdmin = selectedOption.getAttribute('data-prix-admin');
+            const taillesRaw = selectedOption.getAttribute('data-tailles');
+
+            console.log('📊 Données du produit:');
+            console.log('  - Image:', image);
+            console.log('  - Prix admin:', prixAdmin);
+            console.log('  - Tailles raw:', taillesRaw);
+            console.log('  - Produit:', productTitle);
+            console.log('  - ID Produit:', selectedOption.value);
+
+                                // Parser les tailles avec gestion d'erreur et conversion forcée
+                    let tailles = [];
+                    console.log(`🔍 DEBUGGING TAILLES pour ${productName}:`);
+                    console.log('  - Contenu brut taillesRaw:', taillesRaw);
+                    console.log('  - Type de taillesRaw:', typeof taillesRaw);
+
+                    try {
+                        if (taillesRaw && taillesRaw !== '[]' && taillesRaw !== 'null') {
+                            // Essayer de parser d'abord
+                            tailles = JSON.parse(taillesRaw);
+                            console.log('  - Tailles parsées JSON:', tailles);
+                            console.log('  - Type après parsing:', typeof tailles);
+                            console.log('  - Est un tableau?:', Array.isArray(tailles));
+
+                            // Si ce n'est pas un tableau mais que ça existe, le convertir
+                            if (tailles && !Array.isArray(tailles)) {
+                                console.log('⚠️ Tailles n\'est pas un tableau, conversion...');
+                                if (typeof tailles === 'string') {
+                                    // Si c'est une chaîne, la séparer par virgules
+                                    tailles = tailles.split(',').map(t => t.trim().replace(/['"]/g, ''));
+                                } else if (typeof tailles === 'object' && tailles.length !== undefined) {
+                                    // Si c'est un objet avec length, le convertir en tableau
+                                    tailles = Array.from(tailles);
+                                } else {
+                                    // Sinon, l'envelopper dans un tableau
+                                    tailles = [tailles];
+                                }
+                                console.log('  - Tailles converties:', tailles);
+                            }
+
+                            // Nettoyer TOUS les caractères de formatage des tailles
+                            if (Array.isArray(tailles)) {
+                                tailles = tailles
+                                    .filter(taille => taille !== null && taille !== undefined) // Filtrer les valeurs null/undefined
+                                    .map(taille => {
+                                        if (typeof taille === 'string') {
+                                            // Supprimer tous les caractères de formatage JSON : quotes, crochets, espaces
+                                            return taille.replace(/[\[\]'"]/g, '').trim();
+                                        }
+                                        return taille || '';
+                                    })
+                                    .filter(taille => taille !== ''); // Filtrer les chaînes vides
+                                console.log('  - Tailles nettoyées:', tailles);
+                            }
+                        } else {
+                            console.log('⚠️ taillesRaw est vide, null ou []');
+                            tailles = [];
+                        }
+                    } catch (error) {
+                        console.error('❌ Erreur lors du parsing des tailles:', error);
+                        console.log('  - Contenu brut des tailles:', taillesRaw);
+                        tailles = [];
+                    }
+
+            // Afficher l'image - DEBUG COMPLET
+            console.log('🖼️ ===== DEBUG IMAGE COMPLET =====');
+            console.log('🖼️ Image brute:', image);
+            console.log('🖼️ Type image:', typeof image);
+            console.log('🖼️ Image length:', image ? image.length : 0);
+            console.log('🖼️ Image starts with /storage/:', image ? image.startsWith('/storage/') : false);
+            console.log('🖼️ ProductImage element:', productImage);
+            console.log('🖼️ ProductImageImg element:', productImageImg);
+            console.log('🖼️ ProductImageImg exists:', !!productImageImg);
+            console.log('🖼️ =================================');
+
+            if (image && image.trim() !== '') {
+                // Utiliser l'URL de l'image telle qu'elle est (déjà corrigée)
+                let imageUrl = image;
+                console.log('🖼️ URL de l\'image:', imageUrl);
+
+                productImageImg.src = imageUrl;
+                productImage.classList.remove('hidden');
+                console.log('🖼️ Image affichée avec URL:', imageUrl);
+
+                // Vérifier si l'image se charge
+                productImageImg.onload = function() {
+                    console.log('✅ Image chargée avec succès:', imageUrl);
+                };
+
+                productImageImg.onerror = function() {
+                    console.log('❌ Erreur de chargement avec URL:', imageUrl);
+                };
+
+            } else {
+                productImage.classList.add('hidden');
+                console.log('❌ Pas d\'image disponible - image:', image);
+            }
+
+            // Afficher le prix d'achat
+            prixAchatDisplay.value = prixAdmin || '0.00';
+            console.log('💰 Prix d\'achat affiché:', prixAchatDisplay.value);
+
+            // Calculer le prix d'achat total selon la quantité actuelle
+            calculatePurchasePrice(productItem);
+
+                        // Remplir les couleurs disponibles
+            const colorSelect = productItem.querySelector('.color-select');
+            if (colorSelect) {
+                colorSelect.innerHTML = '<option value="">Sélectionnez une couleur</option>';
+
+                                    // Récupérer les couleurs du produit depuis la base de données
+                const productId = selectedOption.value;
+                const product = productsData.find(p => p.id == productId);
+
+                if (product) {
+                    console.log('🔍 Données complètes du produit:', product);
+                    console.log('🔍 Champ quantite_stock:', product.quantite_stock);
+                    console.log('🔍 Champ stock_couleurs_filtre:', product.stock_couleurs_filtre);
+                    console.log('🔍 Champ couleur_filtree:', product.couleur_filtree);
+
+                    let couleurs = [];
+
+                    // Utiliser les couleurs filtrées (sans les couleurs masquées)
+                    if (product.stock_couleurs_filtre && product.stock_couleurs_filtre.length > 0) {
+                        console.log('✅ Utilisation des couleurs filtrées (sans couleurs masquées)');
+                        couleurs = product.stock_couleurs_filtre.map(sc => ({
+                            name: sc.name,
+                            quantity: sc.quantity || 0
+                        }));
+                        console.log('✅ Couleurs filtrées:', couleurs);
+                    } else if (product.stock_couleurs) {
+                        // Fallback sur stock_couleurs si pas de filtrage
+                        try {
+                            const stockCouleurs = typeof product.stock_couleurs === 'string'
+                                ? JSON.parse(product.stock_couleurs)
+                                : product.stock_couleurs;
+
+                            console.log('🔍 Debug stock_couleurs (fallback):', stockCouleurs);
+
+                            if (Array.isArray(stockCouleurs)) {
+                                couleurs = stockCouleurs.map(sc => ({
+                                    name: sc.name,
+                                    quantity: sc.quantity || 0
+                                }));
+                                console.log(`✅ Couleurs trouvées dans stock_couleurs (fallback):`, couleurs);
+                            }
+                        } catch (error) {
+                            console.error('❌ Erreur lors du parsing de stock_couleurs:', error);
+                        }
+                    }
+
+                                        // Fallback sur le champ couleur SEULEMENT si stock_couleurs est vraiment vide
+                    if (couleurs.length === 0 && product.couleur) {
+                        try {
+                            const couleurData = typeof product.couleur === 'string'
+                                ? JSON.parse(product.couleur)
+                                : product.couleur;
+
+                            if (Array.isArray(couleurData)) {
+                                // Utiliser le stock total du produit comme fallback
+                                const stockTotal = product.quantite_stock || 10;
+                                console.log(`🔍 Fallback: utilisation du stock total ${stockTotal} pour toutes les couleurs`);
+
+                                couleurs = couleurData.map(c => ({
+                                    name: typeof c === 'string' ? c : c.name || 'Couleur',
+                                    quantity: stockTotal
+                                }));
+                                console.log(`✅ Couleurs trouvées dans couleur (fallback):`, couleurs);
+                            }
+                        } catch (error) {
+                            console.error('❌ Erreur lors du parsing de couleur:', error);
+                        }
+                    }
+
+                    // Debug final des couleurs qui seront affichées
+                    console.log(`🔍 FINAL - Couleurs à afficher:`, couleurs);
+                    console.log(`🔍 FINAL - Source des données:`, couleurs.length > 0 ? 'stock_couleurs' : 'fallback couleur');
+
+                                        // Afficher toutes les couleurs trouvées avec leur vrai stock
+                    if (couleurs.length > 0) {
+                        let couleursDisponibles = 0;
+
+                        couleurs.forEach(couleur => {
+                            // Debug détaillé de chaque couleur
+                            console.log(`🔍 Debug couleur "${couleur.name}":`, {
+                                name: couleur.name,
+                                quantity: couleur.quantity,
+                                type: typeof couleur.quantity,
+                                isZero: couleur.quantity <= 0,
+                                isStrictlyZero: couleur.quantity === 0,
+                                parsedQuantity: parseInt(couleur.quantity),
+                                parsedIsZero: parseInt(couleur.quantity) <= 0
+                            });
+
+                            const option = document.createElement('option');
+                            option.value = couleur.name;
+
+                            // Vérifier si la quantité est vraiment 0 ou négative
+                            const stockQuantity = parseInt(couleur.quantity) || 0;
+
+                            if (stockQuantity <= 0) {
+                                // Couleur visible avec stock 0: sélectionnable et sans style spécial
+                                option.textContent = `${couleur.name}`;
+                                option.setAttribute('data-stock', stockQuantity);
+                                console.log(`ℹ️ Couleur visible avec stock 0: ${couleur.name}`);
+                            } else {
+                                // Couleur disponible
+                                couleursDisponibles++;
+                                option.textContent = `${couleur.name}`;
+                                option.setAttribute('data-stock', stockQuantity);
+                                console.log(`🎨 Couleur disponible ajoutée: ${couleur.name} (stock: ${stockQuantity})`);
+                            }
+
+                            colorSelect.appendChild(option);
+                        });
+
+                        console.log(`✅ Total couleurs: ${couleurs.length} (${couleursDisponibles} disponibles, ${couleurs.length - couleursDisponibles} en rupture)`);
+
+                        // Si aucune couleur disponible, ajouter un placeholder uniquement s'il n'existe pas déjà
+                        if (couleursDisponibles === 0) {
+                            if (!colorSelect.querySelector('option[value=""]')) {
+                                const warningOption = document.createElement('option');
+                                warningOption.value = '';
+                                warningOption.textContent = 'Sélectionnez une couleur';
+                                warningOption.disabled = true;
+                                warningOption.style.color = '#666';
+                                warningOption.style.fontStyle = 'italic';
+                                colorSelect.insertBefore(warningOption, colorSelect.firstChild);
+                            }
+                            console.log('ℹ️ Aucune couleur disponible avec stock > 0');
+                        }
+                    } else {
+                        console.log('⚠️ Aucune couleur trouvée pour ce produit');
+                        // Ajouter une option par défaut
+                        const option = document.createElement('option');
+                        option.value = 'Couleur unique';
+                        option.textContent = 'Couleur unique';
+                        option.setAttribute('data-stock', 10);
+                        colorSelect.appendChild(option);
+                        console.log('🎨 Couleur par défaut ajoutée: Couleur unique');
+                    }
+                }
+
+                // Réinitialiser la sélection de couleur
+                colorSelect.value = '';
+
+                // Ajouter la validation de stock pour les couleurs
+                colorSelect.addEventListener('change', function() {
+                    setQuantityBounds(productItem);
+                    validateStockQuantity(productItem);
+                });
+            }
+
+                                            // Remplir les tailles
+                    sizeSelect.innerHTML = '<option value="">Sélectionnez une taille</option>';
+
+                    // Supprimer les anciennes notes d'information
+                    const oldNotes = sizeSelect.parentElement.querySelectorAll('p.text-xs');
+                    oldNotes.forEach(note => note.remove());
+
+                    // Réinitialiser la sélection de taille
+                    sizeSelect.value = '';
+
+                        // Gestion des accessoires par catégorie (plus précise)
+            const productId = selectedOption.value;
+            const product = productsData.find(p => p.id == productId);
+
+            // Debug des données de catégorie
+            console.log('🔍 Debug catégorie pour produit ID:', productId);
+            console.log('🔍 Produit trouvé:', product);
+            console.log('🔍 Catégorie du produit:', product?.category);
+            console.log('🔍 Slug de la catégorie:', product?.category?.slug);
+            console.log('🔍 Nom de la catégorie:', product?.category?.name);
+            console.log('🔍 Toutes les données du produit:', JSON.stringify(product, null, 2));
+
+            // Détection des accessoires : d'abord par catégorie, puis par fallback sur les tailles
+            let isAccessoire = false;
+
+            if (product && product.category && product.category.slug === 'accessoires') {
+                isAccessoire = true;
+                console.log('✅ Accessoire détecté par catégorie');
+            } else if (!tailles || tailles.length === 0) {
+                isAccessoire = true;
+                console.log('✅ Accessoire détecté par fallback (pas de tailles)');
+            } else {
+                console.log('📏 Produit avec tailles détecté');
+            }
+
+            console.log('🔍 Est un accessoire?', isAccessoire);
+
+            if (isAccessoire) {
+                // Pour les accessoires, masquer le champ taille et le rendre non obligatoire
+                const tailleContainer = sizeSelect.parentElement;
+                tailleContainer.style.display = 'none';
+                sizeSelect.removeAttribute('required');
+                sizeSelect.value = 'N/A';
+                console.log('✅ Accessoire détecté par catégorie - Champ taille masqué et non obligatoire');
+            } else {
+                // Pour les produits avec tailles, afficher le champ et le rendre obligatoire
+                const tailleContainer = sizeSelect.parentElement;
+                tailleContainer.style.display = 'block';
+                sizeSelect.setAttribute('required', 'required');
+                console.log('📏 Produit avec tailles - Champ taille affiché et obligatoire');
+            }
+
+
+
+            console.log('🔍 Vérification des tailles:');
+            console.log('  - Type:', typeof tailles);
+            console.log('  - Est un tableau:', Array.isArray(tailles));
+            console.log('  - Longueur:', tailles?.length);
+            console.log('  - Contenu:', tailles);
+
+                        // Vérifier que tailles est bien un tableau
+            console.log('🔍 Détails des tailles:');
+            console.log('  - tailles:', tailles);
+            console.log('  - typeof:', typeof tailles);
+            console.log('  - Array.isArray:', Array.isArray(tailles));
+            console.log('  - length:', tailles?.length);
+
+            if (tailles && Array.isArray(tailles) && tailles.length > 0) {
+                console.log('✅ Tailles valides détectées');
+                                    tailles.forEach(taille => {
+                        // Vérifier que taille n'est pas null/undefined avant de faire replace
+                        if (taille && typeof taille === 'string') {
+                            const option = document.createElement('option');
+                            // Triple nettoyage pour être sûr
+                            const tailleClean = taille.replace(/[\[\]'"]/g, '').trim();
+                            option.value = tailleClean;
+                            option.textContent = tailleClean;
+                            sizeSelect.appendChild(option);
+                            console.log(`  📏 Taille ajoutée: "${tailleClean}" (original: "${taille}")`);
+                        }
+                    });
+                console.log(`📏 Tailles disponibles: ${tailles.join(', ')}`);
+                console.log(`📏 Tailles affichées: ${tailles.join(' | ')}`);
+            } else {
+                // Si pas de tailles définies ou format invalide, ajouter "Taille unique"
+                console.log('❌ Tailles invalides ou manquantes');
+                console.log('   Raisons possibles:');
+                console.log(`   - tailles existe: ${!!tailles}`);
+                console.log(`   - est un tableau: ${Array.isArray(tailles)}`);
+                console.log(`   - a une longueur > 0: ${tailles?.length > 0}`);
+
+                // Si des tailles existent malgré tout, les utiliser
+                if (tailles && tailles.length > 0) {
+                    console.log('✅ Tailles du produit trouvées dans la base de données');
+                    tailles.forEach(taille => {
+                        // Vérifier que taille n'est pas null/undefined avant de faire replace
+                        if (taille && typeof taille === 'string') {
+                            const option = document.createElement('option');
+                            // Triple nettoyage pour être sûr
+                            const tailleClean = taille.replace(/[\[\]'"]/g, '').trim();
+                            option.value = tailleClean;
+                            option.textContent = tailleClean;
+                            sizeSelect.appendChild(option);
+                            console.log(`  📏 Taille ajoutée: "${tailleClean}" (original: "${taille}")`);
+                        }
+                    });
+                    console.log(`📏 Tailles du produit: ${tailles.join(', ')}`);
+
+                    // Ajouter une note informatif
+                    const noteInfo = document.createElement('p');
+                    noteInfo.className = 'text-xs text-green-600 mt-1';
+                    noteInfo.innerHTML = '✅ <strong>Tailles définies par l\'admin</strong>';
+                    sizeSelect.parentElement.appendChild(noteInfo);
+
+                } else {
+                    // Si aucune taille n'est trouvée, c'est un accessoire
+                    console.log('✅ Accessoire confirmé - Pas de tailles ajoutées');
+                    console.log('📏 Aucune taille disponible pour cet accessoire');
+
+                    // Pour les accessoires, on n'ajoute pas d'options car le champ est masqué
+                    // La valeur 'N/A' est déjà définie dans la logique de catégorie
+                }
+            }
+
+
+
+            // Recalculer la marge
+            calculateProductMargin(productItem);
+        } else {
+            productImage.classList.add('hidden');
+            prixAchatDisplay.value = '';
+            sizeSelect.innerHTML = '<option value="">Sélectionnez d\'abord un produit</option>';
+            margeProduitDisplay.value = '';
+            console.log('❌ Aucun produit sélectionné');
+        }
+
+        safeCalculateTotals();
+    });
+
+    // Événement de sélection de taille
+    sizeSelect.addEventListener('change', function() {
+        if (this.value) {
+            console.log(`📏 Taille sélectionnée: ${this.value}`);
+            // Recalculer les totaux quand la taille change
+            safeCalculateTotals();
+        }
+    });
+
+    // Événements pour recalculer la marge
+    quantityInput.addEventListener('input', () => {
+        console.log('🔢 Quantité modifiée');
+        // Calculer d'abord le nouveau prix d'achat selon la quantité
+        calculatePurchasePrice(productItem);
+        // Puis recalculer la marge
+        calculateProductMargin(productItem);
+        // Valider la quantité par rapport au stock
+        validateStockQuantity(productItem);
+        safeCalculateTotals();
+    });
+
+    prixVenteInput.addEventListener('input', () => {
+        console.log('💵 Prix de vente modifié');
+        calculateProductMargin(productItem);
+        safeCalculateTotals();
+    });
+
+    // Initialiser si un produit est déjà sélectionné
+    if (productSelect.value) {
+        console.log('🔄 Initialisation avec produit déjà sélectionné');
+        productSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Search is handled by the searchable-select panel input (.ss-search)
+}
+
+// Disponible = stock initial (du produit sélectionné) - somme des quantités des AUTRES lignes sur la même (productId,couleur)
+function getAvailableForItem(productItem) {
+    const productSelect = productItem.querySelector('.product-select');
+    const colorSelect = productItem.querySelector('.color-select');
+    if (!productSelect || !colorSelect || !productSelect.value || !colorSelect.value) {
+        return { available: 0, current: 0, initial: 0, usedOther: 0 };
+    }
+
+    const productId = productSelect.value;
+    const colorName = colorSelect.value;
+
+    // 1) Stock initial pour ce (productId,couleur) – toujours depuis productsData (source de vérité)
+    let initial = 0;
+    const product = productsData.find(p => p.id == productId);
+    if (product) {
+        // Priorité: stock_couleurs_filtre (déjà filtré et nettoyé)
+        if (Array.isArray(product.stock_couleurs_filtre)) {
+            const cs = product.stock_couleurs_filtre.find(sc => sc.name === colorName);
+            if (cs) initial = parseInt(cs.quantity) || 0;
+        }
+        // Fallback: stock_couleurs (peut être string JSON ou tableau)
+        if (initial === 0 && product.stock_couleurs) {
+            try {
+                const raw = typeof product.stock_couleurs === 'string' ? JSON.parse(product.stock_couleurs) : product.stock_couleurs;
+                if (Array.isArray(raw)) {
+                    const cs2 = raw.find(sc => sc.name === colorName);
+                    if (cs2) initial = parseInt(cs2.quantity) || 0;
+                }
+            } catch (_) {}
+        }
+    }
+
+    // 2) Somme des quantités des AUTRES lignes pour ce (productId,couleur)
+    let usedOther = 0;
+    const allItems = document.querySelectorAll('.product-item');
+    allItems.forEach(it => {
+        if (it === productItem) return;
+        const ps = it.querySelector('.product-select');
+        const cs2 = it.querySelector('.color-select');
+        const qi = it.querySelector('.quantity-input');
+        if (!ps || !cs2 || !qi) return;
+        if (ps.value == productId && cs2.value === colorName) {
+            usedOther += (parseInt(qi.value) || 0);
+        }
+    });
+
+    // 3) Quantité sur la ligne en cours (pour l'autoriser à rester à sa valeur)
+    const current = parseInt(productItem.querySelector('.quantity-input')?.value) || 0;
+
+    // Disponible pour cette ligne = initial - usedOther
+    const available = Math.max(0, initial - usedOther);
+    return { available, current, initial, usedOther };
+}
+
+// Fixer min/max de l'input quantité en fonction du stock disponible
+function setQuantityBounds(productItem) {
+    const quantityInput = productItem.querySelector('.quantity-input');
+    const colorSelect = productItem.querySelector('.color-select');
+    if (!quantityInput || !colorSelect || !colorSelect.value) return;
+
+    const info = getAvailableForItem(productItem);
+    const maxAllowed = Math.max(0, info.available + info.current);
+
+    quantityInput.setAttribute('min', '1');
+    quantityInput.setAttribute('max', String(maxAllowed));
+
+    let q = parseInt(quantityInput.value) || 0;
+    if (q > maxAllowed) {
+        quantityInput.value = String(maxAllowed);
+    } else if (q < 1) {
+        quantityInput.value = '1';
+    }
+
+    // Message de validation HTML5 si la valeur dépasse le stock autorisé
+    const currentVal = (parseInt(quantityInput.value) || 0);
+    quantityInput.setCustomValidity(
+        currentVal > maxAllowed ? `Stock insuffisant. Maximum: ${maxAllowed}` : ''
+    );
+}
+
+// Fonction de validation du stock (par produit et couleur) en tenant compte des autres lignes
+function validateStockQuantity(productItem) {
+    const colorSelect = productItem.querySelector('.color-select');
+    const quantityInput = productItem.querySelector('.quantity-input');
+    if (!colorSelect || !quantityInput) return;
+
+    const selectedColor = colorSelect.value;
+    const selectedQuantity = parseInt(quantityInput.value) || 0;
+    if (!selectedColor) {
+        clearStockValidation(productItem);
+        return;
+    }
+
+    const info = getAvailableForItem(productItem);
+    // Autoriser jusqu'à available + current (pour ne pas pénaliser la ligne courante)
+    const maxAllowed = info.available + info.current;
+
+    if (selectedQuantity <= 0) {
+        showStockError(productItem, 'La quantité doit être supérieure à 0');
+        quantityInput.setCustomValidity('La quantité doit être supérieure à 0');
+        quantityInput.classList.add('border-red-500','focus:border-red-500','focus:ring-red-500');
+        return;
+    }
+
+    if (selectedQuantity > maxAllowed) {
+        showStockError(
+          productItem,
+          `Quantité (${selectedQuantity}) dépasse le stock disponible (${maxAllowed}) pour la couleur ${selectedColor} (initial: ${info.initial}, utilisé ailleurs: ${info.usedOther})`
+        );
+        quantityInput.setCustomValidity(`Stock insuffisant. Maximum: ${maxAllowed}`);
+        quantityInput.classList.add('border-red-500','focus:border-red-500','focus:ring-red-500');
+        return;
+    }
+
+        clearStockValidation(productItem);
+        quantityInput.setCustomValidity('');
+    quantityInput.classList.remove('border-red-500','focus:border-red-500','focus:ring-red-500');
+    quantityInput.classList.add('border-green-500','focus:border-green-500','focus:ring-green-500');
+}
+
+// Fonction pour afficher l'erreur de stock
+function showStockError(productItem, message) {
+    // Supprimer les anciens messages d'erreur
+    clearStockValidation(productItem);
+
+    // Créer le message d'erreur
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'stock-error text-sm text-red-600 mt-1 bg-red-50 border border-red-200 rounded px-2 py-1';
+    errorDiv.innerHTML = `⚠️ <strong>Erreur de stock:</strong> ${message}`;
+
+    // Insérer après le champ quantité
+    const quantityContainer = productItem.querySelector('.quantity-input').parentElement;
+    quantityContainer.appendChild(errorDiv);
+
+    console.log(`❌ Erreur de stock affichée: ${message}`);
+}
+
+// Fonction pour effacer la validation de stock
+function clearStockValidation(productItem) {
+    const existingErrors = productItem.querySelectorAll('.stock-error');
+    existingErrors.forEach(error => error.remove());
+
+    const quantityInput = productItem.querySelector('.quantity-input');
+    if (quantityInput) {
+        quantityInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500', 'border-green-500', 'focus:border-green-500', 'focus:ring-green-500');
+    }
+}
+
+function calculateProductMargin(productItem) {
+    // Essayer plusieurs méthodes pour trouver l'élément marge
+    let prixAchatDisplay = productItem.querySelector('.prix-achat-display');
+    let prixVenteInput = productItem.querySelector('.prix-vente-input');
+    let quantityInput = productItem.querySelector('.quantity-input');
+    let margeProduitDisplay = productItem.querySelector('.marge-produit-display');
+
+    // Si l'élément marge n'est pas trouvé, essayer d'autres méthodes
+    if (!margeProduitDisplay) {
+        console.log('🔍 Élément marge non trouvé, tentatives alternatives...');
+
+        // Méthode 1: Chercher par label
+        const labels = productItem.querySelectorAll('label');
+        for (let label of labels) {
+            if (label.textContent.includes('Marge')) {
+                margeProduitDisplay = label.parentElement?.querySelector('input[readonly]');
+                if (margeProduitDisplay) {
+                    console.log('✅ Élément marge trouvé par label');
+                    break;
+                }
+            }
+        }
+
+        // Méthode 2: Chercher tous les inputs readonly
+        if (!margeProduitDisplay) {
+            const readonlyInputs = productItem.querySelectorAll('input[readonly]');
+            console.log(`Found ${readonlyInputs.length} readonly inputs`);
+            readonlyInputs.forEach((input, i) => {
+                console.log(`Input ${i}: classes="${input.className}"`);
+                if (input.className.includes('blue') || input.previousElementSibling?.textContent?.includes('Marge')) {
+                    margeProduitDisplay = input;
+                    console.log('✅ Élément marge trouvé par inspection');
+                }
+            });
+        }
+
+        // Méthode 3: Créer l'élément s'il n'existe pas
+        if (!margeProduitDisplay) {
+            console.log('⚠️ Création forcée de l\'élément marge');
+            const container = productItem.querySelector('.grid');
+            if (container) {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Marge par produit (DH)</label>
+                    <input type="text" class="marge-produit-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-semibold text-center" readonly>
+                `;
+                container.appendChild(div);
+                margeProduitDisplay = div.querySelector('.marge-produit-display');
+                console.log('✅ Élément marge créé');
+            }
+        }
+    }
+
+    if (!prixAchatDisplay || !prixVenteInput || !quantityInput || !margeProduitDisplay) {
+        console.error('❌ Éléments toujours manquants après tentatives');
+        console.log('Éléments trouvés:', {
+            prixAchatDisplay: !!prixAchatDisplay,
+            prixVenteInput: !!prixVenteInput,
+            quantityInput: !!quantityInput,
+            margeProduitDisplay: !!margeProduitDisplay
+        });
+        return;
+    }
+
+    const prixAchatTotal = parseFloat(prixAchatDisplay.value) || 0;
+    const prixVente = parseFloat(prixVenteInput.value) || 0;
+    const quantite = parseInt(quantityInput.value) || 1;
+
+    console.log(`\n=== Calcul de la marge pour ce produit ===`);
+    console.log(`Prix d'achat total (prix admin × quantité): ${prixAchatTotal} DH`);
+    console.log(`Prix de vente au client: ${prixVente} DH`);
+    console.log(`Quantité: ${quantite}`);
+
+    // Vérifier que les valeurs sont valides
+    if (prixAchatTotal <= 0) {
+        console.log('⚠️ Prix d\'achat total invalide ou manquant');
+        margeProduitDisplay.value = '0.00';
+        margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-semibold text-center';
+        return;
+    }
+
+    if (prixVente <= 0) {
+        console.log('⚠️ Prix de vente invalide ou manquant');
+        margeProduitDisplay.value = '0.00';
+        margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-semibold text-center';
+        return;
+    }
+
+    if (quantite <= 0) {
+        console.log('⚠️ Quantité invalide');
+        margeProduitDisplay.value = '0.00';
+        margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-semibold text-center';
+        return;
+    }
+
+    // NOUVELLE LOGIQUE : Marge = Prix de vente au client - Prix d'achat total
+    // Où Prix d'achat total = Prix admin × Quantité
+    const margeProduit = prixVente - prixAchatTotal;
+
+    // Afficher la marge pour ce produit
+    margeProduitDisplay.value = margeProduit.toFixed(2);
+
+    // Changer la couleur selon la marge
+    if (margeProduit > 0) {
+        margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-green-50 text-green-700 font-semibold text-center';
+        console.log('✅ Marge positive (vert)');
+    } else if (margeProduit < 0) {
+        margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-red-50 text-red-700 font-semibold text-center';
+        console.log('❌ Marge négative (rouge)');
+    } else {
+        margeProduitDisplay.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-semibold text-center';
+        console.log('⚪ Marge nulle (gris)');
+    }
+
+    console.log(`Nouvelle logique de calcul:`);
+    console.log(`  Prix de vente au client: ${prixVente} DH`);
+    console.log(`  Prix d'achat total (prix admin × quantité): ${prixAchatTotal} DH`);
+    console.log(`  Marge produit: ${prixVente} - ${prixAchatTotal} = ${margeProduit.toFixed(2)} DH`);
+    console.log(`Marge affichée: ${margeProduitDisplay.value} DH`);
+}
+
+// Nouvelle fonction pour calculer le prix d'achat selon la quantité
+function calculatePurchasePrice(productItem) {
+    const productSelect = productItem.querySelector('.product-select');
+    const quantityInput = productItem.querySelector('.quantity-input');
+    const prixAchatDisplay = productItem.querySelector('.prix-achat-display');
+
+    if (!productSelect || !quantityInput || !prixAchatDisplay) {
+        console.error('❌ Éléments manquants pour le calcul du prix d\'achat');
+        return;
+    }
+
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    if (!selectedOption || !selectedOption.value) {
+        console.log('⚠️ Aucun produit sélectionné');
+        prixAchatDisplay.value = '0.00';
+        return;
+    }
+
+    const prixAdmin = parseFloat(selectedOption.getAttribute('data-prix-admin')) || 0;
+    const quantite = parseInt(quantityInput.value) || 1;
+
+    console.log(`\n=== Calcul du prix d'achat ===`);
+    console.log(`Prix admin (prix unitaire): ${prixAdmin} DH`);
+    console.log(`Quantité: ${quantite}`);
+    console.log(`Prix d'achat total: ${prixAdmin} × ${quantite} = ${(prixAdmin * quantite).toFixed(2)} DH`);
+
+    // Calculer le prix d'achat total selon la quantité
+    const prixAchatTotal = prixAdmin * quantite;
+    prixAchatDisplay.value = prixAchatTotal.toFixed(2);
+
+    // Mettre à jour le label pour clarifier que c'est le prix total
+    const label = prixAchatDisplay.previousElementSibling;
+    if (label && label.tagName === 'LABEL') {
+        label.textContent = `Prix d'achat total (${prixAdmin} DH × ${quantite})`;
+    }
+
+    console.log(`✅ Prix d'achat mis à jour: ${prixAchatDisplay.value} DH`);
+}
+
+function calculateTotals() {
+    const productItems = document.querySelectorAll('.product-item');
+    let prixTotalCommande = 0;
+    let margeTotaleProduits = 0;
+
+    console.log('=== Calcul des totaux de la commande ===');
+    console.log(`Nombre de produits trouvés: ${productItems.length}`);
+
+    productItems.forEach((item, index) => {
+        // Vérifier que tous les éléments nécessaires existent
+        const prixVenteInput = item.querySelector('.prix-vente-input');
+        const quantityInput = item.querySelector('.quantity-input');
+        let margeProduitDisplay = item.querySelector('.marge-produit-display');
+
+        // Si l'élément marge n'est pas trouvé, essayer de le trouver par d'autres méthodes
+        if (!margeProduitDisplay) {
+            const readonlyInputs = item.querySelectorAll('input[readonly]');
+            for (let input of readonlyInputs) {
+                if (input.className.includes('blue') || input.previousElementSibling?.textContent?.includes('Marge')) {
+                    margeProduitDisplay = input;
+                    break;
+                }
+            }
+        }
+
+        if (!prixVenteInput || !quantityInput || !margeProduitDisplay) {
+            console.error(`❌ Éléments manquants pour le produit #${index + 1}`);
+            console.log(`   Prix vente: ${!!prixVenteInput}, Quantité: ${!!quantityInput}, Marge: ${!!margeProduitDisplay}`);
+            return;
+        }
+
+        const prixVente = parseFloat(prixVenteInput.value) || 0;
+        const quantite = parseInt(quantityInput.value) || 1;
+        const margeProduit = parseFloat(margeProduitDisplay.value) || 0;
+
+        console.log(`\nProduit #${index + 1}:`);
+        console.log(`  Prix de vente: ${prixVente} DH`);
+        console.log(`  Quantité: ${quantite}`);
+        console.log(`  Marge produit: ${margeProduit} DH`);
+
+        // 🚨 LOGIQUE MÉTIER CRITIQUE : Le prix total de la commande est le prix de vente au client
+        // ❌ PAS le prix × quantité, mais juste le prix de vente fixe
+        // ✅ C'est la logique métier demandée par l'utilisateur
+        const prixProduit = prixVente; // Prix fixe, pas multiplié par la quantité
+        prixTotalCommande += prixProduit;
+        margeTotaleProduits += margeProduit;
+
+        console.log(`  🎯 Prix total produit: ${prixProduit.toFixed(2)} DH (prix de vente fixe)`);
+        console.log(`  📊 Marge totale produits (accumulé): ${margeTotaleProduits.toFixed(2)} DH`);
+        console.log(`  💡 IMPORTANT: Quantité ${quantite} n'affecte PAS le prix total de la commande`);
+    });
+
+    const prixLivraison = parseFloat(document.getElementById('prixLivraison')?.value) || 0;
+
+    // ✅ IMPORTANT: La livraison est calculée PAR COMMANDE, pas par produit
+    // Une seule déduction du prix de livraison pour toute la commande
+    console.log(`📦 Calcul de livraison: ${prixLivraison} DH pour TOUTE la commande (${productItems.length} produits)`);
+
+    // Calcul selon la logique exacte de l'utilisateur
+    // Marge finale = Marge totale pièces - Prix de livraison (UNE SEULE FOIS)
+    const margeBeneficeTotale = margeTotaleProduits - prixLivraison;
+
+    console.log(`\n=== Résumé des totaux ===`);
+    console.log(`🎯 Prix total commande: ${prixTotalCommande.toFixed(2)} DH (SANS multiplication par quantité)`);
+    console.log(`💰 Marge totale produits: ${margeTotaleProduits.toFixed(2)} DH`);
+    console.log(`📦 Prix de livraison: ${prixLivraison.toFixed(2)} DH`);
+    console.log(`💵 Marge bénéfice finale: ${margeTotaleProduits.toFixed(2)} - ${prixLivraison.toFixed(2)} = ${margeBeneficeTotale.toFixed(2)} DH`);
+
+    // Mettre à jour les affichages
+    const prixTotalElement = document.getElementById('prixTotalCommande');
+    const margeTotaleElement = document.getElementById('margeBeneficeTotale');
+
+    // Affichage du prix total commande APRÈS déduction de la livraison
+    const prixTotalApresLivraison = prixTotalCommande - prixLivraison;
+
+    if (prixTotalElement) {
+        prixTotalElement.value = prixTotalApresLivraison.toFixed(2);
+        console.log(`✅ Prix total commande (après livraison) mis à jour: ${prixTotalElement.value} DH`);
+
+        // Vérification finale pour s'assurer que la logique est respectée
+        if (prixTotalCommande > 0) {
+            console.log(`🎯 CONFIRMATION: Prix total commande (avant livraison) = ${prixTotalCommande.toFixed(2)} DH`);
+            console.log(`🎯 CONFIRMATION: Prix livraison = ${prixLivraison.toFixed(2)} DH`);
+            console.log(`🎯 CONFIRMATION: Prix total (après livraison) = ${prixTotalApresLivraison.toFixed(2)} DH`);
+        }
+    } else {
+        console.error('❌ Élément prixTotalCommande non trouvé');
+    }
+
+    if (margeTotaleElement) {
+        margeTotaleElement.value = margeBeneficeTotale.toFixed(2);
+        console.log(`✅ Marge bénéfice totale mise à jour: ${margeTotaleElement.value} DH`);
+
+        // Changer la couleur de la marge totale
+        if (margeBeneficeTotale > 0) {
+            margeTotaleElement.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-green-50 text-green-700 font-semibold text-center text-lg';
+        } else if (margeBeneficeTotale < 0) {
+            margeTotaleElement.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-red-50 text-red-700 font-semibold text-center text-lg';
+        } else {
+            margeTotaleElement.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-semibold text-center text-lg';
+        }
+    } else {
+        console.error('❌ Élément margeBeneficeTotale non trouvé');
+    }
+}
+
+// Fonction de protection pour s'assurer que le prix total de la commande respecte la logique métier
+function protectPrixTotalCommande() {
+    const prixTotalElement = document.getElementById('prixTotalCommande');
+    if (!prixTotalElement) return;
+
+    // Vérifier que le prix total n'a pas été modifié incorrectement
+    const currentValue = parseFloat(prixTotalElement.value) || 0;
+
+    // Recalculer le prix total correct selon la logique métier
+    const productItems = document.querySelectorAll('.product-item');
+    let correctPrixTotal = 0;
+
+    productItems.forEach((item) => {
+        const prixVenteInput = item.querySelector('.prix-vente-input');
+        if (prixVenteInput) {
+            const prixVente = parseFloat(prixVenteInput.value) || 0;
+            // 🎯 LOGIQUE MÉTIER : Prix fixe, pas × quantité
+            correctPrixTotal += prixVente;
+        }
+    });
+
+    // Si le prix total a été modifié incorrectement, le corriger
+    if (Math.abs(currentValue - correctPrixTotal) > 0.01) {
+        console.log(`🚨 CORRECTION: Prix total incorrect détecté`);
+        console.log(`   Valeur actuelle: ${currentValue.toFixed(2)} DH`);
+        console.log(`   Valeur correcte: ${correctPrixTotal.toFixed(2)} DH`);
+        console.log(`   Correction appliquée`);
+
+        prixTotalElement.value = correctPrixTotal.toFixed(2);
+    }
+}
+
+// Appeler la protection après chaque mise à jour
+function safeCalculateTotals() {
+    calculateTotals();
+    // Protection supplémentaire après le calcul
+    setTimeout(protectPrixTotalCommande, 100);
+}
+
+function validateForm() {
+    const productItems = document.querySelectorAll('.product-item');
+    let isValid = true;
+
+    console.log('=== Validation du formulaire ===');
+
+    productItems.forEach((item, index) => {
+        const productId = item.querySelector('.product-select').value;
+        const taille = item.querySelector('.size-select').value;
+        const quantite = item.querySelector('.quantity-input').value;
+        const prixVente = item.querySelector('.prix-vente-input').value;
+        const prixAchat = parseFloat(item.querySelector('.prix-achat-display').value) || 0;
+
+        console.log(`Produit #${index + 1}:`);
+        console.log(`  - Produit sélectionné: ${productId ? 'Oui' : 'Non'}`);
+        console.log(`  - Taille sélectionnée: ${taille ? 'Oui' : 'Non'}`);
+        console.log(`  - Quantité: ${quantite}`);
+        console.log(`  - Prix de vente: ${prixVente}`);
+
+        // Vérifier que tous les champs sont remplis
+        if (!productId || !quantite || !prixVente) {
+            isValid = false;
+            console.log(`  ❌ Produit #${index + 1}: Champs manquants (produit, quantité, prix)`);
+            return;
+        }
+
+        // Vérifier la taille seulement si le champ est visible (pas pour les accessoires)
+        const sizeSelect = item.querySelector('.size-select');
+        if (sizeSelect && sizeSelect.parentElement.style.display !== 'none') {
+            if (!taille || taille.trim() === '') {
+                isValid = false;
+                console.log(`  ❌ Produit #${index + 1}: Taille manquante (champ visible)`);
+                return;
+            }
+        } else {
+            console.log(`  ✅ Produit #${index + 1}: Taille non requise (accessoire)`);
+        }
+
+        // Vérifier que le prix de vente est supérieur au prix d'achat
+        if (parseFloat(prixVente) <= prixAchat) {
+            isValid = false;
+            console.log(`  ❌ Produit #${index + 1}: Prix de vente (${prixVente} DH) <= Prix d'achat (${prixAchat} DH)`);
+            alert(`Produit #${index + 1}: Le prix de vente doit être supérieur au prix d'achat pour avoir une marge bénéfice.`);
+            return;
+        }
+
+        // La validation de la taille est déjà faite plus haut avec la logique des accessoires
+
+        console.log(`  ✅ Produit #${index + 1}: Valide`);
+    });
+
+    if (isValid) {
+        console.log('✅ Tous les produits sont valides');
+    } else {
+        console.log('❌ Des erreurs ont été détectées');
+    }
+
+    return isValid;
+}
+
+function validateFormBeforeSubmit() {
+    console.log('🔍 Validation du formulaire en cours...');
+
+    // Nettoyer toutes les erreurs de validation existantes
+    const productItems = document.querySelectorAll('.product-item');
+    console.log(`📦 Nombre de produits à valider: ${productItems.length}`);
+
+    productItems.forEach(productItem => {
+        clearStockValidation(productItem);
+        const quantityInput = productItem.querySelector('.quantity-input');
+        if (quantityInput) {
+            quantityInput.setCustomValidity('');
+        }
+    });
+
+    // Valider tous les produits avant l'envoi
+    let isValid = true;
+
+    productItems.forEach((productItem, index) => {
+        const colorSelect = productItem.querySelector('.color-select');
+        const quantityInput = productItem.querySelector('.quantity-input');
+        const sizeSelect = productItem.querySelector('.size-select');
+
+        if (colorSelect && quantityInput) {
+            const selectedColor = colorSelect.value;
+            const selectedQuantity = parseInt(quantityInput.value) || 0;
+
+            if (!selectedColor) {
+                console.log(`❌ Produit ${index + 1}: Couleur manquante`);
+                showStockError(productItem, 'Veuillez sélectionner une couleur');
+                isValid = false;
+            } else if (selectedQuantity <= 0) {
+                console.log(`❌ Produit ${index + 1}: Quantité invalide (${selectedQuantity})`);
+                showStockError(productItem, 'La quantité doit être supérieure à 0');
+                isValid = false;
+            } else {
+                // Vérifier le stock (ignorer si stock = 0 car l'admin masque ces couleurs)
+                const selectedOption = colorSelect.options[colorSelect.selectedIndex];
+                const availableStock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+
+                // Si stock > 0, vérifier que la quantité ne dépasse pas le stock
+                if (availableStock > 0 && selectedQuantity > availableStock) {
+                    showStockError(productItem, `Quantité (${selectedQuantity}) dépasse le stock disponible (${availableStock}) pour la couleur ${selectedColor}`);
+                    isValid = false;
+                }
+                // Si stock = 0, ne pas afficher d'erreur (couleur démasquée par l'admin)
+            }
+
+            // Validation de la taille (seulement si le champ est visible)
+            if (sizeSelect && sizeSelect.parentElement.style.display !== 'none') {
+                if (!sizeSelect.value || sizeSelect.value === '') {
+                    console.log(`❌ Produit ${index + 1}: Taille manquante`);
+                    showStockError(productItem, 'Veuillez sélectionner une taille');
+                    isValid = false;
+                }
+            }
+        }
+    });
+
+    console.log(`✅ Validation terminée. Formulaire valide: ${isValid}`);
+
+    if (!isValid) {
+        console.log('❌ Formulaire bloqué par la validation JavaScript');
+        alert('❌ Veuillez corriger les erreurs avant d\'envoyer la commande');
+        return false;
+    }
+
+    console.log('✅ Formulaire prêt à être soumis');
+    // Si tout est valide, demander confirmation
+    return confirmOrder();
+}
+
+// Fonction de test pour soumettre sans validation
+function submitFormWithoutValidation() {
+    console.log('🧪 Test: Soumission du formulaire sans validation');
+    const form = document.getElementById('orderForm');
+    if (form) {
+        // Désactiver temporairement la validation
+        form.onsubmit = null;
+        form.submit();
+    } else {
+        console.error('❌ Formulaire non trouvé');
+    }
+}
+
+function confirmOrder() {
+    // Valider le formulaire avant de soumettre
+    if (!validateForm()) {
+        return false;
+    }
+
+    // Vérifier que tous les champs requis sont remplis
+    const requiredFields = ['nom_client', 'ville', 'adresse_client', 'numero_telephone_client'];
+
+    for (const fieldName of requiredFields) {
+        const field = document.querySelector(`[name="${fieldName}"]`);
+        if (!field || !field.value.trim()) {
+            alert(`Veuillez remplir le champ ${fieldName.replace('_', ' ')}.`);
+            field?.focus();
+            return false;
+        }
+    }
+
+    // Vérifier qu'au moins un produit est sélectionné
+    console.log('🔍 === Validation dans confirmOrder() ===');
+    const productItems = document.querySelectorAll('.product-item');
+    console.log(`🔍 Nombre de produits trouvés: ${productItems.length}`);
+    let hasValidProduct = false;
+
+    productItems.forEach((item, index) => {
+        const productId = item.querySelector('.product-select').value;
+        const taille = item.querySelector('.size-select').value;
+        const quantite = item.querySelector('.quantity-input').value;
+        const prixVente = item.querySelector('.prix-vente-input').value;
+        const sizeSelect = item.querySelector('.size-select');
+
+        console.log(`\n🔍 Analyse Produit #${index + 1}:`);
+        console.log(`  - productId: "${productId}"`);
+        console.log(`  - taille: "${taille}"`);
+        console.log(`  - quantite: "${quantite}"`);
+        console.log(`  - prixVente: "${prixVente}"`);
+        console.log(`  - sizeSelect trouvé: ${!!sizeSelect}`);
+        console.log(`  - sizeSelect parent: ${sizeSelect?.parentElement?.style?.display}`);
+
+        // Vérifier si c'est un accessoire (champ taille masqué)
+        const isAccessoire = sizeSelect && sizeSelect.parentElement.style.display === 'none';
+        console.log(`  - Est accessoire: ${isAccessoire}`);
+
+        // Validation adaptée selon le type de produit
+        let isValid = false;
+        if (isAccessoire) {
+            // Pour les accessoires : taille non requise
+            isValid = productId && quantite && prixVente;
+            console.log(`  🔍 Accessoire - Taille non requise, validation: ${isValid}`);
+        } else {
+            // Pour les produits avec tailles : tous les champs requis
+            isValid = productId && taille && quantite && prixVente;
+            console.log(`  🔍 Produit avec tailles - Tous les champs requis, validation: ${isValid}`);
+        }
+
+        if (isValid) {
+            hasValidProduct = true;
+            console.log(`  ✅ Produit #${index + 1}: Valide`);
+        } else {
+            console.log(`  ❌ Produit #${index + 1}: Invalide`);
+        }
+    });
+
+    console.log(`🔍 Résultat final: hasValidProduct = ${hasValidProduct}`);
+
+    if (!hasValidProduct) {
+        alert('Veuillez sélectionner au moins un produit avec toutes ses informations.');
+        return false;
+    }
+
+    // Confirmation finale
+    if (confirm('Êtes-vous sûr de vouloir créer cette commande ?')) {
+        console.log('✅ Commande confirmée, soumission du formulaire...');
+
+        // Soumettre le formulaire
+        const form = document.querySelector('form');
+        if (form) {
+            // Ajouter un événement pour rafraîchir le stock après la soumission
+            form.addEventListener('submit', function() {
+                console.log('🔄 Formulaire soumis, rafraîchissement du stock en cours...');
+
+                // Attendre un peu que la commande soit traitée, puis rafraîchir l'affichage
+                setTimeout(() => {
+                    refreshStockDisplay();
+                }, 2000); // 2 secondes de délai
+            });
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Fonction de debug spécifique pour l'élément marge
+function debugMargeElement() {
+    console.log('🔍 Debug spécifique pour l\'élément marge');
+
+    const productItems = document.querySelectorAll('.product-item');
+    productItems.forEach((item, index) => {
+        console.log(`\n--- Produit #${index + 1} ---`);
+
+        // Chercher tous les inputs de type text
+        const textInputs = item.querySelectorAll('input[type="text"]');
+        console.log(`Inputs de type text trouvés: ${textInputs.length}`);
+
+        textInputs.forEach((input, i) => {
+            console.log(`  Input #${i + 1}:`);
+            console.log(`    Classes: "${input.className}"`);
+            console.log(`    Readonly: ${input.readOnly}`);
+            console.log(`    Value: "${input.value}"`);
+            console.log(`    Label précédent:`, input.parentElement?.querySelector('label')?.textContent);
+
+            // Vérifier si c'est l'élément marge
+            if (input.className.includes('marge') || input.parentElement?.querySelector('label')?.textContent?.includes('Marge')) {
+                console.log(`    🎯 TROUVÉ: Ceci semble être l'élément marge !`);
+            }
+        });
+    });
+}
+
+// Fonction de debug pour vérifier les éléments
+function debugElements() {
+    console.log('=== Debug des éléments du DOM ===');
+
+    const elements = [
+        'prixTotalCommande',
+        'margeBeneficeTotale',
+        'prixLivraison',
+        'villeSelect'
+    ];
+
+    elements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            console.log(`✅ ${id}: trouvé, valeur = "${element.value}"`);
+        } else {
+            console.error(`❌ ${id}: NON TROUVÉ`);
+        }
+    });
+
+    const productItems = document.querySelectorAll('.product-item');
+    console.log(`\nProduits trouvés: ${productItems.length}`);
+
+    productItems.forEach((item, index) => {
+        console.log(`\n🔍 Analyse détaillée du Produit #${index + 1}:`);
+
+        // Vérifier toutes les classes CSS recherchées
+        const selectors = [
+            '.product-select',
+            '.size-select',
+            '.quantity-input',
+            '.prix-vente-input',
+            '.prix-achat-display',
+            '.marge-produit-display'
+        ];
+
+        selectors.forEach(selector => {
+            const element = item.querySelector(selector);
+            if (element) {
+                console.log(`  ✅ ${selector}: trouvé`);
+                if (element.value !== undefined) {
+                    console.log(`     Valeur: "${element.value}"`);
+                }
+                if (element.className) {
+                    console.log(`     Classes: "${element.className}"`);
+                }
+            } else {
+                console.error(`  ❌ ${selector}: NON TROUVÉ`);
+            }
+        });
+
+        // Vérifier tous les inputs dans ce produit
+        const allInputs = item.querySelectorAll('input, select');
+        console.log(`  📝 Total inputs/selects trouvés: ${allInputs.length}`);
+        allInputs.forEach((input, i) => {
+            console.log(`     Input #${i + 1}: type="${input.type || input.tagName}", class="${input.className}", value="${input.value}"`);
+        });
+    });
+}
+
+// Fonction pour pré-remplir les produits existants en mode édition
+function populateExistingProducts() {
+    console.log('🔄 Pré-remplissage des produits existants...');
+
+    @if(isset($orderProducts) && !empty($orderProducts))
+        const orderProducts = @json($orderProducts);
+        console.log('📦 Produits de la commande:', orderProducts);
+
+        // Supprimer le premier produit vide s'il existe
+        const firstProductItem = document.querySelector('.product-item');
+        if (firstProductItem) {
+            firstProductItem.remove();
+        }
+
+        // Ajouter chaque produit existant
+        orderProducts.forEach((productData, index) => {
+            console.log(`📦 Ajout du produit #${index + 1}:`, productData);
+
+            // Ajouter un nouveau produit
+            addProduct();
+
+            // Récupérer le produit ajouté
+            const productItems = document.querySelectorAll('.product-item');
+            const currentProductItem = productItems[productItems.length - 1];
+
+            // Pré-remplir les champs
+            const productSelect = currentProductItem.querySelector('.product-select');
+            const colorSelect = currentProductItem.querySelector('.color-select');
+            const sizeSelect = currentProductItem.querySelector('.size-select');
+            const quantityInput = currentProductItem.querySelector('.quantity-input');
+            const prixVenteInput = currentProductItem.querySelector('.prix-vente-input');
+
+            if (productSelect && colorSelect && sizeSelect && quantityInput && prixVenteInput) {
+                // Sélectionner le produit
+                productSelect.value = productData.product_id;
+                console.log(`✅ Produit sélectionné: ${productData.product_id}`);
+
+                // Déclencher l'événement change pour charger les couleurs, tailles et autres données
+                productSelect.dispatchEvent(new Event('change'));
+
+                // Attendre que les couleurs et tailles soient chargées puis les sélectionner
+                setTimeout(() => {
+                    // Sélectionner la couleur
+                    if (colorSelect && productData.couleur) {
+                        colorSelect.value = productData.couleur;
+                        console.log(`✅ Couleur sélectionnée: ${productData.couleur}`);
+                    }
+
+                    // Sélectionner la taille
+                    if (sizeSelect && productData.taille) {
+                        sizeSelect.value = productData.taille;
+                        console.log(`✅ Taille sélectionnée: ${productData.taille}`);
+                    }
+
+                    // Définir la quantité
+                    if (quantityInput) {
+                        quantityInput.value = productData.qty;
+                        console.log(`✅ Quantité définie: ${productData.qty}`);
+                    }
+
+                    // Définir le prix de vente
+                    if (prixVenteInput) {
+                        prixVenteInput.value = productData.prix_vente_client;
+                        console.log(`✅ Prix de vente défini: ${productData.prix_vente_client}`);
+
+                        // Déclencher l'événement change pour recalculer les totaux
+                        prixVenteInput.dispatchEvent(new Event('input'));
+                    }
+
+                                        // Recalculer le prix d'achat pour ce produit
+                    calculatePurchasePrice(currentProductItem);
+
+                    // Recalculer la marge pour ce produit
+                    calculateProductMargin(currentProductItem);
+
+                    // Recalculer les totaux avec protection
+                    safeCalculateTotals();
+                }, 500);
+            }
+        });
+
+                // Calculer le prix d'achat et la marge pour tous les produits après le pré-remplissage
+        setTimeout(() => {
+            const productItems = document.querySelectorAll('.product-item');
+            productItems.forEach(item => {
+                calculatePurchasePrice(item);
+                calculateProductMargin(item);
+            });
+
+            // Forcer le recalcul final des totaux
+            safeCalculateTotals();
+        }, 1500);
+
+        console.log('✅ Pré-remplissage terminé');
+    @endif
+}
+
+// Fonction pour ajouter les notes manquantes aux produits
+function ensureAllProductNotesAreVisible() {
+    console.log('🔍 Vérification des notes pour tous les produits...');
+
+    const productItems = document.querySelectorAll('.product-item');
+    productItems.forEach((item, index) => {
+        const productSelect = item.querySelector('.product-select');
+        const sizeSelect = item.querySelector('.size-select');
+        const productTitle = item.querySelector('h4')?.textContent || `Produit #${index + 1}`;
+
+        // Si un produit est sélectionné mais qu'il n'y a pas de note d'information
+        if (productSelect && productSelect.value && sizeSelect) {
+            const existingNotes = sizeSelect.parentElement.querySelectorAll('p.text-xs');
+            if (existingNotes.length === 0) {
+                console.log(`⚠️ ${productTitle} manque de note d'information, ajout...`);
+                productSelect.dispatchEvent(new Event('change'));
+            } else {
+                console.log(`✅ ${productTitle} a déjà une note d'information`);
+            }
+        }
+    });
+}
+
+// Fonction pour forcer la réinitialisation des calculs
+function forceRecalculate() {
+    console.log('🔄 Forçage du recalcul des totaux...');
+
+    const productItems = document.querySelectorAll('.product-item');
+    console.log(`Produits trouvés: ${productItems.length}`);
+
+    productItems.forEach((item, index) => {
+        console.log(`\n--- Produit #${index + 1} ---`);
+
+        // Récupérer tous les éléments
+        const productSelect = item.querySelector('.product-select');
+        const sizeSelect = item.querySelector('.size-select');
+        const quantityInput = item.querySelector('.quantity-input');
+        const prixVenteInput = item.querySelector('.prix-vente-input');
+        const prixAchatDisplay = item.querySelector('.prix-achat-display');
+        const margeProduitDisplay = item.querySelector('.marge-produit-display');
+
+        console.log(`Produit sélectionné: ${productSelect ? productSelect.value : 'NON TROUVÉ'}`);
+        console.log(`Taille sélectionnée: ${sizeSelect ? sizeSelect.value : 'NON TROUVÉ'}`);
+        console.log(`Quantité: ${quantityInput ? quantityInput.value : 'NON TROUVÉ'}`);
+        console.log(`Prix de vente: ${prixVenteInput ? prixVenteInput.value : 'NON TROUVÉ'}`);
+        console.log(`Prix d'achat: ${prixAchatDisplay ? prixAchatDisplay.value : 'NON TROUVÉ'}`);
+        console.log(`Marge produit: ${margeProduitDisplay ? margeProduitDisplay.value : 'NON TROUVÉ'}`);
+
+        // Si un produit est sélectionné mais pas de taille, forcer la sélection
+        if (productSelect && productSelect.value && (!sizeSelect || !sizeSelect.value || sizeSelect.value === '')) {
+            console.log('⚠️ Produit sélectionné mais pas de taille, réinitialisation...');
+            try {
+                productSelect.dispatchEvent(new Event('change'));
+            } catch (error) {
+                console.error('❌ Erreur lors de la réinitialisation:', error);
+            }
+        }
+
+        // Recalculer la marge pour ce produit seulement si tous les éléments sont présents
+        if (prixAchatDisplay && prixVenteInput && quantityInput && margeProduitDisplay) {
+            try {
+                // Calculer d'abord le prix d'achat selon la quantité
+                calculatePurchasePrice(item);
+                // Puis calculer la marge
+                calculateProductMargin(item);
+            } catch (error) {
+                console.error(`❌ Erreur lors du calcul de la marge pour le produit #${index + 1}:`, error);
+            }
+        } else {
+            console.log(`⚠️ Impossible de calculer la marge pour le produit #${index + 1} - éléments manquants`);
+        }
+    });
+
+    // Recalculer les totaux avec protection
+    try {
+        safeCalculateTotals();
+    } catch (error) {
+        console.error('❌ Erreur lors du calcul des totaux:', error);
+    }
+
+    console.log('✅ Recalcul forcé terminé');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== Initialisation du formulaire de commande ===');
+
+    // Initialiser le tracker de stock
+    initializeStockTracker();
+
+    // Charger la configuration de livraison
+    loadDeliveryConfig();
+
+    // Debug des éléments au chargement
+    setTimeout(() => {
+        debugElements();
+    }, 100);
+
+    // Événement de changement de ville
+    const villeSelect = document.getElementById('villeSelect');
+    if (villeSelect) {
+        villeSelect.addEventListener('change', updateDeliveryPrice);
+        console.log('✅ Événement ville ajouté');
+    } else {
+        console.error('❌ Élément villeSelect non trouvé');
+    }
+
+    // Événement du bouton d'ajout de produit
+    const addProductBtn = document.getElementById('addProductBtn');
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', addProduct);
+        console.log('✅ Événement ajout produit ajouté');
+    } else {
+        console.error('❌ Élément addProductBtn non trouvé');
+    }
+
+        // Configurer les événements pour le premier produit
+    const firstProductItem = document.querySelector('.product-item');
+    if (firstProductItem) {
+        setupProductEvents(firstProductItem);
+        console.log('✅ Événements du premier produit configurés');
+
+        // Si le premier produit a déjà un produit sélectionné, déclencher l'événement change
+        const firstProductSelect = firstProductItem.querySelector('.product-select');
+        if (firstProductSelect && firstProductSelect.value) {
+            console.log('🔄 Produit déjà sélectionné dans le premier produit, mise à jour des tailles...');
+            // Forcer la mise à jour complète des tailles
+            setTimeout(() => {
+                firstProductSelect.dispatchEvent(new Event('change'));
+                // Calculer le prix d'achat après la mise à jour
+                calculatePurchasePrice(firstProductItem);
+            }, 100);
+        }
+    } else {
+        console.error('❌ Premier produit non trouvé');
+    }
+
+                // Initialiser les calculs
+        setTimeout(() => {
+            safeCalculateTotals();
+            console.log('✅ Calculs initiaux effectus');
+
+        // Forcer un recalcul après un délai supplémentaire
+        setTimeout(() => {
+            forceRecalculate();
+
+            // Vérifier que tous les produits ont leurs notes
+            setTimeout(() => {
+                ensureAllProductNotesAreVisible();
+            }, 200);
+        }, 500);
+    }, 200);
+
+    // Si on est en mode édition, pré-remplir les produits existants
+    @if(isset($orderProducts) && !empty($orderProducts))
+        console.log('🔄 Mode édition détecté, pré-remplissage des produits...');
+        setTimeout(() => {
+            populateExistingProducts();
+        }, 1000);
+    @endif
+
+    // Note: First product events are already set up above in the existing code
+
+    console.log('=== Initialisation terminée ===');
+});
+
+// Fonction pour rafraîchir l'affichage du stock après une commande
+function refreshStockDisplay() {
+    console.log('🔄 Rafraîchissement de l\'affichage du stock...');
+
+    // Recharger les données des produits depuis le serveur
+    const productSelects = document.querySelectorAll('.product-select');
+
+    productSelects.forEach(async (productSelect, index) => {
+        if (productSelect.value) {
+            const productId = productSelect.value;
+            console.log(`🔄 Rafraîchissement du stock pour le produit #${index + 1} (ID: ${productId})`);
+
+            try {
+                // Faire une requête AJAX pour récupérer les données mises à jour
+                const response = await fetch(`/api/products/${productId}/stock`);
+                if (response.ok) {
+                    const productData = await response.json();
+                    console.log('✅ Données de stock mises à jour:', productData);
+
+                    // Mettre à jour l'affichage des couleurs avec le nouveau stock
+                    updateColorOptions(productSelect, productData);
+                } else {
+                    console.warn('⚠️ Impossible de récupérer les données de stock mises à jour');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du rafraîchissement du stock:', error);
+            }
+        }
+    });
+}
+
+// Fonction pour mettre à jour les options de couleur avec le nouveau stock
+function updateColorOptions(productSelect, productData) {
+    const productItem = productSelect.closest('.product-item');
+    const colorSelect = productItem.querySelector('.color-select');
+
+    if (!colorSelect) return;
+
+    // Vider les options existantes
+    colorSelect.innerHTML = '<option value="">Sélectionnez une couleur</option>';
+
+    // Récupérer le stock mis à jour
+    const stockCouleurs = productData.stock_couleurs || [];
+    const couleurs = [];
+
+    if (Array.isArray(stockCouleurs) && stockCouleurs.length > 0) {
+        couleurs = stockCouleurs.map(sc => ({
+            name: sc.name,
+            quantity: sc.quantity || 0
+        }));
+    }
+
+    // Afficher les couleurs avec le nouveau stock
+    if (couleurs.length > 0) {
+        let couleursDisponibles = 0;
+
+        couleurs.forEach(couleur => {
+            const option = document.createElement('option');
+            option.value = couleur.name;
+
+            const stockQuantity = parseInt(couleur.quantity) || 0;
+
+            if (stockQuantity <= 0) {
+                // Couleur visible avec stock 0: rester sélectionnable et sans style
+                option.textContent = `${couleur.name}`;
+                option.setAttribute('data-stock', stockQuantity);
+                console.log(`ℹ️ Couleur visible avec stock 0 (refresh): ${couleur.name}`);
+            } else {
+                // Couleur disponible
+                couleursDisponibles++;
+                option.textContent = `${couleur.name}`;
+                option.setAttribute('data-stock', stockQuantity);
+                console.log(`🎨 Couleur disponible mise à jour: ${couleur.name} (stock: ${stockQuantity})`);
+            }
+
+            colorSelect.appendChild(option);
+        });
+
+        console.log(`✅ Stock rafraîchi: ${couleurs.length} couleurs (${couleursDisponibles} disponibles)`);
+
+        // Si aucune couleur disponible, ajouter un placeholder uniquement s'il n'existe pas déjà
+        if (couleursDisponibles === 0) {
+            if (!colorSelect.querySelector('option[value=""]')) {
+                const warningOption = document.createElement('option');
+                warningOption.value = '';
+                warningOption.textContent = 'Sélectionnez une couleur';
+                warningOption.disabled = true;
+                warningOption.style.color = '#666';
+                warningOption.style.fontStyle = 'italic';
+                colorSelect.insertBefore(warningOption, colorSelect.firstChild);
+            }
+        }
+    }
+}
+
+function filterOptionsByText(selectEl, query) {
+    const normalized = (query || '').toLowerCase().trim();
+    const options = Array.from(selectEl.options);
+    const listItems = selectEl.parentElement.querySelectorAll('.ss-option');
+    let visibleCount = 0;
+
+    options.forEach((opt, idx) => {
+        if (idx === 0) {
+            // keep placeholder visible
+            opt.hidden = false;
+            if (listItems[idx]) {
+                listItems[idx].style.display = 'block';
+            }
+            return;
+        }
+        const text = (opt.textContent || '').toLowerCase();
+        const match = text.includes(normalized);
+        opt.hidden = !match;
+
+        // Update corresponding list item
+        if (listItems[idx]) {
+            if (match) {
+                listItems[idx].style.display = 'block';
+                listItems[idx].classList.add('search-match');
+                visibleCount++;
+            } else {
+                listItems[idx].style.display = 'none';
+                listItems[idx].classList.remove('search-match');
+            }
+        }
+    });
+
+    console.log(`🔍 Filtered options: ${visibleCount} visible for query "${query}"`);
+    return visibleCount;
+}
+
+// City search binding - handled by searchable select initialization
+// The search input is automatically bound in initSearchableSelect function
+
+// Searchable select initializer
+function initSearchableSelect(container) {
+    if (container.dataset.ssInit === '1') return;
+    container.dataset.ssInit = '1';
+    const select = container.querySelector('select');
+    const trigger = container.querySelector('.ss-trigger');
+    const label = container.querySelector('.ss-label');
+    const panel = container.querySelector('.ss-panel');
+    const search = container.querySelector('.ss-search');
+    const list = container.querySelector('.ss-options');
+    const placeholder = container.getAttribute('data-placeholder') || 'Select';
+
+    console.log('🔧 Initializing searchable select:', {
+        container: container,
+        select: select,
+        trigger: trigger,
+        label: label,
+        panel: panel,
+        search: search,
+        list: list
+    });
+
+    function closeAllPanelsExcept(current) {
+        document.querySelectorAll('.searchable-select .ss-panel').forEach(p => {
+            if (p !== current) p.classList.add('hidden');
+        });
+    }
+
+    function updateLabelFromSelect() {
+        const selected = select.options[select.selectedIndex];
+        label.textContent = selected && selected.value ? (selected.textContent || '') : placeholder;
+    }
+
+    // Move the REAL select into the panel but keep it hidden
+    if (select && panel && select.parentElement !== panel) {
+        panel.appendChild(select);
+        select.classList.add('hidden'); // Keep select hidden, we use the list
+        // When user changes selection in the REAL select, update label, close panel, and fire events
+        select.addEventListener('change', () => {
+            updateLabelFromSelect();
+            panel.classList.add('hidden');
+            // Dispatch both change and input events to ensure all listeners are triggered
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            select.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    }
+
+    // Build options list in the panel
+    if (list) {
+        list.innerHTML = '';
+        // Populate the list with options from the select
+        Array.from(select.options).forEach((option, index) => {
+            const li = document.createElement('li');
+            li.className = 'ss-option px-3 py-2 cursor-pointer hover:bg-gray-100 rounded text-sm';
+            li.textContent = option.textContent;
+            li.dataset.value = option.value;
+            li.dataset.index = index;
+
+            // Add click handler
+            li.addEventListener('click', () => {
+                select.selectedIndex = index;
+                updateLabelFromSelect();
+                panel.classList.add('hidden');
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            list.appendChild(li);
+        });
+    }
+    updateLabelFromSelect();
+
+    // Filter REAL select options as user types
+    if (search) {
+        console.log('✅ Adding search input event listener');
+
+        // Track selected option index for keyboard navigation
+        let selectedIndex = -1;
+
+        search.addEventListener('input', () => {
+            console.log('🔍 Search input changed:', search.value);
+            selectedIndex = -1; // Reset selection when searching
+            try {
+                const visibleCount = filterOptionsByText(select, search.value);
+
+                // Show/hide results counter or no results message
+                let resultsMsg = panel.querySelector('.results-message');
+                if (!resultsMsg) {
+                    resultsMsg = document.createElement('div');
+                    resultsMsg.className = 'results-message text-center py-2 text-sm border-b border-gray-100';
+                    panel.insertBefore(resultsMsg, panel.querySelector('ul, select'));
+                }
+
+                if (search.value.trim() === '') {
+                    resultsMsg.style.display = 'none';
+                } else if (visibleCount === 0) {
+                    resultsMsg.innerHTML = '<i class="fas fa-search mr-2 text-gray-400"></i><span class="text-gray-500">Aucun résultat trouvé pour "<strong>' + search.value + '</strong>"</span>';
+                    resultsMsg.className = 'results-message text-center py-2 text-sm border-b border-gray-100 text-red-500';
+                    resultsMsg.style.display = 'block';
+                } else {
+                    const resultText = visibleCount === 1 ? 'résultat' : 'résultats';
+
+                    // Get first few matching options for preview
+                    const visibleOptions = Array.from(select.options).filter(opt => !opt.hidden && opt.value);
+                    const previewOptions = visibleOptions.slice(0, 3).map(opt => opt.textContent).join(', ');
+                    const moreText = visibleOptions.length > 3 ? ` et ${visibleOptions.length - 3} autres...` : '';
+
+                    resultsMsg.innerHTML = `
+                        <i class="fas fa-check-circle mr-2 text-green-500"></i>
+                        <span class="text-gray-600">
+                            <strong>${visibleCount}</strong> ${resultText} trouvé${visibleCount > 1 ? 's' : ''} pour "<strong>${search.value}</strong>"
+                        </span>
+                        <div class="text-xs text-gray-500 mt-1">
+                            ${previewOptions}${moreText}
+                        </div>
+                    `;
+                    resultsMsg.className = 'results-message text-center py-2 text-sm border-b border-gray-100 text-green-600';
+                    resultsMsg.style.display = 'block';
+                }
+
+                console.log('✅ Search filtering applied');
+            } catch (error) {
+                console.error('❌ Search filtering error:', error);
+            }
+        });
+
+        // Keyboard navigation
+        search.addEventListener('keydown', (e) => {
+            const visibleListItems = Array.from(list.querySelectorAll('.ss-option')).filter(li => li.style.display !== 'none');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, visibleListItems.length - 1);
+                if (visibleListItems[selectedIndex]) {
+                    // Remove previous highlight
+                    visibleListItems.forEach(li => li.classList.remove('bg-blue-100', 'text-blue-900'));
+                    // Add highlight to current
+                    visibleListItems[selectedIndex].classList.add('bg-blue-100', 'text-blue-900');
+                    select.selectedIndex = parseInt(visibleListItems[selectedIndex].dataset.index);
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, 0);
+                if (visibleListItems[selectedIndex]) {
+                    // Remove previous highlight
+                    visibleListItems.forEach(li => li.classList.remove('bg-blue-100', 'text-blue-900'));
+                    // Add highlight to current
+                    visibleListItems[selectedIndex].classList.add('bg-blue-100', 'text-blue-900');
+                    select.selectedIndex = parseInt(visibleListItems[selectedIndex].dataset.index);
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && visibleListItems[selectedIndex]) {
+                    visibleListItems[selectedIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                panel.classList.add('hidden');
+                search.blur();
+            }
+        });
+
+    } else {
+        console.error('❌ No search input found for searchable select');
+    }
+
+    // Events
+    if (trigger) {
+        console.log('✅ Adding click event to trigger');
+        trigger.addEventListener('click', (e) => {
+            console.log('🎯 Searchable select clicked!');
+            e.stopPropagation();
+            closeAllPanelsExcept(panel);
+            panel.classList.toggle('hidden');
+            console.log('Panel hidden state:', panel.classList.contains('hidden'));
+            if (!panel.classList.contains('hidden')) {
+                if (search) {
+                    search.value = '';
+                    selectedIndex = -1; // Reset selection
+                    try {
+                        filterOptionsByText(select, '');
+                        // Hide any results message
+                        const resultsMsg = panel.querySelector('.results-message');
+                        if (resultsMsg) resultsMsg.style.display = 'none';
+                    } catch (_) {}
+                    search.focus();
+                }
+            }
+        });
+    } else {
+        console.error('❌ No trigger found for searchable select');
+    }
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+            panel.classList.add('hidden');
+        }
+    });
+}
+
+// Initialize searchable selects (handles cases where DOM is already loaded)
+function initAllSearchableSelects() {
+    document.querySelectorAll('.searchable-select').forEach(initSearchableSelect);
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAllSearchableSelects);
+} else {
+    initAllSearchableSelects();
+}
+
+// Initialize for dynamically added product blocks
+// Note: The complete setupProductEvents function is defined above
+</script>
+
+<style>
+    /* Styles pour les boutons d'action */
+    .add-product-btn, .edit-product-btn, .remove-product-btn {
+        transition: all 0.2s ease-in-out;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .add-product-btn:hover {
+        background-color: rgba(34, 197, 94, 0.1);
+        transform: scale(1.1);
+    }
+
+    .edit-product-btn:hover {
+        background-color: rgba(59, 130, 246, 0.1);
+        transform: scale(1.1);
+    }
+
+    .remove-product-btn:hover {
+        background-color: rgba(239, 68, 68, 0.1);
+        transform: scale(1.1);
+    }
+
+    /* Animation pour la surbrillance de modification */
+    .ring-2.ring-blue-500 {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    /* Dynamic search highlighting */
+    .search-match {
+        background-color: #fef3c7 !important;
+        font-weight: 600;
+        border-left: 3px solid #f59e0b;
+        padding-left: 8px;
+    }
+
+    /* Search input focus effects */
+    .ss-search:focus {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Dropdown panel animations */
+    .ss-panel {
+        transform: translateY(-10px);
+        opacity: 0;
+        transition: all 0.2s ease-out;
+    }
+
+    .ss-panel:not(.hidden) {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    /* Option hover effects */
+    select option:hover {
+        background-color: #f3f4f6 !important;
+    }
+
+    /* Search icon animation */
+    .ss-search:focus + .fas.fa-search {
+        color: #3b82f6;
+        transform: scale(1.1);
+    }
+
+    /* Loading state for search */
+    .ss-search:focus {
+        background-image: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    /* Results message styling */
+    .results-message {
+        animation: slideDown 0.2s ease-out;
+        background: linear-gradient(90deg, #f8fafc, #f1f5f9);
+        border-radius: 6px;
+        margin: 4px 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .results-message.text-green-600 {
+        background: linear-gradient(90deg, #f0fdf4, #dcfce7);
+        border-left: 3px solid #22c55e;
+    }
+
+    .results-message.text-red-500 {
+        background: linear-gradient(90deg, #fef2f2, #fee2e2);
+        border-left: 3px solid #ef4444;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* List options styling */
+    .ss-option {
+        transition: all 0.2s ease;
+        border-radius: 4px;
+        margin: 2px 0;
+    }
+
+    .ss-option:hover {
+        background-color: #f3f4f6 !important;
+        transform: translateX(2px);
+    }
+
+    .ss-option.bg-blue-100 {
+        background-color: #dbeafe !important;
+        color: #1e40af !important;
+        font-weight: 600;
+    }
+
+    .ss-option.search-match {
+        background-color: #fef3c7 !important;
+        border-left: 3px solid #f59e0b;
+        padding-left: 8px;
+        font-weight: 600;
+    }
+
+    /* Product image styling */
+    .product-image {
+        margin: 0 auto;
+        background: transparent !important;
+    }
+
+    .product-image img {
+        transition: transform 0.2s ease;
+        object-fit: cover;
+        object-position: center;
+        background: transparent !important;
+        background-color: transparent !important;
+        filter: none !important;
+        mix-blend-mode: normal !important;
+        opacity: 1 !important;
+    }
+
+    /* Override any parent blue backgrounds */
+    .product-image * {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+
+    .product-image:hover img {
+        transform: scale(1.05);
+    }
+
+    /* Responsive image sizing */
+    @media (min-width: 768px) {
+        .product-image img {
+            width: 12rem; /* w-48 - 192px */
+            height: 12rem; /* h-48 - 192px */
+        }
+    }
+
+    @media (max-width: 767px) {
+        .product-image img {
+            width: 10rem; /* w-40 - 160px */
+            height: 10rem; /* h-40 - 160px */
+        }
+    }
+</style>
+
+

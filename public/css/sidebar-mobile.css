@@ -1,0 +1,528 @@
+/* ===== SIDEBAR MOBILE - STYLES CORRIGÉS ===== */
+
+/* Styles généraux */
+.gradient-bg {
+    background: linear-gradient(135deg, var(--brand-gradient-start) 0%, var(--brand-secondary) 25%, var(--brand-gradient-mid) 50%, var(--brand-primary) 75%, var(--brand-gradient-end) 100%);
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Bouton hamburger optimisé pour le header mobile */
+.hamburger-button {
+    position: relative !important;
+    z-index: 10001 !important; /* Toujours au-dessus de l'overlay */
+    background-color: rgba(37, 99, 235, 0.8) !important; /* Background bleu */
+    color: white !important;
+    padding: 0.625rem !important; /* p-2.5 */
+    border-radius: 0.5rem !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    cursor: pointer !important;
+    backdrop-filter: blur(10px) !important;
+    flex-shrink: 0 !important; /* Empêche la compression */
+    min-width: 2.75rem !important; /* Largeur ajustée */
+    height: 2.75rem !important; /* Hauteur ajustée */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.hamburger-button:hover {
+    background-color: rgba(29, 78, 216, 0.9) !important; /* Bleu plus foncé au hover */
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5) !important;
+}
+
+.hamburger-button.sidebar-open {
+    background-color: #dc2626 !important; /* Rouge quand ouvert */
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3) !important;
+}
+
+.hamburger-button.sidebar-open:hover {
+    background-color: #b91c1c !important;
+}
+
+/* Lignes du hamburger */
+.hamburger-line {
+    width: 1.5rem !important;
+    height: 0.125rem !important;
+    background-color: white !important;
+    border-radius: 0.0625rem !important;
+    transition: all 0.2s ease !important;
+    margin: 0.125rem 0 !important;
+}
+
+/* Animation du hamburger quand ouvert */
+.sidebar-open .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(0.3125rem, 0.3125rem) !important;
+}
+
+.sidebar-open .hamburger-line:nth-child(2) {
+    opacity: 0 !important;
+}
+
+.sidebar-open .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(0.3125rem, -0.3125rem) !important;
+}
+
+/* Sidebar Mobile - Position et visibilité optimisées */
+#sidebar {
+    position: fixed !important;
+    top: 4rem !important; /* Ajusté pour le header mobile */
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    /* Background gradient handled inline in layout for Option B */
+    background-color: transparent !important;
+    color: white !important;
+    transition: transform 0.3s ease-in-out !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+    max-height: calc(100vh - 4rem) !important; /* Ajusté pour le header */
+    display: flex !important;
+    flex-direction: column !important;
+    /* No background image for Option B */
+}
+
+/* Sidebar fermé par défaut (avec Tailwind) */
+#sidebar.transform.-translate-y-full {
+    transform: translateY(-100%) !important; /* Caché en haut */
+}
+
+/* Sidebar ouvert (quand on retire -translate-y-full) */
+#sidebar:not(.transform),
+#sidebar:not(.transform.-translate-y-full) {
+    transform: translateY(0) !important; /* Visible */
+}
+
+/* Overlay du sidebar */
+#sidebarOverlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9998 !important;
+    opacity: 1 !important;
+    transition: opacity 0.3s ease-in-out !important;
+}
+
+#sidebarOverlay.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Titre Admin Panel toujours visible */
+.sidebar-header {
+    position: sticky !important;
+    top: 0 !important;
+    background-color: var(--brand-secondary) !important;
+    padding: 1rem !important;
+    margin: -1rem -1rem 1rem -1rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    z-index: 1 !important;
+    min-height: 70px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* Container du header avec flexbox optimisé */
+.sidebar-header > div {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+}
+
+/* Container du titre avec icône */
+.sidebar-header .flex-1 {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex: 1 !important;
+    min-width: 0 !important; /* Permet la compression */
+}
+
+/* Icône du header - Très discrète et non-bouton */
+.sidebar-header i.fas {
+    flex-shrink: 0 !important;
+    width: 1.25rem !important; /* Encore plus petit */
+    height: 1.25rem !important; /* Encore plus petit */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: rgba(255, 255, 255, 0.5) !important; /* Couleur très discrète */
+    font-size: 1rem !important; /* Taille de police encore plus petite */
+    opacity: 0.6 !important; /* Très transparente */
+    transition: opacity 0.2s ease !important;
+    pointer-events: none !important; /* Désactive complètement les interactions */
+    user-select: none !important; /* Empêche la sélection */
+}
+
+/* Hover sur l'icône pour feedback visuel minimal */
+.sidebar-header i.fas:hover {
+    opacity: 0.8 !important; /* Légèrement plus visible au survol */
+    color: rgba(255, 255, 255, 0.7) !important; /* Couleur légèrement plus visible */
+}
+
+/* Titre du header */
+.sidebar-header .text-xl {
+    color: white !important;
+    font-weight: bold !important;
+    font-size: 1.25rem !important;
+    line-height: 1.75rem !important;
+    letter-spacing: 0.025em !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* Bouton de fermeture du sidebar - Discret et unifié */
+#closeSidebarAdmin,
+#closeSidebarSeller {
+    color: rgba(255, 255, 255, 0.8) !important; /* Blanc légèrement transparent */
+    background-color: rgba(255, 255, 255, 0.05) !important; /* Fond très transparent */
+    padding: 0.5rem !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+    min-width: 2.5rem !important;
+    height: 2.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important; /* Bordure très subtile */
+}
+
+#closeSidebarAdmin:hover,
+#closeSidebarSeller:hover {
+    color: rgba(255, 255, 255, 1) !important; /* Blanc opaque au survol */
+    background-color: rgba(255, 255, 255, 0.1) !important; /* Fond légèrement plus visible */
+    border-color: rgba(255, 255, 255, 0.2) !important; /* Bordure légèrement plus visible */
+}
+
+/* Contenu principal de la sidebar mobile - Scrollable */
+#sidebar .flex-1 {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+}
+
+/* Section de déconnexion fixe en bas */
+#sidebar .flex-shrink-0 {
+    flex-shrink: 0 !important;
+    padding: 1rem !important;
+    border-top: 1px solid rgba(75, 85, 99, 0.5) !important;
+    background-color: rgba(31, 41, 55, 0.5) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Navigation du sidebar */
+#sidebar nav {
+    margin-top: 1rem !important;
+}
+
+#sidebar nav a {
+    color: var(--sidebar-link, #0a7cff) !important;
+    padding: 0.75rem !important;
+    border-radius: 0.5rem !important;
+    transition: background-color 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important; /* Forcer alignement à gauche */
+    text-decoration: none !important;
+    position: relative !important;
+    border-right: 3px solid transparent !important;
+}
+
+#sidebar nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--sidebar-link-hover, #003b8f) !important;
+}
+
+/* Active nav indicator (mobile and desktop) */
+#sidebar nav a.nav-link.active,
+#sidebarDesktop a.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+#sidebar nav a.nav-link.active::before,
+#sidebarDesktop a.nav-link.active::before {
+    content: "";
+    position: absolute !important;
+    right: 0 !important;
+    top: 12% !important;
+    bottom: 12% !important;
+    width: 3px !important;
+    border-radius: 2px !important;
+    background: linear-gradient(180deg, var(--brand-primary), var(--brand-gradient-end)) !important;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.6) !important;
+}
+
+#sidebar nav a.nav-link.active::after,
+#sidebarDesktop a.nav-link.active::after {
+    content: "";
+    position: absolute !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 9999px !important;
+    background: var(--sidebar-link, #0a7cff) !important;
+    box-shadow: 0 0 6px rgba(10, 124, 255, 0.8) !important;
+}
+
+#sidebar nav a i {
+    margin-right: 0.75rem !important;
+    width: 1.25rem !important;
+    text-align: center !important;
+}
+
+/* Unification parfaite de la luminosité de la page */
+body:not(.gradient-bg) {
+    background-color: var(--brand-gradient-end, #e2e8f0) !important; /* Utilise la couleur de marque si dispo */
+    color: #334155 !important; /* Texte équilibré et lisible */
+    position: relative !important; /* Position relative pour le z-index */
+    z-index: 1 !important; /* Z-index de base pour le contenu */
+}
+
+/* S'assurer que le contenu principal est cliquable */
+main {
+    position: relative !important;
+    z-index: 2 !important; /* Au-dessus du body */
+}
+
+/* S'assurer que les boutons et liens sont cliquables */
+button, a, input, select, textarea {
+    position: relative !important;
+    z-index: 3 !important; /* Au-dessus du main */
+}
+
+/* S'assurer que les cards et tableaux sont cliquables */
+.bg-white, .bg-gray-50, table, tr, td, th {
+    position: relative !important;
+    z-index: 2 !important; /* Au-dessus du body */
+}
+
+/* Container principal unifié */
+.container {
+    background-color: transparent !important; /* Transparent pour s'intégrer */
+}
+
+/* Cards et sections unifiées */
+.bg-white {
+    background-color: #f8fafc !important; /* Blanc légèrement teinté pour l'unification */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important; /* Ombres très subtiles */
+    border: 1px solid #e2e8f0 !important; /* Bordures unifiées */
+}
+
+/* Tableaux unifiés */
+table {
+    background-color: #f8fafc !important;
+}
+
+thead.bg-gray-50 {
+    background-color: #f1f5f9 !important; /* Header de tableau unifié */
+}
+
+tbody.bg-white {
+    background-color: #f8fafc !important;
+}
+
+/* Hover sur les lignes de tableau - Très subtil et unifié */
+tr.hover\:bg-gray-50:hover {
+    background-color: #f1f5f9 !important; /* Hover unifié */
+}
+
+/* Boutons et actions unifiés */
+.bg-blue-600 {
+    background-color: #3b82f6 !important; /* Bleu unifié et équilibré */
+    border: 1px solid #2563eb !important; /* Bordure unifiée */
+}
+
+.bg-blue-600:hover {
+    background-color: #2563eb !important; /* Hover unifié */
+    transform: translateY(-1px) !important; /* Mouvement très subtil */
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2) !important; /* Ombre colorée subtile */
+}
+
+/* Textes unifiés et parfaitement lisibles */
+.text-gray-800 {
+    color: #1e293b !important; /* Texte principal bien contrasté */
+}
+
+.text-gray-600 {
+    color: #475569 !important; /* Texte secondaire bien contrasté */
+}
+
+.text-gray-900 {
+    color: #0f172a !important; /* Texte de tableau bien contrasté */
+}
+
+/* Header Mobile Styles */
+header.md\\:hidden {
+    backdrop-filter: blur(10px) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Container du header mobile - Layout optimisé */
+header.md\\:hidden > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    height: 4rem !important; /* h-16 */
+    padding: 0 1rem !important;
+}
+
+/* Logo centré dans le header mobile */
+header.md\\:hidden .flex-1 {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+}
+
+/* Container du bouton hamburger à gauche - Aligné en haut */
+header.md\\:hidden > div > div:first-child {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    height: 100% !important;
+    padding-top: 0.25rem !important; /* pt-1 */
+}
+
+/* Espace vide à droite pour équilibrer */
+header.md\\:hidden > div > div:last-child {
+    width: 3rem !important; /* w-12 */
+    flex-shrink: 0 !important;
+}
+
+/* Logo Mobile dans le header */
+header .affilook-logo {
+    font-size: 1.25rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.1em !important;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5) !important;
+    background: linear-gradient(45deg, #000000, #1e40af, #3b82f6) !important;
+    background-size: 200% 200% !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: gradientShift 3s ease-in-out infinite !important;
+}
+
+/* Responsive - Cacher à partir de grands écrans (>= 1024px) */
+@media (min-width: 1024px) {
+    #sidebar {
+        display: none !important;
+    }
+
+    #sidebarOverlay {
+        display: none !important;
+    }
+
+    .hamburger-button {
+        display: none !important;
+    }
+
+    header.md\\:hidden {
+        display: none !important;
+    }
+}
+
+/* Forcer la visibilité sur mobile */
+@media (max-width: 767px) {
+    #sidebar {
+        display: block !important;
+    }
+
+    #sidebarOverlay {
+        display: block !important;
+    }
+
+    .hamburger-button {
+        display: block !important;
+    }
+}
+
+/* Responsive pour très petits écrans - Optimisation du header */
+@media (max-width: 360px) {
+    /* Header mobile pour très petits écrans */
+    header.md\\:hidden > div {
+        padding: 0 0.75rem !important;
+        height: 3.5rem !important;
+    }
+
+    /* Logo plus petit sur très petits écrans */
+    header .affilook-logo {
+        font-size: 1rem !important;
+    }
+
+    /* Bouton hamburger plus compact */
+    .hamburger-button {
+        padding: 0.5rem !important;
+        min-width: 2.25rem !important;
+        height: 2.25rem !important;
+    }
+
+    /* Lignes du hamburger plus petites */
+    .hamburger-line {
+        width: 1rem !important;
+        height: 0.125rem !important;
+    }
+
+    /* Container du bouton hamburger ajusté */
+    header.md\\:hidden > div > div:first-child {
+        padding-top: 0.125rem !important; /* Ajusté pour très petits écrans */
+    }
+
+    /* Espace vide ajusté pour très petits écrans */
+    header.md\\:hidden > div > div:last-child {
+        width: 2.25rem !important;
+    }
+}
+
+/* Responsive pour écrans moyens - Optimisation du header */
+@media (max-width: 480px) {
+    /* Espacement réduit sur écrans moyens */
+    header.md\\:hidden > div {
+        padding: 0 0.75rem !important;
+        height: 3.75rem !important;
+    }
+
+    /* Logo adaptatif */
+    header .affilook-logo {
+        font-size: 1.125rem !important;
+    }
+
+    /* Container du bouton hamburger ajusté */
+    header.md\\:hidden > div > div:first-child {
+        padding-top: 0.25rem !important; /* Maintenu pour écrans moyens */
+    }
+
+    /* Espace vide ajusté */
+    header.md\\:hidden > div > div:last-child {
+        width: 2.75rem !important;
+    }
+}
