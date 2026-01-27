@@ -210,29 +210,23 @@ class ProductController extends Controller
         $data['prix_admin'] = json_encode($prixAdminArray);
         $data['prix_admin_moyen'] = $prixAdminMoyen;
 
-        // Gérer l'upload d'image (Base64)
-        if (!empty($variantsData['image_base64'])) {
+        // Gérer l'upload d'image (Pre-uploaded path or Base64 fallback)
+        if (!empty($variantsData['uploaded_image_path'])) {
+            // Image already uploaded securely
+            $data['image'] = $variantsData['uploaded_image_path'];
+        } elseif (!empty($variantsData['image_base64'])) {
+            // (Previous Base64 fallback logic kept just in case)
             $base64Image = $variantsData['image_base64'];
-            // remove data:image/xxx;base64,
             if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
                 $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
-                $type = strtolower($type[1]); // jpg, png, gif
-                
-                if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
-                    throw new \Exception('Invalid image type');
-                }
-                
+                $type = strtolower($type[1]);
                 $base64Image = base64_decode($base64Image);
-                if ($base64Image === false) {
-                    throw new \Exception('Base64 decode failed');
-                }
-
                 $imageName = 'products/' . \Illuminate\Support\Str::random(40) . '.' . $type;
                 \Illuminate\Support\Facades\Storage::disk('public')->put($imageName, $base64Image);
                 $data['image'] = '/storage/' . $imageName;
             }
         } elseif ($request->hasFile('image')) {
-            // Fallback for standard multipart
+            // Normal Fallback
             $imagePath = $request->file('image')->store('products', 'public');
             $data['image'] = '/storage/' . $imagePath;
         } else {
