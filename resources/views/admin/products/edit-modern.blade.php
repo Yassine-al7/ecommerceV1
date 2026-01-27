@@ -204,8 +204,41 @@
                                         </div>
                                     </div>
                                 @endforeach
+                                
+                                <!-- Custom Add Button -->
+                                <div class="color-card bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-3 hover:border-purple-500 hover:bg-purple-50 transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center relative"
+                                     style="min-height: 160px;"
+                                     onclick="document.getElementById('customColorModal').classList.remove('hidden')">
+                                    <div class="w-12 h-12 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                        <i class="fas fa-plus text-gray-400 group-hover:text-purple-600 text-xl"></i>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-500 group-hover:text-purple-700 text-center">إضافة لون<br>مخصص</span>
+                                </div>
                             </div>
-                        </div>
+
+                            <!-- Modal for Custom Color -->
+                            <div id="customColorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                                <div class="bg-white rounded-xl p-6 w-80 shadow-2xl transform transition-all scale-100">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">إضافة لون جديد</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">اسم اللون</label>
+                                            <input type="text" id="customColorName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" placeholder="مثال: ذهبي">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">اللون</label>
+                                            <div class="flex items-center space-x-3">
+                                                <input type="color" id="customColorPicker" class="h-10 w-10 rounded cursor-pointer border-0 p-0" value="#8b5cf6" onchange="document.getElementById('customColorHex').textContent = this.value">
+                                                <span id="customColorHex" class="text-sm text-gray-500 font-mono">#8b5cf6</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-end space-x-2 pt-2">
+                                            <button type="button" onclick="document.getElementById('customColorModal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">إلغاء</button>
+                                            <button type="button" onclick="addNewCustomColor()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">إضافة</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
 
                     @error('couleurs')
@@ -506,19 +539,23 @@ document.addEventListener('DOMContentLoaded', function() {
 let removedImages = [];
 
 // Fonction pour basculer l'affichage des détails d'une couleur
+// Fonction pour basculer l'affichage des détails d'une couleur
 function toggleColorCard(checkbox) {
     const colorCard = checkbox.closest('.color-card');
     const hexInput = colorCard.querySelector('.color-hex-input');
+    const stockField = colorCard.querySelector('.stock-field');
 
     if (checkbox.checked) {
         colorCard.classList.add('selected');
         if (hexInput) hexInput.disabled = false;
+        if (stockField) stockField.style.display = 'block';
 
         // Changer l'image principale du produit
         changeMainProductImage(colorCard);
     } else {
         colorCard.classList.remove('selected');
         if (hexInput) hexInput.disabled = true;
+        if (stockField) stockField.style.display = 'none';
     }
 
     updateSelectedColorsCount();
