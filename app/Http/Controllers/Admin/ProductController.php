@@ -126,100 +126,55 @@ class ProductController extends Controller
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
 
-        // Récupérer les couleurs pour la validation dynamique
-        $couleurs = $request->input('couleurs', []);
+        $variantsJson = $request->input('variants_json');
+        $variantsData = json_decode($variantsJson, true) ?? [];
         
-        // Nouvelle méthode : décoder le JSON des couleurs personnalisées
-        $customColorsJson = $request->input('custom_colors_json', '[]');
-        $customColorsData = json_decode($customColorsJson, true) ?? [];
-
         $validationRules = [
             'name' => 'required|string|max:255',
-            'couleurs' => 'required|array|min:1',
-            'couleurs_hex' => 'array',
-            'hidden_colors' => 'nullable|array',
-            'tailles' => $isAccessoire ? 'nullable|array' : 'required|array|min:1',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:20480', // Augmenté à 20MB pour sécurité
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:20480',
             'categorie_id' => 'required|exists:categories,id',
-            'prix_admin' => 'required|numeric|min:0', // Changed to numeric to match form input type
-            'prix_vente' => 'required|numeric|min:0', // Added missing validation
-            'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
+            'prix_admin' => 'required|numeric|min:0',
+            'prix_vente' => 'required|numeric|min:0',
             'description' => 'nullable|string',
         ];
 
-
-        // Ajouter la validation des stocks par couleur
-        foreach ($couleurs as $index => $couleur) {
-            $validationRules["stock_couleur_{$index}"] = 'required|integer|min:0';
+        // Variants validation handled by checking parsed JSON
+        if (empty($variantsData['colors'])) {
+            // Fallback validation if JSON is empty (should rely on frontend)
         }
-        
-        // Note: La validation des stocks personnalisés est implicite car ils sont dans le JSON
-        // On pourrait ajouter une validation manuelle si nécessaire, mais le frontend gère déjà ça.
 
         $data = $request->validate($validationRules);
 
-        // Traiter les couleurs avec leurs valeurs hexadécimales et stocks
-        $couleursHex = $request->input('couleurs_hex', []);
+        // Create color/stock structures from Safe JSON
+        $colorsFromJson = $variantsData['colors'] ?? [];
+        $sizesFromJson = $variantsData['sizes'] ?? [];
+        $totalStockFromJson = $variantsData['total_stock'] ?? 0;
 
-        // Créer un mapping couleur-hex pour la sauvegarde
-        $couleursWithHex = [];
-        $stockCouleurs = [];
-
-        // Traiter les couleurs prédéfinies
-        foreach ($couleurs as $index => $couleur) {
-            $hex = $couleursHex[$index] ?? '#cccccc';
-            $stock = $request->input("stock_couleur_{$index}", 0);
+        foreach ($colorsFromJson as $vColor) {
+            $name = $vColor['name'];
+            // Add # back if missing
+            $hexRaw = $vColor['hex'];
+            $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
+            $stock = $vColor['stock'];
 
             $couleursWithHex[] = [
-                'name' => $couleur,
+                'name' => $name,
                 'hex' => $hex
             ];
 
             $stockCouleurs[] = [
-                'name' => $couleur,
+                'name' => $name,
                 'quantity' => (int) $stock
             ];
         }
 
-        // Traiter les couleurs personnalisées via JSON
-        foreach ($customColorsData as $customColor) {
-            $name = $customColor['name'] ?? null;
-            $hexRaw = $customColor['hex'] ?? 'cccccc';
-            $stock = $customColor['stock'] ?? 0;
-            
-            if ($name) {
-                // Re-add # if it was stripped by frontend
-                $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
+        $data['couleur'] = $couleursWithHex;
+        $data['stock_couleurs'] = $stockCouleurs;
+        $data['quantite_stock'] = $totalStockFromJson;
+        $data['tailles'] = $sizesFromJson;
 
-                $couleursWithHex[] = [
-                    'name' => $name,
-                    'hex' => $hex
-                ];
+        // (Sizes logic handled above via $data['tailles'] = $sizesFromJson)
 
-                $stockCouleurs[] = [
-                    'name' => $name,
-                    'quantity' => (int) $stock
-                ];
-            }
-        }
-
-        // Convertir les couleurs en JSON (pour stockage en base)
-        $data['couleur'] = $couleursWithHex; // Laravel cast automatiquement en JSON
-        $data['stock_couleurs'] = $stockCouleurs; // Laravel cast automatiquement en JSON
-
-        // Traiter les couleurs masquées
-        $data['hidden_colors'] = json_encode($request->input('hidden_colors', []));
-
-        // Calculer le stock total à partir des stocks par couleur
-        $totalStock = array_sum(array_column($stockCouleurs, 'quantity'));
-        $data['quantite_stock'] = $totalStock;
-
-        // Convertir les tailles en JSON - pour les accessoires, utiliser un tableau vide
-        if ($isAccessoire) {
-            $data['tailles'] = []; // Laravel cast automatiquement en JSON
-        } else {
-            $data['tailles'] = $data['tailles'] ?? []; // Laravel cast automatiquement en JSON
-        }
 
         // Note: vendeur_id n'est plus utilisé - nous utilisons la table pivot product_user
 

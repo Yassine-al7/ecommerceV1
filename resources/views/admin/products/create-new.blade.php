@@ -16,6 +16,9 @@
 
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="productForm">
             @csrf
+            
+            <!-- Hidden input for the safely consolidated variants data -->
+            <input type="hidden" name="variants_json" id="variants_json">
 
             @if($errors->any())
                 <div class="bg-red-50 border-l-4 border-red-500 p-6 mb-8 rounded-xl">
@@ -32,7 +35,7 @@
             @endif
 
             <div class="space-y-8">
-                <!-- Section 1: Basic Info -->
+                <!-- Section 1: Basic Info (Safe Standard Inputs) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-8">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -53,7 +56,7 @@
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">التصنيف *</label>
-                                <select name="categorie_id" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+                                <select name="categorie_id" id="categorie_id" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                                     <option value="">اختر التصنيف</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -69,7 +72,7 @@
                                         <div class="flex text-sm text-gray-600">
                                             <span class="text-blue-600 font-medium hover:underline">اضغط هنا لرفع الصورة</span>
                                         </div>
-                                        <p class="text-xs text-gray-400">PNG, JPG حتى 5MB</p>
+                                        <p class="text-xs text-gray-400">PNG, JPG</p>
                                     </div>
                                     <input id="imageInput" name="image" type="file" class="hidden" onchange="handleImageUpload(this)">
                                 </div>
@@ -81,15 +84,15 @@
                     </div>
                 </div>
 
-                <!-- Section 2: Pricing & Stock -->
+                <!-- Section 2: Pricing (Safe Standard Inputs) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-8">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                             <span class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mr-3 text-sm">02</span>
-                            السعر والمخزون
+                            السعر
                         </h2>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-right" dir="rtl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-right" dir="rtl">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">سعر التكلفة (درهم) *</label>
                                 <input type="number" step="0.01" name="prix_admin" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
@@ -99,29 +102,32 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">سعر البيع (درهم) *</label>
                                 <input type="number" step="0.01" name="prix_vente" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
                             </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">المخزون الإجمالي *</label>
-                                <input type="number" id="quantite_stock" name="quantite_stock" readonly required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-100 cursor-not-allowed font-bold text-lg" value="0">
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 3: Variants (Colors) -->
+                <!-- Section 3: Safe JS-Managed Variants (Colors & Sizes) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-8">
                         <div class="flex items-center justify-between mb-8">
                             <h2 class="text-2xl font-bold text-gray-900 flex items-center">
                                 <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mr-3 text-sm">03</span>
-                                الألوان والمقاسات
+                                الألوان والمخزون
                             </h2>
                             <button type="button" onclick="openColorModal()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm font-medium">
                                 <i class="fas fa-plus mr-2 text-xs"></i> إضافة لون
                             </button>
                         </div>
+                        
+                        <!-- Total Stock Display -->
+                        <div class="mb-6 flex justify-end">
+                            <div class="bg-gray-50 px-6 py-3 rounded-xl border border-gray-200 flex items-center space-x-4">
+                                <span id="totalStockDisplay" class="text-2xl font-bold text-purple-700">0</span>
+                                <span class="text-sm text-gray-500 font-medium">:إجمالي المخزون</span>
+                            </div>
+                        </div>
 
-                        <!-- Fixed list of common colors to avoid heavy JS generation -->
+                        <!-- Colors Grid: Inputs have NO name attribute to prevent native submission -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6" id="colorsGrid">
                             @php
                                 $presetColors = [
@@ -135,26 +141,29 @@
                             @endphp
 
                             @foreach($presetColors as $color)
-                                <div class="relative group p-4 border-2 border-gray-100 rounded-2xl hover:border-purple-300 transition-all duration-200 bg-gray-50 color-item">
+                                <div class="relative group p-4 border-2 border-gray-100 rounded-2xl hover:border-purple-300 transition-all duration-200 bg-gray-50 color-item bg-white" 
+                                     data-name="{{ $color['name'] }}" 
+                                     data-hex="{{ str_replace('#', '', $color['hex']) }}">
+                                    
                                     <div class="flex items-center justify-between mb-4">
                                         <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm" style="background-color: {{ $color['hex'] }}"></div>
-                                        <input type="checkbox" name="couleurs[{{ $loop->index }}]" value="{{ $color['name'] }}" class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
-                                        <input type="hidden" name="couleurs_hex[{{ $loop->index }}]" value="{{ $color['hex'] }}">
+                                        <!-- No Name Attribute -->
+                                        <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
                                     </div>
                                     <p class="font-bold text-gray-800 text-right">{{ $color['name'] }}</p>
                                     
                                     <div class="mt-4 stock-container hidden">
                                         <label class="block text-[10px] text-gray-400 uppercase font-bold text-right mb-1">المخزون</label>
-                                        <input type="number" name="stock_couleur_{{ $loop->index }}" value="0" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
+                                        <!-- No Name Attribute -->
+                                        <input type="number" value="0" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
                                     </div>
                                 </div>
-
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 4: Sizes -->
+                <!-- Section 4: Sizes (Safe JS-Managed) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-8">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -162,10 +171,11 @@
                             المقاسات المتاحة
                         </h2>
 
-                        <div class="flex flex-wrap gap-4 justify-end" dir="rtl">
+                        <div class="flex flex-wrap gap-4 justify-end" id="sizesContainer" dir="rtl">
                             @foreach(['S', 'M', 'L', 'XL', 'XXL', '3XL'] as $size)
                                 <label class="relative flex items-center justify-center px-8 py-4 border-2 border-gray-100 rounded-xl cursor-pointer hover:bg-yellow-50 hover:border-yellow-200 transition-all duration-200 group">
-                                    <input type="checkbox" name="tailles[]" value="{{ $size }}" class="hidden peer">
+                                    <!-- No Name Attribute -->
+                                    <input type="checkbox" value="{{ $size }}" class="hidden peer size-toggle">
                                     <span class="text-lg font-bold text-gray-700 peer-checked:text-yellow-700">{{ $size }}</span>
                                     <div class="absolute inset-0 border-2 border-transparent peer-checked:border-yellow-500 rounded-xl pointer-events-none"></div>
                                 </label>
@@ -210,49 +220,43 @@
     </div>
 </div>
 
-<!-- Template for adding colors without triggering firewall (hidden in DOM) -->
 <template id="colorTemplate">
-    <div class="relative group p-4 border-2 border-purple-300 rounded-2xl transition-all duration-200 bg-white shadow-lg shadow-purple-50 color-item">
+    <div class="relative group p-4 border-2 border-gray-100 rounded-2xl transition-all duration-200 bg-white color-item" data-name="" data-hex="">
         <div class="flex items-center justify-between mb-4">
             <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm color-box"></div>
-            <input type="checkbox" name="couleurs[]" checked class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
-            <input type="hidden" name="couleurs_hex[]" class="hex-val">
+            <input type="checkbox" checked class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
         </div>
         <p class="font-bold text-gray-800 text-right color-label"></p>
         <div class="mt-4 stock-container">
             <label class="block text-[10px] text-gray-400 uppercase font-bold text-right mb-1">المخزون</label>
-            <input type="number" name="" value="0" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
+            <input type="number" value="0" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
         </div>
     </div>
 </template>
 
 <script>
+// --- Image Compression Logic (Preserved) ---
 async function handleImageUpload(input) {
     const preview = document.getElementById('imagePreview');
     const previewImg = preview.querySelector('img');
-    const uploadText = document.querySelector('.fa-cloud-upload-alt').nextElementSibling; // Get the text element
-    const originalText = uploadText.innerHTML;
+    const uploadText = document.querySelector('.fa-cloud-upload-alt').nextElementSibling;
+    const originalText = "اضغط هنا لرفع الصورة";
 
     if (input.files && input.files[0]) {
         let file = input.files[0];
         
-        // Show loading state
         uploadText.innerHTML = '<span class="text-blue-600 animate-pulse">جاري معالجة الصورة...</span>';
         
         try {
-            // Compress if image is larger than 1MB to save bandwidth/storage and ensure fast uploads
             if (file.size > 1024 * 1024) {
-                console.log('Compressing image...', ((file.size / 1024) / 1024).toFixed(2) + ' MB');
+                console.log('Compressing...');
                 file = await compressImage(file);
-                console.log('Compressed to:', ((file.size / 1024) / 1024).toFixed(2) + ' MB');
                 
-                // Replace the file in the input
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 input.files = dataTransfer.files;
             }
 
-            // Preview
             const reader = new FileReader();
             reader.onload = function(e) {
                 previewImg.src = e.target.result;
@@ -263,7 +267,7 @@ async function handleImageUpload(input) {
             
         } catch (error) {
             console.error('Error handling image:', error);
-            alert('حدث خطأ أثناء معالجة الصورة. يرجى المحاولة مرة أخرى.');
+            alert('حدث خطأ أثناء معالجة الصورة.');
             uploadText.innerHTML = originalText;
         }
     }
@@ -280,13 +284,11 @@ function compressImage(file) {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 
-                // Max dimensions (Full HD is usually enough)
                 const MAX_WIDTH = 1920;
                 const MAX_HEIGHT = 1920;
                 let width = img.width;
                 let height = img.height;
                 
-                // Maintain aspect ratio
                 if (width > height) {
                     if (width > MAX_WIDTH) {
                         height *= MAX_WIDTH / width;
@@ -302,17 +304,11 @@ function compressImage(file) {
                 canvas.width = width;
                 canvas.height = height;
                 
-                // Draw white background (for transparent PNGs converted to JPEG)
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                // Compress to JPEG with 85% quality
                 canvas.toBlob((blob) => {
-                    if (!blob) {
-                        reject(new Error('Canvas is empty'));
-                        return;
-                    }
                     const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
                         type: 'image/jpeg',
                         lastModified: Date.now(),
@@ -320,20 +316,21 @@ function compressImage(file) {
                     resolve(newFile);
                 }, 'image/jpeg', 0.85);
             };
-            img.onerror = (error) => reject(error);
         };
-        reader.onerror = (error) => reject(error);
     });
 }
 
+// --- UI Logic ---
 function toggleStockDisplay(checkbox) {
-    const container = checkbox.closest('.color-item, .bg-white').querySelector('.stock-container');
+    const container = checkbox.closest('.color-item').querySelector('.stock-container');
+    const wrapper = checkbox.closest('.color-item');
+    
     if (checkbox.checked) {
         container.classList.remove('hidden');
-        checkbox.closest('.color-item, .bg-white').classList.add('border-purple-300', 'bg-white', 'shadow-lg', 'shadow-purple-50');
+        wrapper.classList.add('border-purple-300', 'shadow-lg', 'shadow-purple-50');
     } else {
         container.classList.add('hidden');
-        checkbox.closest('.color-item, .bg-white').classList.remove('border-purple-300', 'bg-white', 'shadow-lg', 'shadow-purple-50');
+        wrapper.classList.remove('border-purple-300', 'shadow-lg', 'shadow-purple-50');
         container.querySelector('input').value = 0;
     }
     calculateTotal();
@@ -342,20 +339,17 @@ function toggleStockDisplay(checkbox) {
 function calculateTotal() {
     let total = 0;
     document.querySelectorAll('.stock-input').forEach(input => {
-        if (!input.closest('.stock-container').classList.contains('hidden')) {
+        const wrapper = input.closest('.stock-container');
+        if (!wrapper.classList.contains('hidden')) {
             total += parseInt(input.value) || 0;
         }
     });
-    document.getElementById('quantite_stock').value = total;
+    document.getElementById('totalStockDisplay').innerText = total;
 }
 
-function openColorModal() {
-    document.getElementById('customColorModal').classList.remove('hidden');
-}
-
-function closeColorModal() {
-    document.getElementById('customColorModal').classList.add('hidden');
-}
+// --- Dynamic colors logic ---
+function openColorModal() { document.getElementById('customColorModal').classList.remove('hidden'); }
+function closeColorModal() { document.getElementById('customColorModal').classList.add('hidden'); }
 
 document.getElementById('newColorHex').addEventListener('input', function() {
     document.getElementById('hexValue').textContent = this.value;
@@ -371,50 +365,40 @@ function addNewColor() {
     const clone = template.content.cloneNode(true);
     const container = clone.querySelector('.relative');
     
+    container.setAttribute('data-name', name);
+    // Strip # safely
+    container.setAttribute('data-hex', hex.replace('#', ''));
+    
     container.querySelector('.color-box').style.backgroundColor = hex;
     container.querySelector('.color-label').textContent = name;
     
-    // Create a unique ID for this custom color
-    const uniqueId = 'c_' + Date.now();
-    
-    // Add data attributes for easy retrieval securely via JS
-    // We REMOVE the 'name' attributes so these don't get submitted individually
-    // preventing WAF issues with array parameters
-    container.setAttribute('data-custom-color', 'true');
-    container.setAttribute('data-name', name);
-    container.setAttribute('data-hex', hex.replace('#', '')); // Strip # here too
-    
+    // Simulate check
     const checkbox = container.querySelector('.color-toggle');
-    checkbox.value = name;
-    checkbox.removeAttribute('name'); // Don't submit this
-    
-    const hexInput = container.querySelector('.hex-val');
-    hexInput.value = hex;
-    hexInput.removeAttribute('name'); // Don't submit this
-    
-    const stockInput = container.querySelector('.stock-input');
-    stockInput.removeAttribute('name'); // Don't submit this
-    stockInput.setAttribute('id', 'stock_' + uniqueId); // For easy access
+    checkbox.checked = true;
+    container.querySelector('.stock-container').classList.remove('hidden');
+    container.classList.add('border-purple-300', 'shadow-lg', 'shadow-purple-50');
     
     document.getElementById('colorsGrid').appendChild(clone);
-
     closeColorModal();
     document.getElementById('newColorName').value = '';
     calculateTotal();
 }
 
-// Form validation and payload construction before submit
+// --- Form Submission Logic (The WAF Fix) ---
 document.getElementById('productForm').addEventListener('submit', function(e) {
-    // 1. Validation
-    const selectedColors = document.querySelectorAll('.color-toggle:checked');
+    // 1. Validate Colors
+    const selectedColors = Array.from(document.querySelectorAll('.color-item'))
+        .filter(el => el.querySelector('.color-toggle').checked);
+        
     if (selectedColors.length === 0) {
         e.preventDefault();
         alert('يرجى اختيار لون واحد على الأقل');
         return false;
     }
     
-    const selectedSizes = document.querySelectorAll('input[name="tailles[]"]:checked');
-    const categorySelect = document.querySelector('select[name="categorie_id"]');
+    // 2. Validate Sizes (unless accessory)
+    const selectedSizes = document.querySelectorAll('.size-toggle:checked');
+    const categorySelect = document.getElementById('categorie_id');
     const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
     const isAccessory = selectedCategory && selectedCategory.text.toLowerCase().includes('accessoire');
     
@@ -424,42 +408,32 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
         return false;
     }
 
-    // 2. Build Custom Colors JSON Payload
-    // This avoids sending complex array structures that WAF might block
-    const customColorElements = document.querySelectorAll('[data-custom-color="true"]');
-    const customColorsData = [];
+    // 3. Construct Safe JSON Payload
+    const variantsData = {
+        colors: [],
+        sizes: [],
+        total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0
+    };
 
-    customColorElements.forEach(el => {
-        // Only include if checked? Or include all? 
-        // Logic says usually we only process checked ones, but the UI implies adding a custom color enables it.
-        // Let's check the checkbox state inside.
-        const checkbox = el.querySelector('.color-toggle');
-        if (checkbox.checked) {
-            const uniqueId = el.querySelector('.stock-input').id.replace('stock_', '');
-            const stockVal = el.querySelector('.stock-input').value || 0;
-            
-            customColorsData.push({
-                name: el.getAttribute('data-name'),
-                hex: el.getAttribute('data-hex'),
-                stock: parseInt(stockVal)
-            });
-        }
+    // Gather Colors
+    selectedColors.forEach(el => {
+        variantsData.colors.push({
+            name: el.getAttribute('data-name'),
+            hex: el.getAttribute('data-hex'), // No #
+            stock: parseInt(el.querySelector('.stock-input').value) || 0
+        });
     });
 
-    // Create or update hidden input
-    let payloadInput = document.getElementById('custom_colors_payload');
-    if (!payloadInput) {
-        payloadInput = document.createElement('input');
-        payloadInput.type = 'hidden';
-        payloadInput.name = 'custom_colors_json';
-        payloadInput.id = 'custom_colors_payload';
-        this.appendChild(payloadInput);
-    }
-    payloadInput.value = JSON.stringify(customColorsData);
-    
-    return true;
-});
+    // Gather Sizes
+    selectedSizes.forEach(el => {
+        variantsData.sizes.push(el.value);
+    });
 
+    // Inject into hidden field
+    document.getElementById('variants_json').value = JSON.stringify(variantsData);
+    
+    return true; // Submit
+});
 </script>
 
 <style>
