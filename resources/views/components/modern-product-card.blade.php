@@ -80,6 +80,7 @@
                                 @php
                                     $couleurData = is_array($couleur) ? $couleur : ['name' => $couleur, 'hex' => '#cccccc'];
                                     $hex = $couleurData['hex'] ?? '#cccccc';
+                                    if (!str_starts_with($hex, '#')) $hex = '#' . $hex;
                                     $colorName = $couleurData['name'] ?? $couleur;
                                 @endphp
                                 <div class="w-4 h-4 border border-white shadow-sm cursor-pointer color-circle"

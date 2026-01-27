@@ -441,6 +441,7 @@ class ProductController extends Controller
             // Traiter les couleurs prédéfinies
             foreach ($couleurs as $index => $couleur) {
                 $hex = $couleursHex[$index] ?? '#cccccc';
+                if (!str_starts_with($hex, '#')) $hex = '#' . $hex;
                 $stock = $request->input("stock_couleur_{$index}", 0);
 
                 $couleursWithHex[] = [
