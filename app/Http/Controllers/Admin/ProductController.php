@@ -132,10 +132,20 @@ class ProductController extends Controller
         
         $variantsData = [];
         if ($hexPayload && ctype_xdigit($hexPayload)) {
-            // hex2bin requires an even length string, which json_encode->hex always produces
             try {
                 $jsonString = hex2bin($hexPayload);
                 $variantsData = json_decode($jsonString, true) ?? [];
+                
+                // HYDRATE REQUEST FROM PAYLOAD
+                // This is critical because the actual form inputs were renamed to '_visible' to avoid WAF
+                $request->merge([
+                    'name' => $variantsData['name'] ?? null,
+                    'description' => $variantsData['description'] ?? null,
+                    'categorie_id' => $variantsData['categorie_id'] ?? null,
+                    'prix_admin' => $variantsData['prix_admin'] ?? null,
+                    'prix_vente' => $variantsData['prix_vente'] ?? null,
+                ]);
+
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to decode product HEX payload: ' . $e->getMessage());
                 $variantsData = [];
@@ -145,6 +155,14 @@ class ProductController extends Controller
         $colorsFromJson = $variantsData['colors'] ?? [];
         $sizesFromJson = $variantsData['sizes'] ?? [];
         $totalStockFromJson = $variantsData['total_stock'] ?? 0;
+        
+        // Add minimal validation here since we are bypassing standard flow
+        $request->validate([
+             'name' => 'required|string',
+             'categorie_id' => 'required',
+             'prix_admin' => 'required',
+             'prix_vente' => 'required'
+        ]);
 
         foreach ($colorsFromJson as $vColor) {
             $name = $vColor['name'];
