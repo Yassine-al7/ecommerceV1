@@ -1,191 +1,388 @@
 @extends('layouts.app')
 
 @section('header_styles')
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    body { font-family: 'Cairo', sans-serif; }
-    .form-glass {
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+    :root {
+        --primary: #4F46E5;
+        --secondary: #6366F1;
+        --bg-main: #F8FAFC;
+        --card-bg: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-light: #64748B;
+        --border-color: #E2E8F0;
     }
-    .input-premium {
-        @apply w-full px-4 py-3 rounded-xl border-gray-200 transition-all duration-300 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 bg-gray-50/50;
+
+    body {
+        font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-dark);
+        margin: 0;
+        padding: 0;
     }
-    .btn-gradient {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+    .form-container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
     }
-    .color-dot {
-        width: 1.5rem;
-        height: 1.5rem;
-        border-radius: 9999px;
-        transition: transform 0.2s;
+
+    .header-section {
+        margin-bottom: 32px;
+        text-align: right;
     }
-    .color-card-v2 {
-        @apply border-2 border-transparent rounded-2xl p-4 transition-all duration-300 bg-white shadow-sm hover:shadow-md cursor-pointer flex items-center justify-between;
+
+    .header-section h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
-    .color-card-v2.active {
-        @apply border-blue-500 bg-blue-50/30 shadow-none;
+
+    .header-section p {
+        color: var(--text-light);
+        font-size: 16px;
+    }
+
+    .card-v3 {
+        background: var(--card-bg);
+        border-radius: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        padding: 32px;
+        margin-bottom: 24px;
+        border: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px;
+    }
+
+    .section-title i {
+        color: var(--primary);
+        font-size: 20px;
+    }
+
+    .input-group {
+        margin-bottom: 24px;
+    }
+
+    .label-v3 {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        text-align: right;
+    }
+
+    .input-v3 {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background-color: #F8FAFC;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        outline: none;
+        text-align: right;
+        box-sizing: border-box;
+    }
+
+    .input-v3:focus {
+        border-color: var(--primary);
+        background-color: #FFFFFF;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .upload-zone {
+        border: 2px dashed var(--border-color);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #FDFDFF;
+        position: relative;
+    }
+
+    .upload-zone:hover {
+        border-color: var(--primary);
+        background: rgba(79, 70, 229, 0.02);
+    }
+
+    .upload-zone i {
+        font-size: 40px;
+        color: var(--primary);
+        margin-bottom: 16px;
+    }
+
+    .upload-zone p {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-light);
+    }
+
+    .swatch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .swatch-card {
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #FFFFFF;
+        position: relative;
+    }
+
+    .swatch-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .swatch-card.active {
+        border-color: var(--primary);
+        background: rgba(79, 70, 229, 0.04);
+        border-width: 2px;
+    }
+
+    .swatch-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .swatch-card.active .swatch-circle i {
+        color: white;
+        text-shadow: 0 0 4px rgba(0,0,0,0.5);
+        display: block;
+    }
+
+    .swatch-circle i {
+        display: none;
+    }
+
+    .swatch-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .stock-input-mini {
+        width: 60px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 12px;
+        text-align: center;
+        margin-top: 4px;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: 16px;
+        border: none;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px -5px rgba(79, 70, 229, 0.5);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+
+    #image-preview-v3 {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 12px;
+        margin-top: 16px;
+        display: none;
+    }
+
+    .total-stock-banner {
+        background: rgba(79, 70, 229, 0.05);
+        border-radius: 16px;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        border: 1px solid rgba(79, 70, 229, 0.1);
+    }
+
+    .total-stock-banner span {
+        font-weight: 700;
+        color: var(--primary);
     }
 </style>
 @endsection
 
 @section('content')
-<div class="min-h-screen bg-gray-50/50 py-12 px-4 sm:px-6 lg:px-8" dir="rtl">
-    <div class="max-w-4xl mx-auto">
-        <!-- Breadcrumbs -->
-        <nav class="flex mb-8 text-gray-400 text-sm font-medium">
-            <a href="{{ route('admin.dashboard') }}" class="hover:text-blue-600 transition-colors">لوحة التحكم</a>
-            <span class="mx-2">/</span>
-            <a href="{{ route('admin.products.index') }}" class="hover:text-blue-600 transition-colors">المنتجات</a>
-            <span class="mx-2">/</span>
-            <span class="text-blue-600">إضافة منتج جديد</span>
-        </nav>
+<div class="form-container" dir="rtl">
+    <div class="header-section">
+        <h1>إضافة منتج جديد</h1>
+        <p>قم بملء البيانات أدناه لإنشاء منتج جديد في متجرك.</p>
+    </div>
 
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-10">
-            <div>
-                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">منتج جديد</h1>
-                <p class="mt-2 text-lg text-gray-500">أضف تفاصيل المنتج والصور والألوان المتاحة.</p>
+    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="v3ProductForm">
+        @csrf
+
+        <!-- المعلومات الأساسية -->
+        <div class="card-v3">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                المعلومات الأساسية
+            </h2>
+            
+            <div class="input-group">
+                <label class="label-v3">اسم المنتج</label>
+                <input type="text" name="name" required class="input-v3" placeholder="أدخل اسم المنتج بالكامل" value="{{ old('name') }}">
             </div>
-            <a href="{{ route('admin.products.index') }}" class="flex items-center text-gray-500 hover:text-gray-700 font-medium">
-                <i class="fas fa-times ml-2 bg-white p-2 rounded-full shadow-sm"></i>
-                إلغاء
-            </a>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="input-group">
+                    <label class="label-v3">التصنيف</label>
+                    <select name="categorie_id" required class="input-v3">
+                        <option value="">اختر التصنيف الرئيسي</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('categorie_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="label-v3">سعر البيع (درهم)</label>
+                    <input type="number" step="0.01" name="prix_vente" required class="input-v3" placeholder="0.00" value="{{ old('prix_vente') }}">
+                </div>
+            </div>
         </div>
 
-        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8" id="v2Form">
-            @csrf
-
-            <!-- Section 1: Basic Info -->
-            <div class="form-glass rounded-3xl p-8 shadow-sm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="col-span-1 md:col-span-2">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">اسم المنتج <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" required class="input-premium text-lg" placeholder="مثال: قميص أزرق عالي الجودة" value="{{ old('name') }}">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف <span class="text-red-500">*</span></label>
-                        <select name="categorie_id" required class="input-premium appearance-none">
-                            <option value="">اختر التصنيف</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ old('categorie_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">سعر البيع (درهم) <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.01" name="prix_vente" required class="input-premium" placeholder="0.00" value="{{ old('prix_vente') }}">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section 2: Colors & Stock -->
-            <div class="form-glass rounded-3xl p-8 shadow-sm">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">الألوان والمخزون</h3>
-                    <button type="button" onclick="showColorModal()" class="text-blue-600 hover:text-blue-700 text-sm font-bold flex items-center">
-                        <i class="fas fa-plus-circle ml-1"></i>
-                        أضف لون خاص
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="colorContainer">
-                    @php
-                        $predefinedColors = [
-                            'أسود' => '#000000',
-                            'أبيض' => '#FFFFFF',
-                            'أحمر' => '#EF4444',
-                            'أزرق' => '#3B82F6',
-                            'أخضر' => '#22C55E',
-                            'رمادي' => '#6B7280'
-                        ];
-                    @endphp
-
-                    @foreach($predefinedColors as $name => $hex)
-                        <div class="color-card-v2" onclick="toggleColor(this, '{{ $loop->index }}')">
-                            <div class="flex items-center gap-4">
-                                <span class="color-dot border border-gray-100 shadow-sm" style="background-color: {{ $hex }}"></span>
-                                <span class="font-bold text-gray-700">{{ $name }}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="hidden stock-input-wrapper flex items-center bg-gray-100 rounded-lg px-2 py-1">
-                                    <span class="text-[10px] text-gray-400 ml-1">المخزون:</span>
-                                    <input type="number" name="stock_couleur_{{ $loop->index }}" value="0" min="0" 
-                                           class="w-12 bg-transparent text-center border-none focus:ring-0 text-sm p-0"
-                                           onclick="event.stopPropagation()">
-                                </div>
-                                <input type="checkbox" name="couleurs[{{ $loop->index }}]" value="{{ $name }}" class="hidden color-checkbox-v2">
-                                <input type="hidden" name="couleurs_hex[{{ $loop->index }}]" value="{{ $hex }}">
-                                <i class="fas fa-check-circle text-blue-500 opacity-0 transition-opacity check-icon"></i>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Section 3: Media -->
-            <div class="form-glass rounded-3xl p-8 shadow-sm">
-                <h3 class="text-xl font-bold text-gray-900 mb-6">صورة المنتج</h3>
-                <div class="relative group">
-                    <div class="border-2 border-dashed border-gray-200 rounded-2xl p-12 text-center transition-colors group-hover:border-blue-400">
-                        <input type="file" name="image" id="main_image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="previewImage(this)">
-                        <div id="preview-container" class="hidden flex justify-center mb-4">
-                            <img id="image-preview" src="#" alt="Preview" class="h-48 w-48 object-cover rounded-2xl shadow-lg border-4 border-white">
-                        </div>
-                        <div id="upload-placeholder" class="space-y-2">
-                            <i class="fas fa-cloud-upload-alt text-4xl text-blue-500"></i>
-                            <p class="text-gray-600 font-bold">اسحب الصورة هنا أو انقر للاختيار</p>
-                            <p class="text-gray-400 text-sm font-medium">PNG, JPG حتى 5MB</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pricing for Admin/Seller -->
-            <div class="form-glass rounded-3xl p-8 shadow-sm">
-                <h3 class="text-xl font-bold text-gray-900 mb-6 font-arabic">إعدادات البيع والعمولة</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">ثمن المنتج عند الأدمن (درهم)</label>
-                        <input type="text" name="prix_admin" required class="input-premium" placeholder="100, 150, 200..." value="{{ old('prix_admin') }}">
-                        <p class="mt-1 text-xs text-gray-400">يمكنك إدخال عدة أثمان مفصولة بفواصل.</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">المخزون الإجمالي المتاح</label>
-                        <input type="number" name="quantite_stock" id="total_stock" readonly class="input-premium bg-gray-50 text-blue-600 font-bold" value="0">
-                        <p class="mt-1 text-xs text-gray-400">يتم احتسابه تلقائياً من مخزون الألوان.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit -->
-            <div class="flex gap-4">
-                <button type="submit" class="flex-1 btn-gradient text-white font-bold py-5 rounded-2xl shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-transform active:scale-95">
-                    حفظ المنتج في المتجر
+        <!-- الألوان والمخزون -->
+        <div class="card-v3">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 class="section-title" style="margin-bottom: 0; border: none; padding: 0;">
+                    <i class="fas fa-palette"></i>
+                    الألوان والمخزون
+                </h2>
+                <button type="button" onclick="triggerCustomColor()" style="background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; font-size: 14px;">
+                    <i class="fas fa-plus-circle"></i> إضافة لون مخصص
                 </button>
             </div>
-        </form>
-    </div>
+
+            <div class="swatch-grid" id="colorPickerGrid">
+                @php
+                    $colors = [
+                        ['name' => 'أسود', 'hex' => '#000000'],
+                        ['name' => 'أبيض', 'hex' => '#FFFFFF'],
+                        ['name' => 'أحمر', 'hex' => '#EF4444'],
+                        ['name' => 'أزرق', 'hex' => '#3B82F6'],
+                        ['name' => 'أخضر', 'hex' => '#22C55E'],
+                        ['name' => 'رمادي', 'hex' => '#94A3B8']
+                    ];
+                @endphp
+
+                @foreach($colors as $index => $color)
+                <div class="swatch-card" onclick="selectSwatch(this, {{ $index }})">
+                    <div class="swatch-circle" style="background-color: {{ $color['hex'] }}">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="swatch-name">{{ $color['name'] }}</span>
+                    <input type="checkbox" name="couleurs[{{ $index }}]" value="{{ $color['name'] }}" class="hidden-check" style="display: none;">
+                    <input type="hidden" name="couleurs_hex[{{ $index }}]" value="{{ $color['hex'] }}">
+                    <div class="stock-container" style="display: none;">
+                        <input type="number" name="stock_couleur_{{ $index }}" value="0" min="0" class="stock-input-mini" onclick="event.stopPropagation()" oninput="updateTotalStockV3()">
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <div class="total-stock-banner">
+                <p style="font-size: 14px; font-weight: 600; color: var(--text-light);">إجمالي المخزون المتاح:</p>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="totalStockValue">0</span>
+                    <input type="hidden" name="quantite_stock" id="total_stock_hidden" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- الوسائط -->
+        <div class="card-v3">
+            <h2 class="section-title">
+                <i class="fas fa-image"></i>
+                صورة المنتج
+            </h2>
+            
+            <div class="upload-zone" onclick="document.getElementById('fileInputV3').click()">
+                <input type="file" name="image" id="fileInputV3" style="display: none;" onchange="handleFileV3(this)">
+                <div id="uploadPlaceholderV3">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>انقر هنا لرفع صورة المنتج الرئيسية</p>
+                    <p style="margin-top: 8px; font-size: 12px;">JPG, PNG حتى 5 ميجابايت</p>
+                </div>
+                <img id="image-preview-v3" src="#" alt="Preview">
+            </div>
+            
+            <div class="input-group" style="margin-top: 24px;">
+                <label class="label-v3">سعر التكلفة (عند الأدمن)</label>
+                <input type="text" name="prix_admin" required class="input-v3" placeholder="مثال: 120, 150" value="{{ old('prix_admin') }}">
+                <p style="text-align: right; font-size: 12px; color: var(--text-light); margin-top: 4px;">يمكنك كتابة عدة أسعار مفصولة بفاصلة.</p>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtnV3">
+            <i class="fas fa-save"></i>
+            حفظ ونشر المنتج
+        </button>
+    </form>
 </div>
 
-<!-- Simple Hidden template for colors to avoid 403 blocks -->
-<template id="customColorTpl">
-    <div class="color-card-v2 active">
-        <div class="flex items-center gap-4">
-            <span class="color-dot border border-gray-100 shadow-sm" id="tpl-dot"></span>
-            <span class="font-bold text-gray-700" id="tpl-name"></span>
+<!-- Template Safe for Firewall -->
+<template id="swatchTemplate">
+    <div class="swatch-card active">
+        <div class="swatch-circle">
+            <i class="fas fa-check"></i>
         </div>
-        <div class="flex items-center gap-3">
-            <div class="stock-input-wrapper flex items-center bg-gray-100 rounded-lg px-2 py-1">
-                <span class="text-[10px] text-gray-400 ml-1 text-center">المخزون:</span>
-                <input type="number" name="STOCK_NAME" value="0" min="0" class="w-12 bg-transparent text-center border-none focus:ring-0 text-sm p-0">
-            </div>
-            <input type="checkbox" name="CHECK_NAME" value="VAL" checked class="hidden">
-            <input type="hidden" name="HEX_NAME" value="VAL">
-            <i class="fas fa-check-circle text-blue-500 check-icon"></i>
+        <span class="swatch-name"></span>
+        <input type="checkbox" checked style="display: none;">
+        <input type="hidden">
+        <div class="stock-container">
+            <input type="number" value="0" min="0" class="stock-input-mini" onclick="event.stopPropagation()" oninput="updateTotalStockV3()">
         </div>
     </div>
 </template>
@@ -194,76 +391,83 @@
 
 @section('scripts')
 <script>
-    function toggleColor(card, id) {
-        const checkbox = card.querySelector('.color-checkbox-v2');
-        const icon = card.querySelector('.check-icon');
-        const stock = card.querySelector('.stock-input-wrapper');
+    function selectSwatch(el, id) {
+        const checkbox = el.querySelector('input[type="checkbox"]');
+        const stockContainer = el.querySelector('.stock-container');
         
-        checkbox.checked = !checkbox.checked;
-        if (checkbox.checked) {
-            card.classList.add('active');
-            icon.classList.remove('opacity-0');
-            stock.classList.remove('hidden');
-            stock.classList.add('flex');
+        el.classList.toggle('active');
+        checkbox.checked = el.classList.contains('active');
+        
+        if (el.classList.contains('active')) {
+            stockContainer.style.display = 'block';
         } else {
-            card.classList.remove('active');
-            icon.classList.add('opacity-0');
-            stock.classList.add('hidden');
-            stock.classList.remove('flex');
+            stockContainer.style.display = 'none';
+            el.querySelector('input[type="number"]').value = 0;
         }
-        updateTotalStock();
+        updateTotalStockV3();
     }
 
-    function updateTotalStock() {
+    function updateTotalStockV3() {
         let total = 0;
-        document.querySelectorAll('input[type="number"][name*="stock_couleur"]').forEach(input => {
-            const card = input.closest('.color-card-v2');
-            if (card.classList.contains('active')) {
+        document.querySelectorAll('.stock-input-mini').forEach(input => {
+            const card = input.closest('.swatch-card');
+            if (card && card.classList.contains('active')) {
                 total += parseInt(input.value) || 0;
             }
         });
-        document.getElementById('total_stock').value = total;
+        document.getElementById('totalStockValue').textContent = total;
+        document.getElementById('total_stock_hidden').value = total;
     }
 
-    document.addEventListener('input', (e) => {
-        if (e.target.name && e.target.name.startsWith('stock_couleur')) {
-            updateTotalStock();
-        }
-    });
-
-    function previewImage(input) {
+    function handleFileV3(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                document.getElementById('image-preview').src = e.target.result;
-                document.getElementById('preview-container').classList.remove('hidden');
-                document.getElementById('upload-placeholder').classList.add('hidden');
+                const preview = document.getElementById('image-preview-v3');
+                const placeholder = document.getElementById('uploadPlaceholderV3');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
             }
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function showColorModal() {
-        // Minimal modal to avoid large JS blocks
-        const name = prompt("أدخل اسم اللون الجديد:");
+    function triggerCustomColor() {
+        const name = prompt("اسم اللون المخصص:");
         if (!name) return;
-        const hex = prompt("أدخل كود اللون (مثل #FF0000):", "#000000");
+        const hex = prompt("كود اللون (مثال #FF0000):", "#6366F1");
         if (!hex) return;
-        
+
         const id = Date.now();
-        const tpl = document.getElementById('customColorTpl');
+        const tpl = document.getElementById('swatchTemplate');
         const clone = tpl.content.cloneNode(true);
+        const card = clone.querySelector('.swatch-card');
         
-        clone.querySelector('#tpl-dot').style.backgroundColor = hex;
-        clone.querySelector('#tpl-name').textContent = name;
-        clone.querySelector('input[name="STOCK_NAME"]').name = "stock_couleur_" + id;
-        clone.querySelector('input[name="CHECK_NAME"]').name = "couleurs[" + id + "]";
-        clone.querySelector('input[name="CHECK_NAME"]').value = name;
-        clone.querySelector('input[name="HEX_NAME"]').name = "couleurs_hex[" + id + "]";
-        clone.querySelector('input[name="HEX_NAME"]').value = hex;
+        card.querySelector('.swatch-circle').style.backgroundColor = hex;
+        card.querySelector('.swatch-name').textContent = name;
         
-        document.getElementById('colorContainer').appendChild(clone);
-        updateTotalStock();
+        const check = card.querySelector('input[type="checkbox"]');
+        check.name = "couleurs[" + id + "]";
+        check.value = name;
+        
+        const hexInp = card.querySelector('input[type="hidden"]');
+        hexInp.name = "couleurs_hex[" + id + "]";
+        hexInp.value = hex;
+        
+        const stock = card.querySelector('input[type="number"]');
+        stock.name = "stock_couleur_" + id;
+        
+        card.onclick = function() {
+            this.classList.toggle('active');
+            check.checked = this.classList.contains('active');
+            this.querySelector('.stock-container').style.display = check.checked ? 'block' : 'none';
+            if (!check.checked) this.querySelector('input[type="number"]').value = 0;
+            updateTotalStockV3();
+        };
+
+        document.getElementById('colorPickerGrid').appendChild(clone);
+        updateTotalStockV3();
     }
 </script>
 @endsection
