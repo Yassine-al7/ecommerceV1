@@ -9,7 +9,7 @@
     </div>
 
     <!-- CLEAN FORM IMPLEMENTATION -->
-    <form action="{{ route('admins.products.store') }}" method="POST" enctype="multipart/form-data" id="finalProductForm">
+    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" id="finalProductForm">
         @csrf
         
         <div class="row">
