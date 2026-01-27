@@ -112,7 +112,12 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        dd('Reached store', $request->all());
+        \Illuminate\Support\Facades\Log::info('Store request reached controller', [
+            'ip' => $request->ip(),
+            'user_id' => auth()->id(),
+            'all_data_except_files' => $request->except(['image', 'color_images_*']),
+            'files_count' => count($request->allFiles())
+        ]);
 
         // Récupérer la catégorie pour vérifier si c'est un accessoire
         $categorie = \App\Models\Category::find($request->categorie_id);
@@ -353,7 +358,13 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        dd('Reached update', $request->all(), $request->file());
+        \Illuminate\Support\Facades\Log::info('Update request reached controller', [
+            'product_id' => $product->id,
+            'ip' => $request->ip(),
+            'user_id' => auth()->id(),
+            'all_data_except_files' => $request->except(['image', 'color_images_*']),
+            'files_count' => count($request->allFiles())
+        ]);
 
         // Récupérer la catégorie pour vérifier si c'est un accessoire
         $categorie = \App\Models\Category::find($request->categorie_id);
@@ -612,6 +623,8 @@ class ProductController extends Controller
                 }
             }
         }
+
+
 
         // Traiter les images des couleurs personnalisées
         $customColorIndex = 0;

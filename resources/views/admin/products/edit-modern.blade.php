@@ -209,13 +209,7 @@
                                                 @if(!empty($existingImages))
                                                     <div class="flex flex-wrap gap-1 mb-2 justify-center existing-images">
                                                         @foreach($existingImages as $image)
-                                                            <div class="relative group/img">
                                                                 <img src="{{ $image }}" class="w-10 h-10 object-cover rounded border border-gray-200">
-                                                                <button type="button" onclick="removeExistingImage('{{ $name }}', '{{ $image }}'); event.stopPropagation();"
-                                                                        class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
-                                                                    <i class="fas fa-times"></i>
-                                                                </button>
-                                                            </div>
                                                         @endforeach
                                                     </div>
                                                 @endif
@@ -569,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hexInput) hexInput.disabled = false;
     });
 });
-let removedImages = [];
+
 
 // Fonction pour basculer l'affichage des détails d'une couleur
 // Fonction pour basculer l'affichage des détails d'une couleur
@@ -1149,17 +1143,9 @@ function validateProductForm() {
         return false;
     }
 
-    // Ajouter les images supprimées au formulaire
-    if (typeof removedImages !== 'undefined' && removedImages.length > 0) {
-        const removedImagesInput = document.createElement('input');
-        removedImagesInput.type = 'hidden';
-        removedImagesInput.name = 'removed_images';
-        removedImagesInput.value = JSON.stringify(removedImages);
-        form.appendChild(removedImagesInput);
-    }
-
     console.log('✅ Formulaire valide, soumission en cours...');
     return true;
 }
+
 </script>
 @endsection
