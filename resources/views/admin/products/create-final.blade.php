@@ -95,7 +95,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-right" dir="rtl">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">سعر التكلفة (درهم) *</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">السعر المقترح للبيع</label>
                                 <input type="number" step="0.01" name="prix_admin_visible" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
                             </div>
 

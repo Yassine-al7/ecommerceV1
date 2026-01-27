@@ -97,7 +97,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-right" dir="rtl">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">سعر التكلفة (درهم) *</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">السعر المقترح للبيع</label>
                                 @php
                                     $prixAdminVal = $product->prix_admin;
                                     // Try to decode if JSON
