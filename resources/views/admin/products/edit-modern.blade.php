@@ -14,7 +14,7 @@
                 </a>
             </div>
 
-            <form method="POST" action="{{ route('admin.products.update', $product->id) }}" enctype="multipart/form-data" class="space-y-8" id="productForm">
+            <form method="POST" action="{{ route('admin.products.update', $product->id) }}" enctype="multipart/form-data" class="space-y-8" id="productForm" onsubmit="return validateProductForm()">
                 @csrf
                 @method('PUT')
 
@@ -1080,6 +1080,46 @@ function initializeHiddenColors() {
             }
         });
     });
+}
+
+// Fonction de validation du formulaire de produit
+function validateProductForm() {
+    console.log('🔍 Validation du formulaire de produit en cours...');
+
+    const form = document.getElementById('productForm');
+
+    const name = form.querySelector('input[name="name"]').value;
+    const category = form.querySelector('select[name="categorie_id"]').value;
+    const prixVente = form.querySelector('input[name="prix_vente"]').value;
+
+    // Vérifier les champs requis
+    if (!name.trim()) {
+        alert('يرجى إدخال اسم المنتج');
+        return false;
+    }
+
+    if (!category) {
+        alert('يرجى اختيار تصنيف');
+        return false;
+    }
+
+    if (!prixVente || prixVente <= 0) {
+        alert('يرجى إدخال سعر بيع صحيح');
+        return false;
+    }
+
+    // Vérifier les couleurs - utiliser les checkboxes avec le sélecteur générique
+    const selectedColors = document.querySelectorAll('input[name^="couleurs"]:checked');
+
+    console.log('🎨 Couleurs cochées:', selectedColors.length);
+
+    if (selectedColors.length === 0) {
+        alert('يرجى اختيار لون واحد على الأقل');
+        return false;
+    }
+
+    console.log('✅ Formulaire valide, soumission en cours...');
+    return true;
 }
 </script>
 @endsection

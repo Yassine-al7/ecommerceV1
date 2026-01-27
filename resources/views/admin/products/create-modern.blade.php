@@ -1002,18 +1002,18 @@ function validateProductForm() {
         return false;
     }
 
-    // Vérifier les couleurs - utiliser les checkboxes
-    const colorCheckboxes = document.querySelectorAll('input[name^="couleurs"]:checked');
+    // Vérifier les couleurs - utiliser les checkboxes avec le sélecteur générique
+    const selectedColors = document.querySelectorAll('input[name^="couleurs"]:checked');
 
-    console.log('🎨 Checkboxes couleurs cochées:', colorCheckboxes.length);
+    console.log('🎨 Couleurs cochées:', selectedColors.length);
 
-    if (colorCheckboxes.length === 0) {
+    if (selectedColors.length === 0) {
         console.log('❌ Aucune couleur sélectionnée');
         alert('يرجى اختيار لون واحد على الأقل');
         return false;
     }
 
-    console.log('✅ Couleurs sélectionnées:', colorCheckboxes.length + customColorCheckboxes.length);
+    console.log('✅ Couleurs sélectionnées:', selectedColors.length);
 
     console.log('✅ Formulaire valide, soumission en cours...');
     return true;
