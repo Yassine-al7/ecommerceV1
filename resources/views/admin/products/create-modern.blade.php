@@ -112,36 +112,48 @@
                                         $currentIndex = $isSelected ? $colorIndex : null;
                                         if ($isSelected) $colorIndex++;
                                     @endphp
-                                    <div class="color-card bg-white border-2 border-gray-200 rounded-xl p-3 hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                                         data-color-name="{{ $name }}" data-color-hex="{{ $hex }}">
-                                        <div class="flex flex-col items-center space-y-2">
-                                            <!-- Checkbox et couleur -->
-                                            <div class="flex items-center space-x-3">
-                                                <input type="checkbox" name="couleurs[]" value="{{ $name }}"
-                                                       @checked(in_array($name, old('couleurs', [])))
-                                                       data-hex="{{ $hex }}"
-                                                       class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 color-checkbox"
-                                                       onchange="toggleColorCard(this)">
-                                                <input type="hidden" name="couleurs_hex[]" value="{{ $hex }}" class="color-hex-input">
-                                                <div class="w-12 h-12 rounded-full border-3 border-gray-300 shadow-md color-preview group-hover:scale-110 transition-transform duration-200"
-                                                     style="background-color: {{ $hex }}"></div>
+                                    <div class="color-card bg-white border-2 border-gray-200 rounded-xl p-3 hover:shadow-lg transition-all duration-300 cursor-pointer group relative flex flex-col items-center justify-between"
+                                         data-color-name="{{ $name }}" data-color-hex="{{ $hex }}"
+                                         style="min-height: 160px;"
+                                         onclick="if(event.target.type !== 'checkbox' && event.target.tagName !== 'INPUT') this.querySelector('input[type=checkbox]').click()">
+                                        
+                                        <!-- Checkbox (Top Left) -->
+                                        <div class="absolute top-3 left-3 z-10">
+                                            <input type="checkbox" name="couleurs[]" value="{{ $name }}"
+                                                   @checked(in_array($name, old('couleurs', [])))
+                                                   data-hex="{{ $hex }}"
+                                                   class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 color-checkbox cursor-pointer"
+                                                   onchange="toggleColorCard(this)">
+                                            
+                                            <!-- Check icon for visual feedback when selected -->
+                                            <div class="hidden check-icon absolute top-0 left-0 w-5 h-5 bg-purple-600 rounded text-white items-center justify-center pointer-events-none">
+                                                <i class="fas fa-check text-xs"></i>
                                             </div>
+                                        </div>
 
-                                            <!-- Nom de la couleur (masqué) -->
-                                            <span class="text-sm font-medium text-gray-700 text-center color-name" style="display: none;">{{ $name }}</span>
+                                        <input type="hidden" name="couleurs_hex[]" value="{{ $hex }}" class="color-hex-input">
 
-                                            <!-- Champ de stock pour cette couleur -->
-                                            <div class="w-full stock-field" style="display: none;">
-                                                <label class="block text-xs text-gray-600 mb-1">الكمية</label>
-                                                <input type="number"
-                                                       name="stock_couleur_{{ $loop->index }}"
-                                                       value="{{ old('stock_couleur_' . $loop->index, 0) }}"
-                                                       min="0"
-                                                       class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input"
-                                                       placeholder="0"
-                                                       oninput="calculateTotalStock()">
-                                            </div>
+                                        <!-- Content Wrapper -->
+                                        <div class="flex flex-col items-center justify-center w-full mt-2 h-full"> 
+                                            <!-- Color Circle -->
+                                            <div class="w-16 h-16 rounded-full shadow-md color-preview group-hover:scale-110 transition-transform duration-200 mb-3 border-2 border-gray-100"
+                                                 style="background-color: {{ $hex }}"></div>
 
+                                            <!-- Name -->
+                                            <span class="text-base font-semibold text-gray-700 text-center color-name block">{{ $name }}</span>
+                                        </div>
+
+                                        <!-- Stock Input (Visible only if selected) -->
+                                        <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100" style="display: none;">
+                                            <label class="block text-xs font-medium text-gray-500 mb-1 text-center">المخزون</label>
+                                            <input type="number"
+                                                   name="stock_couleur_{{ $loop->index }}"
+                                                   value="{{ old('stock_couleur_' . $loop->index, 0) }}"
+                                                   min="0"
+                                                   class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm"
+                                                   placeholder="0"
+                                                   onclick="event.stopPropagation()"
+                                                   oninput="calculateTotalStock()">
                                         </div>
                                     </div>
                                 @endforeach
