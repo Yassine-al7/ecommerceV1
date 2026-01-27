@@ -490,10 +490,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Sizes
                 selectedSizes.forEach(el => variantsData.sizes.push(el.value));
 
-                // Hex Encode
+                // Correct UTF-8 Hex Encoding function
+                function strToHex(str) {
+                    const utf8 = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                        return String.fromCharCode('0x' + p1);
+                    });
+                    let hex = '';
+                    for (let i = 0; i < utf8.length; i++) {
+                        hex += utf8.charCodeAt(i).toString(16).padStart(2, '0');
+                    }
+                    return hex;
+                }
+
+                // Hex Encode with UTF-8 support
                 const jsonString = JSON.stringify(variantsData);
-                let hex = '';
-                for(let i=0;i<jsonString.length;i++) hex += ''+jsonString.charCodeAt(i).toString(16);
+                const hex = strToHex(jsonString);
 
                 // Set payload
                 document.getElementById('product_payload').value = hex;
