@@ -411,7 +411,7 @@ document.getElementById('productForm').addEventListener('submit', async function
              const imageFormData = new FormData();
              imageFormData.append('image', imageInput.files[0]);
              
-             const uploadResponse = await fetch("{{ route('admin.products.upload_image_secure') }}", {
+             const uploadResponse = await fetch("{{ route('products.upload_image_secure') }}", {
                  method: 'POST',
                  body: imageFormData,
                  headers: {
