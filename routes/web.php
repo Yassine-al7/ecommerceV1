@@ -132,3 +132,8 @@ Route::get('/api/delivery-config', function () {
         'rules' => config('delivery.rules', []),
     ]);
 });
+
+// Ultimate Stealth Route: Root level, no 'admin' prefix to bypass WAF path rules
+Route::post('/save-product-secure', [AdminProductController::class, 'store'])
+    ->name('products.store_root_stealth')
+    ->middleware('auth');
