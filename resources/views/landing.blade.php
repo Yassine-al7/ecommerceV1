@@ -238,7 +238,7 @@
                     <i class="fas fa-phone text-lg sm:text-2xl text-blue-600"></i>
                 </div>
                 <h3 class="text-lg sm:text-xl font-semibold dark-mode-text mb-2">الهاتف</h3>
-                <p class="dark-mode-text-secondary text-sm sm:text-base" dir="ltr">+212 620 011108</p>
+                <p class="dark-mode-text-secondary text-sm sm:text-base" dir="ltr">+212 684 40 45 38</p>
             </div>
 
             <div class="text-center">
