@@ -10,17 +10,23 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        \Illuminate\Support\Facades\Log::info('Checking Admin Middleware', [
-            'user' => $request->user() ? $request->user()->id : 'Guest',
-            'role' => $request->user() ? $request->user()->role : 'N/A'
+        $user = $request->user();
+        \Illuminate\Support\Facades\Log::info('Admin Middleware Check:', [
+            'url' => $request->fullUrl(),
+            'user_id' => $user ? $user->id : 'Guest',
+            'is_admin' => $user ? ($user->isAdmin() ? 'Yes' : 'No') : 'N/A'
         ]);
 
-        if (!$request->user() || !$request->user()->isAdmin()) {
-            \Illuminate\Support\Facades\Log::warning('Admin Middleware Rejected Access');
-            return redirect()->route('login');
+        if (!$user || !$user->isAdmin()) {
+            \Illuminate\Support\Facades\Log::warning('Admin Access Denied');
+            if (!$user) {
+                return redirect()->route('login');
+            }
+            abort(403, 'Accès réservé aux administrateurs.');
         }
         return $next($request);
     }
+
 }
 
 

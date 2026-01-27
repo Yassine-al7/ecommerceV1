@@ -25,7 +25,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('admins', App\Http\Controllers\Admin\AdminController::class)->except(['show', 'edit', 'update']);
 
     // Products CRUD - Using modern forms as default
-    Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+    Route::get('/products', function() { return 'Route reached'; })->name('products.index');
     Route::get('/products/create', [AdminProductController::class, 'createModern'])->name('products.create');
     Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}', [AdminProductController::class, 'show'])->name('products.show');
