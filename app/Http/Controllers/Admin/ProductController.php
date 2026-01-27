@@ -107,9 +107,9 @@ class ProductController extends Controller
     public function createModern()
     {
         $categories = \App\Models\Category::all();
-        return view('admin.products.create-v2', compact('categories'));
-    }
+        return view('admin.products.create-new', compact('categories'));
 
+    }
 
 
 
@@ -139,9 +139,10 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Augmenté à 5MB
             'categorie_id' => 'required|exists:categories,id',
             'prix_admin' => 'required|string|min:1|regex:/^[\d\s,.-]+$/', // Accepte nombres, virgules, espaces, points, tirets
-            'prix_vente' => 'required|numeric|min:0',
             'quantite_stock' => 'required|integer|min:0', // Stock global obligatoire
+            'description' => 'nullable|string',
         ];
+
 
         // Ajouter la validation des stocks par couleur
         foreach ($couleurs as $index => $couleur) {
@@ -317,8 +318,10 @@ class ProductController extends Controller
     public function editModern(Product $product)
     {
         $categories = \App\Models\Category::all();
+        // Pour l'édition, on pourrait créer un edit-new, mais pour l'instant voyons si create-new fonctionne
         return view('admin.products.edit-modern', compact('product', 'categories'));
     }
+
 
     public function update(Request $request, Product $product)
     {
