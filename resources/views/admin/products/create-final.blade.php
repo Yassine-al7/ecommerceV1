@@ -488,7 +488,7 @@ document.getElementById('productForm').addEventListener('submit', async function
     } catch (error) {
         console.error('Sequence Error:', error);
         alert(error.message);
-    } final {
+    } finally {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     }
