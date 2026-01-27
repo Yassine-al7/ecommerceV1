@@ -382,75 +382,130 @@ function addNewColor() {
     calculateTotal();
 }
 
-// --- Form Submission Logic (The WAF Fix) ---
-document.getElementById('productForm').addEventListener('submit', function(e) {
+// --- Form Submission Logic (AJAX with Diagnostics) ---
+document.getElementById('productForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
     // 1. Validate Colors
     const selectedColors = Array.from(document.querySelectorAll('.color-item'))
         .filter(el => el.querySelector('.color-toggle').checked);
         
     if (selectedColors.length === 0) {
-        e.preventDefault();
         alert('يرجى اختيار لون واحد على الأقل');
         return false;
     }
     
-    // 2. Validate Sizes (unless accessory)
-    const selectedSizes = document.querySelectorAll('.size-toggle:checked');
+    // 2. Validate Sizes
     const categorySelect = document.getElementById('categorie_id');
     const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
     const isAccessory = selectedCategory && selectedCategory.text.toLowerCase().includes('accessoire');
+    const selectedSizes = document.querySelectorAll('.size-toggle:checked');
     
     if (!isAccessory && selectedSizes.length === 0) {
-        e.preventDefault();
         alert('يرجى اختيار مقاس واحد على الأقل');
         return false;
     }
+    
+    // Show Loading State
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+    submitBtn.disabled = true;
 
-    // 3. Construct Safe JSON Payload
-    const variantsData = {
-        colors: [],
-        sizes: [],
-        total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0
-    };
+    try {
+        // 3. Construct Payload
+        const variantsData = {
+            colors: [],
+            sizes: [],
+            total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
+            // Gather text fields inside payload to hide from WAF
+            name: document.querySelector('input[name="name_visible"]').value,
+            description: document.querySelector('textarea[name="description_visible"]').value,
+            categorie_id: document.querySelector('select[name="categorie_id_visible"]').value,
+            prix_admin: document.querySelector('input[name="prix_admin_visible"]').value,
+            prix_vente: document.querySelector('input[name="prix_vente_visible"]').value
+        };
 
-    // Gather Colors
-    selectedColors.forEach(el => {
-        variantsData.colors.push({
-            name: el.getAttribute('data-name'),
-            hex: el.getAttribute('data-hex'), // No #
-            stock: parseInt(el.querySelector('.stock-input').value) || 0
+        selectedColors.forEach(el => {
+            variantsData.colors.push({
+                name: el.getAttribute('data-name'),
+                hex: el.getAttribute('data-hex'),
+                stock: parseInt(el.querySelector('.stock-input').value) || 0
+            });
         });
-    });
 
-    // Gather Sizes
-    selectedSizes.forEach(el => {
-        variantsData.sizes.push(el.value);
-    });
+        selectedSizes.forEach(el => variantsData.sizes.push(el.value));
 
-    // Inject into hidden field - HEX ENCODED JSON to bypass WAF
-    // This converts the payload to a purely alphanumeric string (0-9, a-f)
-    // No special characters, no structural markers = No WAF triggers.
-    
-    // GATHER ALL TEXT DATA HERE to hide it from WAF
-    variantsData.name = document.querySelector('input[name="name_visible"]').value;
-    variantsData.description = document.querySelector('textarea[name="description_visible"]').value;
-    variantsData.categorie_id = document.querySelector('select[name="categorie_id_visible"]').value;
-    variantsData.prix_admin = document.querySelector('input[name="prix_admin_visible"]').value;
-    variantsData.prix_vente = document.querySelector('input[name="prix_vente_visible"]').value;
-
-    const jsonString = JSON.stringify(variantsData);
-    
-    function stringToHex(str) {
+        // Hex Encode
+        const jsonString = JSON.stringify(variantsData);
         let hex = '';
-        for(let i=0;i<str.length;i++) {
-            hex += ''+str.charCodeAt(i).toString(16);
+        for(let i=0;i<jsonString.length;i++) {
+            hex += ''+jsonString.charCodeAt(i).toString(16);
         }
-        return hex;
+        document.getElementById('product_payload').value = hex;
+
+        // 4. Prepare FormData
+        const formData = new FormData(this);
+        
+        // Remove "visible" fields from FormData to avoid sending them as plain text
+        // (They are already in the payload)
+        formData.delete('name_visible');
+        formData.delete('description_visible');
+        formData.delete('categorie_id_visible');
+        formData.delete('prix_admin_visible');
+        formData.delete('prix_vente_visible');
+
+        // 5. Send Request
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+
+        // 6. Handle Response
+        const contentType = response.headers.get("content-type");
+        if (response.ok) {
+            window.location.href = "{{ route('admin.products.index') }}";
+        } else {
+            // Error Handling
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                const data = await response.json();
+                if (data.errors) {
+                    let msg = "Validation Error:\n";
+                    for (let key in data.errors) msg += data.errors[key].join("\n") + "\n";
+                    alert(msg);
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            } else {
+                // Non-JSON Error (Likely WAF or Server Error)
+                const text = await response.text();
+                console.error("Server Error Response:", text);
+                
+                // Diagnostic Alert
+                if (response.status === 403) {
+                    if (text.includes("admin")) { 
+                        alert("Error 403 (App): You are not authorized as Admin.");
+                    } else if (text.includes("ModSecurity") || text.includes("Firewall") || text.includes("Forbidden")) {
+                        alert("Error 403 (WAF): The server firewall blocked the request.\nTip: Try removing special characters from description.");
+                    } else {
+                        alert("Error 403: Forbidden.\nCheck console for details.");
+                    }
+                } else {
+                    alert(`Error ${response.status}: An unexpected error occurred.`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Submission error:', error);
+        alert('Submission failed: ' + error.message);
+    } final {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
-    
-    document.getElementById('product_payload').value = stringToHex(jsonString);
-    
-    return true; // Submit
 });
 </script>
 
