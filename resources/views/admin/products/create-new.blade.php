@@ -296,7 +296,8 @@ document.getElementById('newColorHex').addEventListener('input', function() {
     checkbox.name = 'custom_colors[' + uniqueId + ']';
     
     const hexInput = container.querySelector('.hex-val');
-    hexInput.value = hex;
+    // Remove # to avoid WAF false positives (e.g. SQL injection filters)
+    hexInput.value = hex.replace('#', '');
     hexInput.name = 'custom_colors_hex[' + uniqueId + ']';
     
     const stockInput = container.querySelector('.stock-input');

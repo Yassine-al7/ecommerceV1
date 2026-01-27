@@ -184,7 +184,10 @@ class ProductController extends Controller
         foreach ($customColors as $key => $couleur) {
             // Récupérer le stock et le code hexadécimal
             $stock = $request->input("stock_custom_{$key}", 0);
-            $hex = $customColorsHex[$key] ?? '#cccccc';
+            $hexRaw = $customColorsHex[$key] ?? 'cccccc';
+            
+            // Re-add # if it was stripped by frontend to avoid WAF
+            $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
 
             $couleursWithHex[] = [
                 'name' => $couleur,
@@ -456,7 +459,10 @@ class ProductController extends Controller
             // Traiter les couleurs personnalisées
             foreach ($customColors as $key => $couleur) {
                 $stock = $request->input("stock_custom_{$key}", 0);
-                $hex = $customColorsHex[$key] ?? '#cccccc';
+                $hexRaw = $customColorsHex[$key] ?? 'cccccc';
+                
+                // Re-add # if it was stripped by frontend to avoid WAF
+                $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
 
                 $couleursWithHex[] = [
                     'name' => $couleur,
