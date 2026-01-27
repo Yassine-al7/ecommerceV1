@@ -806,36 +806,18 @@ function addNewCustomColor() {
             <span class="text-base font-semibold text-gray-700 text-center color-name block">${colorName}</span>
         </div>
 
-        <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100 space-y-3" style="display: block;">
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1 text-center">المخزون</label>
-                <input type="number"
-                       name="stock_couleur_${timestamp}"
-                       value="0"
-                       min="0"
-                       class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm"
-                       placeholder="0"
-                       onclick="event.stopPropagation()"
-                       oninput="calculateTotalStock()">
-            </div>
-
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1 text-center">صور اللون</label>
-                <input type="file" 
-                       name="color_images_${timestamp}[]" 
-                       multiple 
-                       accept="image/*"
-                       class="hidden color-image-input"
-                       onchange="previewColorImages(this, '${colorName}')"
-                       onclick="event.stopPropagation()">
-                <button type="button" 
-                        onclick="this.previousElementSibling.click(); event.stopPropagation();"
-                        class="w-full px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 rounded-lg text-xs font-medium transition-colors">
-                    <i class="fas fa-camera mr-1"></i> رفع صور
-                </button>
-                <div id="preview-${colorName}" class="flex flex-wrap gap-1 mt-2 justify-center"></div>
-            </div>
+        <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100" style="display: block;">
+            <label class="block text-xs font-medium text-gray-500 mb-1 text-center">المخزون</label>
+            <input type="number"
+                   name="stock_couleur_${timestamp}"
+                   value="0"
+                   min="0"
+                   class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm"
+                   placeholder="0"
+                   onclick="event.stopPropagation()"
+                   oninput="calculateTotalStock()">
         </div>
+
     `;
 
     // Insérer avant le bouton d'ajout (le dernier élément de la grille)

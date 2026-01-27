@@ -245,50 +245,11 @@ class ProductController extends Controller
             $data['image'] = null;
         }
 
-        // Gérer les images par couleur
+        // Les images par couleur ne sont plus utilisées selon la demande client
         $colorImages = [];
-
-        // Traiter les images des couleurs prédéfinies
-        foreach ($couleurs as $index => $couleur) {
-            $colorImageKey = "color_images_{$index}";
-            if ($request->hasFile($colorImageKey)) {
-                $images = [];
-                foreach ($request->file($colorImageKey) as $file) {
-                    $imagePath = $file->store('products/colors', 'public');
-                    $images[] = '/storage/' . $imagePath;
-                }
-                if (!empty($images)) {
-                    // Extraire le nom de la couleur (peut être un string ou un array)
-                    $colorName = is_array($couleur) ? $couleur['name'] : $couleur;
-                    $colorImages[] = [
-                        'color' => $colorName,
-                        'images' => $images
-                    ];
-                }
-            }
-        }
-
-        // Traiter les images des couleurs personnalisées
-        $customColorIndex = 0;
-        foreach ($couleursPersonnalisees as $couleur) {
-            $customImageKey = "custom_color_images_{$customColorIndex}";
-            if ($request->hasFile($customImageKey)) {
-                $images = [];
-                foreach ($request->file($customImageKey) as $file) {
-                    $imagePath = $file->store('products/colors', 'public');
-                    $images[] = '/storage/' . $imagePath;
-                }
-                if (!empty($images)) {
-                    $colorImages[] = [
-                        'color' => $couleur,
-                        'images' => $images
-                    ];
-                }
-            }
-            $customColorIndex++;
-        }
-
         $data['color_images'] = json_encode($colorImages);
+
+
 
         // Si aucune image principale n'est fournie mais qu'il y a des images par couleur,
         // utiliser la première image comme image principale
@@ -585,115 +546,9 @@ class ProductController extends Controller
             $data['image'] = $product->image ?? '/storage/products/default-product.svg';
         }
 
-        // Gérer les images par couleur
-        $existingColorImages = $product->color_images ?: [];
-        $colorImages = $existingColorImages;
-
-        // Traiter les images des couleurs prédéfinies
-        foreach ($couleurs as $index => $couleur) {
-            $colorImageKey = "color_images_{$index}";
-            if ($request->hasFile($colorImageKey)) {
-                $images = [];
-                foreach ($request->file($colorImageKey) as $file) {
-                    $imagePath = $file->store('products/colors', 'public');
-                    $images[] = '/storage/' . $imagePath;
-                }
-
-                // Chercher si cette couleur existe déjà dans les images
-                $colorIndex = -1;
-                foreach ($colorImages as $idx => $colorImage) {
-                    if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $couleur) {
-                        $colorIndex = $idx;
-                        break;
-                    }
-                }
-
-                if ($colorIndex >= 0) {
-                    // Ajouter les nouvelles images aux existantes
-                    if (!isset($colorImages[$colorIndex]['images'])) {
-                        $colorImages[$colorIndex]['images'] = [];
-                    }
-                    $colorImages[$colorIndex]['images'] = array_merge($colorImages[$colorIndex]['images'], $images);
-                } else {
-                    // Créer une nouvelle entrée pour cette couleur
-                    $colorImages[] = [
-                        'color' => $couleur,
-                        'images' => $images
-                    ];
-                }
-            }
-        }
-
-
-
-        // Traiter les images des couleurs personnalisées
-        $customColorIndex = 0;
-        foreach ($couleursPersonnalisees as $couleur) {
-            $customImageKey = "custom_color_images_{$customColorIndex}";
-            if ($request->hasFile($customImageKey)) {
-                $images = [];
-                foreach ($request->file($customImageKey) as $file) {
-                    $imagePath = $file->store('products/colors', 'public');
-                    $images[] = '/storage/' . $imagePath;
-                }
-
-                // Chercher si cette couleur existe déjà dans les images
-                $colorIndex = -1;
-                foreach ($colorImages as $idx => $colorImage) {
-                    if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $couleur) {
-                        $colorIndex = $idx;
-                        break;
-                    }
-                }
-
-                if ($colorIndex >= 0) {
-                    // Ajouter les nouvelles images aux existantes
-                    if (!isset($colorImages[$colorIndex]['images'])) {
-                        $colorImages[$colorIndex]['images'] = [];
-                    }
-                    $colorImages[$colorIndex]['images'] = array_merge($colorImages[$colorIndex]['images'], $images);
-                } else {
-                    // Créer une nouvelle entrée pour cette couleur
-                    $colorImages[] = [
-                        'color' => $couleur,
-                        'images' => $images
-                    ];
-                }
-            }
-            $customColorIndex++;
-        }
-
-        // Gérer la suppression d'images
-        if ($request->has('removed_images')) {
-            $removedImages = json_decode($request->input('removed_images'), true);
-            foreach ($removedImages as $removedImage) {
-                // Supprimer le fichier physique
-                if (isset($removedImage['image'])) {
-                    $imagePath = str_replace('/storage/', '', $removedImage['image']);
-                    if (Storage::disk('public')->exists($imagePath)) {
-                        Storage::disk('public')->delete($imagePath);
-                    }
-                }
-
-                // Supprimer de la structure des données
-                foreach ($colorImages as $idx => $colorImage) {
-                    if (is_array($colorImage) && isset($colorImage['color']) && $colorImage['color'] === $removedImage['color']) {
-                        if (isset($colorImage['images'])) {
-                            $colorImages[$idx]['images'] = array_filter($colorImage['images'], function($img) use ($removedImage) {
-                                return $img !== $removedImage['image'];
-                            });
-
-                            // Si plus d'images pour cette couleur, supprimer l'entrée
-                            if (empty($colorImages[$idx]['images'])) {
-                                unset($colorImages[$idx]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        $data['color_images'] = json_encode(array_values($colorImages));
+        // Les images par couleur ne sont plus utilisées selon la demande client
+        $colorImages = $product->color_images ?: [];
+        $data['color_images'] = $colorImages;
 
         // Si aucune image principale n'est fournie mais qu'il y a des images par couleur,
         // utiliser la première image comme image principale
@@ -703,6 +558,7 @@ class ProductController extends Controller
                 $data['image'] = $firstColorImages[0];
             }
         }
+
 
         // Le stock total est maintenant géré dans la logique ci-dessus
 
