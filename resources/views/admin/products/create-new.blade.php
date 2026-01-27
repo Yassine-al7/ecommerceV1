@@ -243,31 +243,28 @@ async function handleImageUpload(input) {
     const originalText = "اضغط هنا لرفع الصورة";
 
     if (input.files && input.files[0]) {
-        let file = input.files[0];
+        const file = input.files[0];
         
-        uploadText.innerHTML = '<span class="text-blue-600 animate-pulse">جاري معالجة الصورة...</span>';
-        
-        try {
-            if (file.size > 1024 * 1024) {
-                console.log('Compressing...');
-                file = await compressImage(file);
-                
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                input.files = dataTransfer.files;
-            }
+        // Validate type client-side
+        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            alert('يرجى اختيار صورة صالحة (JPEG, PNG, GIF)');
+            input.value = ''; // Clear input
+            return;
+        }
 
+        try {
             const reader = new FileReader();
             reader.onload = function(e) {
                 previewImg.src = e.target.result;
                 preview.classList.remove('hidden');
-                uploadText.innerHTML = '<span class="text-green-600 font-bold">تم اختيار الصورة بنجاح</span>';
+                uploadText.innerHTML = '<span class="text-green-600 font-bold">تم اختيار الصورة بنجاح (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)</span>';
             }
             reader.readAsDataURL(file);
             
         } catch (error) {
             console.error('Error handling image:', error);
-            alert('حدث خطأ أثناء معالجة الصورة.');
+            alert('حدث خطأ أثناء معاينة الصورة.');
             uploadText.innerHTML = originalText;
         }
     }
