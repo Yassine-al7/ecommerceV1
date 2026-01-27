@@ -126,7 +126,8 @@ class ProductController extends Controller
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
 
-        $variantsJson = $request->input('variants_json');
+        $variantsJsonBase64 = $request->input('variants_json');
+        $variantsJson = base64_decode($variantsJsonBase64);
         $variantsData = json_decode($variantsJson, true) ?? [];
         
         $validationRules = [

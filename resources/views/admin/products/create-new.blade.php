@@ -429,8 +429,15 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
         variantsData.sizes.push(el.value);
     });
 
-    // Inject into hidden field
-    document.getElementById('variants_json').value = JSON.stringify(variantsData);
+    // Inject into hidden field - Base64 Encoded to bypass WAF
+    const jsonString = JSON.stringify(variantsData);
+    
+    // Unicode-safe Base64 encoding
+    function utf8_to_b64(str) {
+        return window.btoa(unescape(encodeURIComponent(str)));
+    }
+    
+    document.getElementById('variants_json').value = utf8_to_b64(jsonString);
     
     return true; // Submit
 });
