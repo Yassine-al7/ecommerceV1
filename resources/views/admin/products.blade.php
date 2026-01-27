@@ -43,7 +43,7 @@
                             <a href="{{ route('admin.products.index') }}" class="text-gray-600 hover:text-gray-800">إعادة تعيين</a>
                         </form>
                         <div class="actions-buttons">
-                            <a href="{{ route('admin.products.create-new') }}" class="btn bg-blue-600 hover:bg-blue-700 text-white">
+                            <a href="{{ route('admin.products.create') }}" class="btn bg-blue-600 hover:bg-blue-700 text-white">
                                 <i class="fas fa-plus mr-2"></i>إنشاء منتج
                             </a>
                         </div>
