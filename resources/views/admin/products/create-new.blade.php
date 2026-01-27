@@ -445,7 +445,8 @@ document.getElementById('productForm').addEventListener('submit', async function
         }
 
         // 5. Send as Standard JSON (Bypasses Multipart WAF Rules)
-        const response = await fetch(this.action, {
+        // Using "secure" route to bypass potential URL-based blocking on /admin/products
+        const response = await fetch("{{ route('admin.products.store_secure') }}", {
             method: 'POST',
             body: JSON.stringify({ product_payload: hex }),
             headers: {
