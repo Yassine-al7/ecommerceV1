@@ -241,6 +241,25 @@
                             </div>
                     </div>
 
+                    <!-- Template for Custom Color Card -->
+                    <template id="colorCardTemplate">
+                        <div class="color-card bg-white border-2 border-gray-200 rounded-xl p-3 hover:shadow-lg transition-all duration-300 cursor-pointer group relative flex flex-col items-center justify-between selected w-full" style="min-height: 160px;">
+                            <div class="absolute top-3 left-3 z-10">
+                                <input type="checkbox" class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 color-checkbox cursor-pointer">
+                            </div>
+                            <input type="hidden" class="color-hex-input">
+                            <div class="flex flex-col items-center justify-center w-full mt-2 h-full pointer-events-none">
+                                <div class="w-16 h-16 rounded-full shadow-md color-preview group-hover:scale-110 transition-transform duration-200 mb-3 border-2 border-gray-100"></div>
+                                <span class="text-base font-semibold text-gray-700 text-center color-name block"></span>
+                            </div>
+                            <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100" style="display: block;">
+                                <label class="block text-xs font-medium text-gray-500 mb-1 text-center font-arabic">المخزون</label>
+                                <input type="number" value="0" min="0" class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm" placeholder="0">
+                            </div>
+                        </div>
+                    </template>
+
+
                     @error('couleurs')
                         <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                     @enderror
@@ -759,7 +778,6 @@ function removeExistingImage(colorName, imagePath) {
 function addNewCustomColor() {
     const nameInput = document.getElementById('customColorName');
     const colorInput = document.getElementById('customColorPicker');
-    const modal = document.getElementById('customColorModal');
     
     const colorName = nameInput.value.trim();
     const colorHex = colorInput.value;
@@ -769,7 +787,6 @@ function addNewCustomColor() {
         return;
     }
     
-    // Vérifier si la couleur existe déjà
     const exists = Array.from(document.querySelectorAll('input[class*="color-checkbox"]'))
         .some(el => el.value.toLowerCase() === colorName.toLowerCase());
         
@@ -778,60 +795,48 @@ function addNewCustomColor() {
         return;
     }
     
-    // Créer la nouvelle carte de couleur
     const timestamp = Date.now();
-    const colorElement = document.createElement('div');
-    colorElement.className = 'color-card bg-white border-2 border-gray-200 rounded-xl p-3 hover:shadow-lg transition-all duration-300 cursor-pointer group relative flex flex-col items-center justify-between selected w-full';
-    colorElement.setAttribute('data-color-name', colorName);
-    colorElement.setAttribute('data-color-hex', colorHex);
-    colorElement.style.minHeight = '160px';
-    colorElement.onclick = function(event) {
-        if(event.target.type !== 'checkbox' && event.target.tagName !== 'INPUT') 
-            this.querySelector('input[type=checkbox]').click();
+    const template = document.getElementById('colorCardTemplate');
+    const clone = template.content.cloneNode(true);
+    const colorElement = clone.querySelector('.color-card');
+    
+    // Configurer la checkbox
+    const checkbox = colorElement.querySelector('.color-checkbox');
+    checkbox.name = `couleurs[${timestamp}]`;
+    checkbox.value = colorName;
+    checkbox.checked = true;
+    checkbox.dataset.hex = colorHex;
+    checkbox.onchange = function() { updateSelectedColorsCount(); };
+
+    // Configurer le champ hex caché
+    const hexInput = colorElement.querySelector('.color-hex-input');
+    hexInput.name = `couleurs_hex[${timestamp}]`;
+    hexInput.value = colorHex;
+
+    // Configurer le visuel
+    colorElement.querySelector('.color-preview').style.backgroundColor = colorHex;
+    colorElement.querySelector('.color-name').textContent = colorName;
+
+    // Configurer le stock
+    const stockInput = colorElement.querySelector('.stock-input');
+    stockInput.name = `stock_couleur_${timestamp}`;
+    stockInput.oninput = calculateTotalStock;
+    stockInput.onclick = e => e.stopPropagation();
+
+    // Click handler pour la carte
+    colorElement.onclick = function(e) {
+        if(e.target.type !== 'checkbox' && e.target.tagName !== 'INPUT') 
+            checkbox.click();
     };
 
-    colorElement.innerHTML = `
-        <div class="absolute top-3 left-3 z-10">
-            <input type="checkbox" name="couleurs[${timestamp}]" value="${colorName}" checked
-                   data-hex="${colorHex}"
-                   class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 color-checkbox cursor-pointer"
-                   onchange="toggleColorCard(this)">
-        </div>
-
-        <input type="hidden" name="couleurs_hex[${timestamp}]" value="${colorHex}" class="color-hex-input">
-
-        <div class="flex flex-col items-center justify-center w-full mt-2 h-full">
-            <div class="w-16 h-16 rounded-full shadow-md color-preview group-hover:scale-110 transition-transform duration-200 mb-3 border-2 border-gray-100"
-                 style="background-color: ${colorHex}"></div>
-            <span class="text-base font-semibold text-gray-700 text-center color-name block">${colorName}</span>
-        </div>
-
-        <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100" style="display: block;">
-            <label class="block text-xs font-medium text-gray-500 mb-1 text-center">المخزون</label>
-            <input type="number"
-                   name="stock_couleur_${timestamp}"
-                   value="0"
-                   min="0"
-                   class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm"
-                   placeholder="0"
-                   onclick="event.stopPropagation()"
-                   oninput="calculateTotalStock()">
-        </div>
-
-    `;
-
-    // Insérer avant le bouton d'ajout (le dernier élément de la grille)
     const addButton = document.querySelector('.color-card[onclick*="customColorModal"]');
     addButton.parentNode.insertBefore(colorElement, addButton);
     
-    // Fermer le modal et réinitialiser
-    modal.classList.add('hidden');
+    document.getElementById('customColorModal').classList.add('hidden');
     nameInput.value = '';
-    colorInput.value = '#8b5cf6';
-    document.getElementById('customColorHex').textContent = '#8b5cf6';
-    
     updateSelectedColorsCount();
 }
+
 
 // Fonction pour calculer le stock total
 function calculateTotalStock() {
