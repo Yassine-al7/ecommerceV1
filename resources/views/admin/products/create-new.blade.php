@@ -47,17 +47,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-right" dir="rtl">
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">اسم المنتج *</label>
-                                <input type="text" name="name" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" placeholder="مثال: قميص أبيض عصري">
+                                <input type="text" name="name_visible" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" placeholder="مثال: قميص أبيض عصري">
                             </div>
 
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">وصف المنتج</label>
-                                <textarea name="description" rows="4" class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-right" placeholder="أدخل وصفاً تفصيلياً للمنتج..."></textarea>
+                                <textarea name="description_visible" rows="4" class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-right" placeholder="أدخل وصفاً تفصيلياً للمنتج..."></textarea>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">التصنيف *</label>
-                                <select name="categorie_id" id="categorie_id" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+                                <select name="categorie_id_visible" id="categorie_id" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                                     <option value="">اختر التصنيف</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -96,12 +96,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-right" dir="rtl">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">سعر التكلفة (درهم) *</label>
-                                <input type="number" step="0.01" name="prix_admin" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
+                                <input type="number" step="0.01" name="prix_admin_visible" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">سعر البيع (درهم) *</label>
-                                <input type="number" step="0.01" name="prix_vente" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
+                                <input type="number" step="0.01" name="prix_vente_visible" required class="block w-full px-4 py-4 rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" placeholder="0.00">
                             </div>
                         </div>
                     </div>
@@ -431,6 +431,13 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
     // This converts the payload to a purely alphanumeric string (0-9, a-f)
     // No special characters, no structural markers = No WAF triggers.
     
+    // GATHER ALL TEXT DATA HERE to hide it from WAF
+    variantsData.name = document.querySelector('input[name="name_visible"]').value;
+    variantsData.description = document.querySelector('textarea[name="description_visible"]').value;
+    variantsData.categorie_id = document.querySelector('select[name="categorie_id_visible"]').value;
+    variantsData.prix_admin = document.querySelector('input[name="prix_admin_visible"]').value;
+    variantsData.prix_vente = document.querySelector('input[name="prix_vente_visible"]').value;
+
     const jsonString = JSON.stringify(variantsData);
     
     function stringToHex(str) {
