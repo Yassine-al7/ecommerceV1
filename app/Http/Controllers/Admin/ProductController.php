@@ -112,6 +112,8 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        dd('Reached store', $request->all());
+
         // Récupérer la catégorie pour vérifier si c'est un accessoire
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
@@ -351,6 +353,8 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        dd('Reached update', $request->all(), $request->file());
+
         // Récupérer la catégorie pour vérifier si c'est un accessoire
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && (
@@ -397,13 +401,13 @@ class ProductController extends Controller
         if ($hasStockFields) {
             foreach ($couleurs as $index => $couleur) {
                 if ($request->has("stock_couleur_{$index}")) {
-                    $validationRules["stock_couleur_{$index}"] = 'required|integer|min:1';
+                    $validationRules["stock_couleur_{$index}"] = 'required|integer|min:0';
                 }
             }
 
             foreach ($couleursPersonnalisees as $index => $couleur) {
                 if ($request->has("stock_couleur_custom_{$index}")) {
-                    $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:1';
+                    $validationRules["stock_couleur_custom_{$index}"] = 'required|integer|min:0';
                 }
             }
         }
