@@ -107,8 +107,9 @@ class ProductController extends Controller
     public function createModern()
     {
         $categories = \App\Models\Category::all();
-        return view('admin.products.create-modern', compact('categories'));
+        return view('admin.products.create-v2', compact('categories'));
     }
+
 
 
 
