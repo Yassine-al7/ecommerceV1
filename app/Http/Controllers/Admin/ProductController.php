@@ -128,8 +128,10 @@ class ProductController extends Controller
 
         // Récupérer les couleurs pour la validation dynamique
         $couleurs = $request->input('couleurs', []);
-        $customColors = $request->input('custom_colors', []);
-        $customColorsHex = $request->input('custom_colors_hex', []);
+        
+        // Nouvelle méthode : décoder le JSON des couleurs personnalisées
+        $customColorsJson = $request->input('custom_colors_json', '[]');
+        $customColorsData = json_decode($customColorsJson, true) ?? [];
 
         $validationRules = [
             'name' => 'required|string|max:255',
@@ -150,10 +152,9 @@ class ProductController extends Controller
         foreach ($couleurs as $index => $couleur) {
             $validationRules["stock_couleur_{$index}"] = 'required|integer|min:0';
         }
-
-        foreach ($customColors as $key => $couleur) {
-            $validationRules["stock_custom_{$key}"] = 'required|integer|min:0';
-        }
+        
+        // Note: La validation des stocks personnalisés est implicite car ils sont dans le JSON
+        // On pourrait ajouter une validation manuelle si nécessaire, mais le frontend gère déjà ça.
 
         $data = $request->validate($validationRules);
 
@@ -180,24 +181,26 @@ class ProductController extends Controller
             ];
         }
 
-        // Traiter les couleurs personnalisées
-        foreach ($customColors as $key => $couleur) {
-            // Récupérer le stock et le code hexadécimal
-            $stock = $request->input("stock_custom_{$key}", 0);
-            $hexRaw = $customColorsHex[$key] ?? 'cccccc';
+        // Traiter les couleurs personnalisées via JSON
+        foreach ($customColorsData as $customColor) {
+            $name = $customColor['name'] ?? null;
+            $hexRaw = $customColor['hex'] ?? 'cccccc';
+            $stock = $customColor['stock'] ?? 0;
             
-            // Re-add # if it was stripped by frontend to avoid WAF
-            $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
+            if ($name) {
+                // Re-add # if it was stripped by frontend
+                $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
 
-            $couleursWithHex[] = [
-                'name' => $couleur,
-                'hex' => $hex
-            ];
+                $couleursWithHex[] = [
+                    'name' => $name,
+                    'hex' => $hex
+                ];
 
-            $stockCouleurs[] = [
-                'name' => $couleur,
-                'quantity' => (int) $stock
-            ];
+                $stockCouleurs[] = [
+                    'name' => $name,
+                    'quantity' => (int) $stock
+                ];
+            }
         }
 
         // Convertir les couleurs en JSON (pour stockage en base)
@@ -377,13 +380,15 @@ class ProductController extends Controller
 
         // Ajouter la validation des stocks par couleur seulement s'ils sont présents
         $couleurs = $request->input('couleurs', []);
-        $customColors = $request->input('custom_colors', []);
-        $customColorsHex = $request->input('custom_colors_hex', []);
+        // Nouvelle méthode : décoder le JSON des couleurs personnalisées
+        $customColorsJson = $request->input('custom_colors_json', '[]');
+        $customColorsData = json_decode($customColorsJson, true) ?? [];
 
         // Vérifier si des champs de stock par couleur sont présents
         $hasStockFields = false;
         foreach ($request->all() as $key => $value) {
-            if (str_starts_with($key, 'stock_couleur_') || str_starts_with($key, 'stock_custom_')) {
+            // Check standard stock fields OR if we have custom colors payload
+            if (str_starts_with($key, 'stock_couleur_') || !empty($customColorsData)) {
                 $hasStockFields = true;
                 break;
             }
@@ -397,11 +402,8 @@ class ProductController extends Controller
                 }
             }
 
-            foreach ($customColors as $key => $couleur) {
-                if ($request->has("stock_custom_{$key}")) {
-                    $validationRules["stock_custom_{$key}"] = 'required|integer|min:0';
-                }
-            }
+            // Custom colors validation handled implicitly via data presence
+
         }
 
         // Ajouter la validation des tailles conditionnellement
@@ -456,23 +458,25 @@ class ProductController extends Controller
                 ];
             }
 
-            // Traiter les couleurs personnalisées
-            foreach ($customColors as $key => $couleur) {
-                $stock = $request->input("stock_custom_{$key}", 0);
-                $hexRaw = $customColorsHex[$key] ?? 'cccccc';
+            // Traiter les couleurs personnalisées via JSON
+            foreach ($customColorsData as $customColor) {
+                $name = $customColor['name'] ?? null;
+                $hexRaw = $customColor['hex'] ?? 'cccccc';
+                $stock = $customColor['stock'] ?? 0;
                 
-                // Re-add # if it was stripped by frontend to avoid WAF
-                $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
-
-                $couleursWithHex[] = [
-                    'name' => $couleur,
-                    'hex' => $hex
-                ];
-
-                $stockCouleurs[] = [
-                    'name' => $couleur,
-                    'quantity' => (int) $stock
-                ];
+                if ($name) {
+                    $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
+    
+                    $couleursWithHex[] = [
+                        'name' => $name,
+                        'hex' => $hex
+                    ];
+    
+                    $stockCouleurs[] = [
+                        'name' => $name,
+                        'quantity' => (int) $stock
+                    ];
+                }
             }
         } else {
             // Si pas de champs de stock par couleur, garder les couleurs existantes

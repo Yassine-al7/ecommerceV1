@@ -288,20 +288,26 @@ document.getElementById('newColorHex').addEventListener('input', function() {
     container.querySelector('.color-label').textContent = name;
     
     // Create a unique ID for this custom color
-    const uniqueId = 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const uniqueId = 'c_' + Date.now();
     
-    // Set names for the inputs
+    // Add data attributes for easy retrieval securely via JS
+    // We REMOVE the 'name' attributes so these don't get submitted individually
+    // preventing WAF issues with array parameters
+    container.setAttribute('data-custom-color', 'true');
+    container.setAttribute('data-name', name);
+    container.setAttribute('data-hex', hex.replace('#', '')); // Strip # here too
+    
     const checkbox = container.querySelector('.color-toggle');
     checkbox.value = name;
-    checkbox.name = 'custom_colors[' + uniqueId + ']';
+    checkbox.removeAttribute('name'); // Don't submit this
     
     const hexInput = container.querySelector('.hex-val');
-    // Remove # to avoid WAF false positives (e.g. SQL injection filters)
-    hexInput.value = hex.replace('#', '');
-    hexInput.name = 'custom_colors_hex[' + uniqueId + ']';
+    hexInput.value = hex;
+    hexInput.removeAttribute('name'); // Don't submit this
     
     const stockInput = container.querySelector('.stock-input');
-    stockInput.name = 'stock_custom_' + uniqueId;
+    stockInput.removeAttribute('name'); // Don't submit this
+    stockInput.setAttribute('id', 'stock_' + uniqueId); // For easy access
     
     document.getElementById('colorsGrid').appendChild(clone);
 
@@ -310,9 +316,9 @@ document.getElementById('newColorHex').addEventListener('input', function() {
     calculateTotal();
 }
 
-// Form validation before submit
+// Form validation and payload construction before submit
 document.getElementById('productForm').addEventListener('submit', function(e) {
-    // Check if at least one color is selected
+    // 1. Validation
     const selectedColors = document.querySelectorAll('.color-toggle:checked');
     if (selectedColors.length === 0) {
         e.preventDefault();
@@ -320,7 +326,6 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
         return false;
     }
     
-    // Check if at least one size is selected (unless it's an accessory)
     const selectedSizes = document.querySelectorAll('input[name="tailles[]"]:checked');
     const categorySelect = document.querySelector('select[name="categorie_id"]');
     const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
@@ -331,6 +336,39 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
         alert('يرجى اختيار مقاس واحد على الأقل');
         return false;
     }
+
+    // 2. Build Custom Colors JSON Payload
+    // This avoids sending complex array structures that WAF might block
+    const customColorElements = document.querySelectorAll('[data-custom-color="true"]');
+    const customColorsData = [];
+
+    customColorElements.forEach(el => {
+        // Only include if checked? Or include all? 
+        // Logic says usually we only process checked ones, but the UI implies adding a custom color enables it.
+        // Let's check the checkbox state inside.
+        const checkbox = el.querySelector('.color-toggle');
+        if (checkbox.checked) {
+            const uniqueId = el.querySelector('.stock-input').id.replace('stock_', '');
+            const stockVal = el.querySelector('.stock-input').value || 0;
+            
+            customColorsData.push({
+                name: el.getAttribute('data-name'),
+                hex: el.getAttribute('data-hex'),
+                stock: parseInt(stockVal)
+            });
+        }
+    });
+
+    // Create or update hidden input
+    let payloadInput = document.getElementById('custom_colors_payload');
+    if (!payloadInput) {
+        payloadInput = document.createElement('input');
+        payloadInput.type = 'hidden';
+        payloadInput.name = 'custom_colors_json';
+        payloadInput.id = 'custom_colors_payload';
+        this.appendChild(payloadInput);
+    }
+    payloadInput.value = JSON.stringify(customColorsData);
     
     return true;
 });
