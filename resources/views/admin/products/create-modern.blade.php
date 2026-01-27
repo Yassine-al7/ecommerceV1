@@ -157,6 +157,40 @@
                                         </div>
                                     </div>
                                 @endforeach
+
+                                <!-- Custom Add Button -->
+                                <div class="color-card bg-purple-50 border-2 border-dashed border-purple-400 rounded-xl p-3 hover:bg-purple-100 transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center relative"
+                                     style="min-height: 160px;"
+                                     onclick="document.getElementById('customColorModal').classList.remove('hidden')">
+                                    <div class="w-12 h-12 rounded-full bg-white border-2 border-purple-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                        <i class="fas fa-plus text-purple-600 text-xl"></i>
+                                    </div>
+                                    <span class="text-base font-bold text-purple-700 text-center">إضافة لون<br>مخصص</span>
+                                </div>
+                            </div>
+
+                            <!-- Modal for Custom Color -->
+                            <div id="customColorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                                <div class="bg-white rounded-xl p-6 w-80 shadow-2xl transform transition-all scale-100">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">إضافة لون جديد</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">اسم اللون</label>
+                                            <input type="text" id="customColorName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" placeholder="مثال: ذهبي">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">اللون</label>
+                                            <div class="flex items-center space-x-3">
+                                                <input type="color" id="customColorPicker" class="h-10 w-10 rounded cursor-pointer border-0 p-0" value="#8b5cf6" onchange="document.getElementById('customColorHex').textContent = this.value">
+                                                <span id="customColorHex" class="text-sm text-gray-500 font-mono">#8b5cf6</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-end space-x-2 pt-2">
+                                            <button type="button" onclick="document.getElementById('customColorModal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">إلغاء</button>
+                                            <button type="button" onclick="addNewCustomColor()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">إضافة</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -682,6 +716,107 @@ function addCustomSize() {
 
     // Réinitialiser l'input
     input.value = '';
+}
+
+// Fonction pour ajouter une couleur personnalisée via le modal
+function addNewCustomColor() {
+    const nameInput = document.getElementById('customColorName');
+    const colorInput = document.getElementById('customColorPicker');
+    const modal = document.getElementById('customColorModal');
+    
+    const colorName = nameInput.value.trim();
+    const colorHex = colorInput.value;
+    
+    if (!colorName) {
+        alert('يرجى إدخال اسم اللون');
+        return;
+    }
+    
+    // Vérifier si la couleur existe déjà
+    const exists = Array.from(document.querySelectorAll('input[name="couleurs[]"]'))
+        .some(el => el.value.toLowerCase() === colorName.toLowerCase());
+        
+    if (exists) {
+        alert('هذا اللون موجود بالفعل');
+        return;
+    }
+    
+    // Créer la nouvelle carte de couleur
+    const timestamp = Date.now();
+    const colorElement = document.createElement('div');
+    colorElement.className = 'color-card bg-white border-2 border-gray-200 rounded-xl p-3 hover:shadow-lg transition-all duration-300 cursor-pointer group relative flex flex-col items-center justify-between selected w-full';
+    colorElement.setAttribute('data-color-name', colorName);
+    colorElement.setAttribute('data-color-hex', colorHex);
+    colorElement.style.minHeight = '160px';
+    colorElement.onclick = function(event) {
+        if(event.target.type !== 'checkbox' && event.target.tagName !== 'INPUT') 
+            this.querySelector('input[type=checkbox]').click();
+    };
+
+    colorElement.innerHTML = `
+        <div class="absolute top-3 left-3 z-10">
+            <input type="checkbox" name="couleurs[]" value="${colorName}" checked
+                   data-hex="${colorHex}"
+                   class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 color-checkbox cursor-pointer"
+                   onchange="toggleColorCard(this)">
+        </div>
+
+        <input type="hidden" name="couleurs_hex[]" value="${colorHex}" class="color-hex-input">
+
+        <div class="flex flex-col items-center justify-center w-full mt-2 h-full">
+            <div class="w-16 h-16 rounded-full shadow-md color-preview group-hover:scale-110 transition-transform duration-200 mb-3 border-2 border-gray-100"
+                 style="background-color: ${colorHex}"></div>
+            <span class="text-base font-semibold text-gray-700 text-center color-name block">${colorName}</span>
+        </div>
+
+        <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100" style="display: block;">
+            <label class="block text-xs font-medium text-gray-500 mb-1 text-center">المخزون</label>
+            <input type="number"
+                   name="stock_couleur_custom_${timestamp}"
+                   value="0"
+                   min="0"
+                   class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm"
+                   placeholder="0"
+                   onclick="event.stopPropagation()"
+                   oninput="calculateTotalStock()">
+        </div>
+    `;
+
+    // Insérer avant le bouton d'ajout (le dernier élément de la grille)
+    const addButton = document.querySelector('.color-card[onclick*="customColorModal"]');
+    addButton.parentNode.insertBefore(colorElement, addButton);
+    
+    // Fermer le modal et réinitialiser
+    modal.classList.add('hidden');
+    nameInput.value = '';
+    colorInput.value = '#8b5cf6';
+    document.getElementById('customColorHex').textContent = '#8b5cf6';
+    
+    updateSelectedColorsCount();
+}
+
+// Fonction pour calculer le stock total
+function calculateTotalStock() {
+    const stockInputs = document.querySelectorAll('.stock-input');
+    let total = 0;
+
+    stockInputs.forEach(input => {
+        const card = input.closest('.color-card');
+        if (card && card.classList.contains('selected')) {
+             const value = parseInt(input.value) || 0;
+             total += value;
+        }
+    });
+
+    const quantiteStock = document.getElementById('quantite_stock');
+    if (quantiteStock) {
+        quantiteStock.value = total;
+    }
+    
+    const totalDisplay = document.getElementById('totalStockDisplay');
+    if (totalDisplay) {
+        totalDisplay.textContent = total;
+    }
 }
 
 // Fonction pour réinitialiser le formulaire
