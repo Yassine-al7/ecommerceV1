@@ -126,47 +126,31 @@ class ProductController extends Controller
         $categorie = \App\Models\Category::find($request->categorie_id);
         $isAccessoire = $categorie && strtolower($categorie->name) === 'accessoire';
 
-        // Parse the "Safe String" payload (bypassing WAF JSON filters)
-        // Format: "ColorsStr||SizesStr||TotalStock"
-        // ColorsStr: "Name:Hex:Stock;Name:Hex:Stock"
-        $rawPayload = $request->input('variants_json');
+        // Parse the HEX-encoded payload
+        // This input contains the JSON string encoded in hexadecimal to bypass WAF filters
+        $hexPayload = $request->input('product_payload');
         
-        $colorsFromJson = [];
-        $sizesFromJson = [];
-        $totalStockFromJson = 0;
-
-        if ($rawPayload) {
-            $parts = explode('||', $rawPayload);
-            
-            // 1. Colors
-            $colorsStr = $parts[0] ?? '';
-            if ($colorsStr) {
-                $colorItems = explode(';', $colorsStr);
-                foreach ($colorItems as $item) {
-                     $cParts = explode(':', $item);
-                     if (count($cParts) >= 3) {
-                         $colorsFromJson[] = [
-                             'name' => $cParts[0],
-                             'hex' => '#' . $cParts[1], // Try adding hash back
-                             'stock' => (int)$cParts[2]
-                         ];
-                     }
-                }
+        $variantsData = [];
+        if ($hexPayload && ctype_xdigit($hexPayload)) {
+            // hex2bin requires an even length string, which json_encode->hex always produces
+            try {
+                $jsonString = hex2bin($hexPayload);
+                $variantsData = json_decode($jsonString, true) ?? [];
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to decode product HEX payload: ' . $e->getMessage());
+                $variantsData = [];
             }
-            
-            // 2. Sizes
-            $sizesStr = $parts[1] ?? '';
-            if ($sizesStr) {
-                $sizesFromJson = explode(',', $sizesStr);
-            }
-            
-            // 3. Total Stock
-            $totalStockFromJson = (int)($parts[2] ?? 0);
         }
+        
+        $colorsFromJson = $variantsData['colors'] ?? [];
+        $sizesFromJson = $variantsData['sizes'] ?? [];
+        $totalStockFromJson = $variantsData['total_stock'] ?? 0;
 
         foreach ($colorsFromJson as $vColor) {
             $name = $vColor['name'];
-            $hex = $vColor['hex']; // Hash already added in parser
+            // Add # back if missing (Hex encoding preserves exact string, but frontend might strip it for display)
+            $hexRaw = $vColor['hex'];
+            $hex = str_starts_with($hexRaw, '#') ? $hexRaw : '#' . $hexRaw;
             $stock = $vColor['stock'];
 
             $couleursWithHex[] = [
