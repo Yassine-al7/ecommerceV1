@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-6xl mx-auto">
-        <div class="bg-white rounded-xl shadow-lg p-8">
+            <div class="bg-white rounded-xl shadow-lg p-8">
             <div class="flex items-center justify-between mb-8">
                 <h1 class="text-3xl font-bold text-gray-800 flex items-center">
                     <i class="fas fa-edit text-blue-600 mr-3"></i>
@@ -161,8 +161,6 @@
                                     @php
                                         $isActive = in_array($name, $activeColors);
                                         $existingImages = $imagesByColor[$name] ?? [];
-                                        $currentIndex = $isActive ? $colorIndex : null; // Index seulement pour les couleurs actives
-                                        if ($isActive) $colorIndex++; // Incrémenter seulement pour les couleurs actives
                                     @endphp
                                     <div class="color-card bg-white border-2 border-gray-200 rounded-xl p-3 hover:shadow-lg transition-all duration-300 cursor-pointer group relative flex flex-col items-center justify-between {{ $isActive ? 'selected' : '' }} w-full"
                                          data-color-name="{{ $name }}" data-color-hex="{{ $hex }}"
@@ -171,14 +169,14 @@
                                         
                                         <!-- Checkbox (Top Left) -->
                                         <div class="absolute top-3 left-3 z-10">
-                                            <input type="checkbox" name="couleurs[]" value="{{ $name }}"
+                                            <input type="checkbox" name="couleurs[{{ $loop->index }}]" value="{{ $name }}"
                                                    @checked($isActive)
                                                    data-hex="{{ $hex }}"
                                                    class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 color-checkbox cursor-pointer"
                                                    onchange="toggleColorCard(this)">
                                         </div>
 
-                                        <input type="hidden" name="couleurs_hex[]" value="{{ $hex }}" class="color-hex-input">
+                                        <input type="hidden" name="couleurs_hex[{{ $loop->index }}]" value="{{ $hex }}" class="color-hex-input">
 
                                         <!-- Content Wrapper -->
                                         <div class="flex flex-col items-center justify-center w-full mt-2 h-full">
@@ -194,8 +192,8 @@
                                         <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100" style="display: {{ $isActive ? 'block' : 'none' }};">
                                             <label class="block text-xs font-medium text-gray-500 mb-1 text-center">المخزون</label>
                                             <input type="number"
-                                                   name="stock_couleur_{{ $isActive ? $currentIndex : $loop->index }}"
-                                                   value="{{ old('stock_couleur_' . ($isActive ? $currentIndex : $loop->index), $stockByColor[$name] ?? 0) }}"
+                                                   name="stock_couleur_{{ $loop->index }}"
+                                                   value="{{ old('stock_couleur_' . $loop->index, $stockByColor[$name] ?? 0) }}"
                                                    min="0"
                                                    class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm"
                                                    placeholder="0"
@@ -770,7 +768,7 @@ function addNewCustomColor() {
     }
     
     // Vérifier si la couleur existe déjà
-    const exists = Array.from(document.querySelectorAll('input[name="couleurs[]"]'))
+    const exists = Array.from(document.querySelectorAll('input[class*="color-checkbox"]'))
         .some(el => el.value.toLowerCase() === colorName.toLowerCase());
         
     if (exists) {
@@ -792,13 +790,13 @@ function addNewCustomColor() {
 
     colorElement.innerHTML = `
         <div class="absolute top-3 left-3 z-10">
-            <input type="checkbox" name="couleurs[]" value="${colorName}" checked
+            <input type="checkbox" name="couleurs[${timestamp}]" value="${colorName}" checked
                    data-hex="${colorHex}"
                    class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 color-checkbox cursor-pointer"
                    onchange="toggleColorCard(this)">
         </div>
 
-        <input type="hidden" name="couleurs_hex[]" value="${colorHex}" class="color-hex-input">
+        <input type="hidden" name="couleurs_hex[${timestamp}]" value="${colorHex}" class="color-hex-input">
 
         <div class="flex flex-col items-center justify-center w-full mt-2 h-full">
             <div class="w-16 h-16 rounded-full shadow-md color-preview group-hover:scale-110 transition-transform duration-200 mb-3 border-2 border-gray-100"
@@ -809,7 +807,7 @@ function addNewCustomColor() {
         <div class="w-full stock-field mt-3 pt-2 border-t border-gray-100" style="display: block;">
             <label class="block text-xs font-medium text-gray-500 mb-1 text-center">المخزون</label>
             <input type="number"
-                   name="stock_couleur_custom_${timestamp}"
+                   name="stock_couleur_${timestamp}"
                    value="0"
                    min="0"
                    class="w-full px-2 py-1.5 text-center text-sm font-medium border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 stock-input bg-white shadow-sm"
@@ -1004,6 +1002,45 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion des couleurs masquées
     initializeHiddenColors();
 });
+
+// Fonction pour mettre à jour le compteur de couleurs sélectionnées
+function updateSelectedColorsCount() {
+    const selectedColors = document.querySelectorAll('input[name^="couleurs"]:checked');
+    const countElement = document.getElementById('selectedColorsCount');
+    if (countElement) {
+        countElement.textContent = `${selectedColors.length} محددة`;
+    }
+    
+    // Mettre à jour le résumé
+    const summaryList = document.getElementById('selectedColorsList');
+    const summaryContainer = document.getElementById('selectedColorsSummary');
+    
+    if (summaryList && summaryContainer) {
+        if (selectedColors.length > 0) {
+            summaryContainer.style.display = 'block';
+            summaryList.innerHTML = '';
+            
+            selectedColors.forEach(checkbox => {
+                const colorCard = checkbox.closest('.color-card');
+                const colorName = checkbox.value;
+                const colorHex = checkbox.dataset.hex;
+                const stockInput = colorCard.querySelector('.stock-input');
+                const stock = stockInput ? (stockInput.value || 0) : 0;
+                
+                const badge = document.createElement('div');
+                badge.className = 'flex items-center bg-white border border-gray-200 rounded-full px-3 py-1 shadow-sm';
+                badge.innerHTML = `
+                    <div class="w-3 h-3 rounded-full mr-2 border border-gray-300" style="background-color: ${colorHex}"></div>
+                    <span class="text-xs font-medium text-gray-700 mr-2">${colorName}</span>
+                    <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">${stock}</span>
+                `;
+                summaryList.appendChild(badge);
+            });
+        } else {
+            summaryContainer.style.display = 'none';
+        }
+    }
+}
 
 // Fonction pour initialiser la gestion des couleurs masquées
 function initializeHiddenColors() {
