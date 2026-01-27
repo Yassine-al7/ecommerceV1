@@ -201,33 +201,6 @@
                                                        onclick="event.stopPropagation()"
                                                        oninput="calculateTotalStock()">
                                             </div>
-
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-500 mb-1 text-center">صور اللون</label>
-                                                
-                                                <!-- Images existantes -->
-                                                @if(!empty($existingImages))
-                                                    <div class="flex flex-wrap gap-1 mb-2 justify-center existing-images">
-                                                        @foreach($existingImages as $image)
-                                                                <img src="{{ $image }}" class="w-10 h-10 object-cover rounded border border-gray-200">
-                                                        @endforeach
-                                                    </div>
-                                                @endif
-
-                                                <input type="file" 
-                                                       name="color_images_{{ $loop->index }}[]" 
-                                                       multiple 
-                                                       accept="image/*"
-                                                       class="hidden color-image-input"
-                                                       onchange="previewColorImages(this, '{{ $name }}')"
-                                                       onclick="event.stopPropagation()">
-                                                <button type="button" 
-                                                        onclick="this.previousElementSibling.click(); event.stopPropagation();"
-                                                        class="w-full px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 rounded-lg text-xs font-medium transition-colors">
-                                                    <i class="fas fa-camera mr-1"></i> رفع صور
-                                                </button>
-                                                <div id="preview-{{ $name }}" class="flex flex-wrap gap-1 mt-2 justify-center"></div>
-                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
