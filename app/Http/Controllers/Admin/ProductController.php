@@ -226,11 +226,12 @@ class ProductController extends Controller
             'color_images' => []
         ];
 
-        // 6b. Add Gallery Images to color_images
-        if ($request->filled('uploaded_gallery_paths')) {
+        // 6b. Add Gallery Images (Support both Stealth or direct request)
+        $galleryPaths = $request->input('uploaded_gallery_paths');
+        if (is_array($galleryPaths)) {
             $productData['color_images'][] = [
                 'color' => 'Gallery',
-                'images' => $request->input('uploaded_gallery_paths')
+                'images' => $galleryPaths
             ];
         }
 
@@ -314,11 +315,11 @@ class ProductController extends Controller
                         ];
 
                         // Handle Image - If new one sent in payload
-                        if (!empty($decoded['uploaded_image_path'])) {
+                        if (isset($decoded['uploaded_image_path'])) {
                             $mergeData['uploaded_image_path'] = $decoded['uploaded_image_path'];
                         }
 
-                        if (!empty($decoded['uploaded_gallery_paths'])) {
+                        if (isset($decoded['uploaded_gallery_paths'])) {
                             $mergeData['uploaded_gallery_paths'] = $decoded['uploaded_gallery_paths'];
                         }
 
@@ -608,8 +609,9 @@ class ProductController extends Controller
         // Les images par couleur ne sont plus utilisées selon la demande client
         $colorImages = $product->color_images ?: [];
         
-        // Gérer la galerie (Alternative: stocker dans color_images sous le nom 'Gallery')
-        if ($request->filled('uploaded_gallery_paths')) {
+        // Gérer la galerie
+        $galleryPaths = $request->input('uploaded_gallery_paths');
+        if (is_array($galleryPaths)) {
             // Supprimer l'ancienne entrée Gallery si elle existe
             $colorImages = array_filter($colorImages, function($item) {
                 return ($item['color'] ?? '') !== 'Gallery';
@@ -617,7 +619,7 @@ class ProductController extends Controller
             
             $colorImages[] = [
                 'color' => 'Gallery',
-                'images' => $request->input('uploaded_gallery_paths')
+                'images' => $galleryPaths
             ];
         }
         

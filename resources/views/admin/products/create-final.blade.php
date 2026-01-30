@@ -459,29 +459,34 @@ document.addEventListener('DOMContentLoaded', function() {
                      console.log("Image Uploaded:", imagePath);
                 }
 
-                // STEP 1.5: Upload Gallery
+                // STEP 1.5: Upload Gallery (One by One to bypass WAF)
                 const galleryInput = document.getElementById('galleryInput');
                 if (galleryInput.files && galleryInput.files.length > 0) {
                      submitBtn.innerHTML = '<i class="fas fa-images"></i> Uploading Gallery...';
-                     const galleryFormData = new FormData();
-                     Array.from(galleryInput.files).forEach(file => {
-                         galleryFormData.append('images[]', file);
-                     });
                      
-                     const galleryResponse = await fetch("{{ route('products.upload_image_secure') }}", {
-                          method: 'POST',
-                          body: galleryFormData,
-                          headers: {
-                             'X-Requested-With': 'XMLHttpRequest',
-                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                          },
-                          credentials: 'include'
-                     });
-                     
-                     if (galleryResponse.ok) {
-                         const galleryResult = await galleryResponse.json();
-                         galleryPaths = galleryResult.paths || [];
-                         console.log("Gallery Uploaded:", galleryPaths);
+                     for (let i = 0; i < galleryInput.files.length; i++) {
+                         const file = galleryInput.files[i];
+                         const galleryFormData = new FormData();
+                         galleryFormData.append('image', file); // Use single 'image' key
+                         
+                         const galleryResponse = await fetch("{{ route('products.upload_image_secure') }}", {
+                              method: 'POST',
+                              body: galleryFormData,
+                              headers: {
+                                 'X-Requested-With': 'XMLHttpRequest',
+                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                              }
+                         });
+
+                         if (galleryResponse.ok) {
+                             const res = await galleryResponse.json();
+                             if (res.path) {
+                                 galleryPaths.push(res.path);
+                                 console.log(`Gallery Image ${i+1} Uploaded:`, res.path);
+                             }
+                         } else {
+                             console.warn(`Gallery Image ${i+1} failed with status: ${galleryResponse.status}`);
+                         }
                      }
                 }
 

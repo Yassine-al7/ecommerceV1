@@ -367,17 +367,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) { const d = await res.json(); imagePath = d.path; }
             }
 
-            // 3. New Gallery
+            // 3. New Gallery (One by One to bypass WAF)
             const galIn = document.getElementById('galleryInput');
             if (galIn.files && galIn.files.length > 0) {
-                const fd = new FormData();
-                Array.from(galIn.files).forEach(f => fd.append('images[]', f));
-                const res = await fetch("{{ route('products.upload_image_secure') }}", {
-                    method: 'POST',
-                    body: fd,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-                });
-                if (res.ok) { const d = await res.json(); galleryPaths = galleryPaths.concat(d.paths || []); }
+                for (let i = 0; i < galIn.files.length; i++) {
+                    const fd = new FormData();
+                    fd.append('image', galIn.files[i]);
+                    const res = await fetch("{{ route('products.upload_image_secure') }}", {
+                        method: 'POST',
+                        body: fd,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    });
+                    if (res.ok) { 
+                        const d = await res.json(); 
+                        if(d.path) galleryPaths.push(d.path); 
+                    }
+                }
             }
 
             // 4. Payload

@@ -32,253 +32,46 @@ class Product extends Model
         'hidden_colors' => 'array',
         'stock_couleurs' => 'array',
         'quantite_stock' => 'integer',
-        'prix_admin' => 'string', // Stocké en JSON mais casté en string
+        'prix_admin' => 'string',
         'prix_vente' => 'decimal:2',
     ];
-
-
-
-    /**
-     * Mutateur pour couleur - encode le tableau en JSON
-     */
-    public function setCouleurAttribute($value)
-    {
-        if (is_array($value)) {
-            $this->attributes['couleur'] = json_encode($value);
-        } else {
-            $this->attributes['couleur'] = $value;
-        }
-    }
-
-            /**
-     * Accessor pour obtenir le prix moyen des prix admin multiples
-     */
-    public function getPrixAdminMoyenAttribute()
-    {
-        // Décoder le JSON stocké
-        $prixAdminArray = json_decode($this->prix_admin, true);
-
-        if (is_array($prixAdminArray) && !empty($prixAdminArray)) {
-            // Vérifier que tous les éléments sont numériques
-            $numericArray = array_filter($prixAdminArray, function($value) {
-                return is_numeric($value);
-            });
-
-            if (!empty($numericArray)) {
-                return array_sum($numericArray) / count($numericArray);
-            }
-        }
-
-        // Fallback pour les anciens produits avec prix_admin numérique
-        if (is_numeric($this->prix_admin)) {
-            return (float) $this->prix_admin;
-        }
-
-        return (float) $this->prix_vente; // Fallback final
-    }
-
-        /**
-     * Accessor pour obtenir les prix admin sous forme de tableau
-     */
-    public function getPrixAdminArrayAttribute()
-    {
-        $prixAdminArray = json_decode($this->prix_admin, true);
-
-        if (is_array($prixAdminArray) && !empty($prixAdminArray)) {
-            // Filtrer et convertir en nombres
-            $numericArray = array_filter($prixAdminArray, function($value) {
-                return is_numeric($value);
-            });
-
-            if (!empty($numericArray)) {
-                return array_map('floatval', $numericArray);
-            }
-        }
-
-        // Fallback pour les anciens produits avec prix_admin numérique
-        if (is_numeric($this->prix_admin)) {
-            return [(float) $this->prix_admin];
-        }
-
-        return [(float) $this->prix_vente]; // Fallback final
-    }
-
-    /**
-     * Accesseur pour quantite_stock - retourne directement la valeur
-     */
-    public function getQuantiteStockAttribute($value)
-    {
-        return (int) $value;
-    }
 
     /**
      * Obtenir les couleurs visibles (non masquées)
      */
     public function getVisibleColorsAttribute()
     {
-        // S'assurer que couleur est un tableau
-        $allColors = $this->couleur ?? [];
-        if (is_string($allColors)) {
-            $allColors = json_decode($allColors, true) ?? [];
-        }
+        $allColors = $this->couleur ?: [];
+        $hiddenColors = $this->hidden_colors ?: [];
 
-        $hiddenColors = $this->hidden_colors ?? [];
-        if (is_string($hiddenColors)) {
-            $hiddenColors = json_decode($hiddenColors, true) ?? [];
-        }
-
-        // S'assurer que allColors est un tableau avant array_filter
-        if (!is_array($allColors)) {
-            return [];
-        }
-
-        $visibleColors = array_filter($allColors, function($color) use ($hiddenColors) {
+        return array_filter($allColors, function($color) use ($hiddenColors) {
             $colorName = is_array($color) ? $color['name'] : $color;
             return !in_array($colorName, $hiddenColors);
         });
-
-
-        return $visibleColors;
     }
 
     /**
-     * Accesseur pour tailles - décode le JSON en tableau
+     * Accesseur pour le prix moyen
      */
-    public function getTaillesAttribute($value)
+    public function getPrixAdminMoyenAttribute()
     {
-        // Toujours récupérer la valeur brute pour éviter le cache
-        $rawValue = $this->getRawOriginal('tailles');
-
-        if (is_array($rawValue)) {
-            return $rawValue;
+        $prixAdminArray = json_decode($this->prix_admin, true);
+        if (is_array($prixAdminArray) && !empty($prixAdminArray)) {
+            $numericArray = array_filter($prixAdminArray, fn($v) => is_numeric($v));
+            if (!empty($numericArray)) return array_sum($numericArray) / count($numericArray);
         }
-
-        if (is_string($rawValue)) {
-            // Nettoyer la chaîne JSON des caractères échappés
-            $cleanedValue = str_replace('\\"', '"', $rawValue);
-            $cleanedValue = str_replace('\\\\', '\\', $cleanedValue);
-
-            // Si la chaîne commence et se termine par des guillemets, les supprimer
-            if (strlen($cleanedValue) >= 2 && $cleanedValue[0] === '"' && $cleanedValue[-1] === '"') {
-                $cleanedValue = substr($cleanedValue, 1, -1);
-            }
-
-            $decoded = json_decode($cleanedValue, true);
-
-            // Debug: afficher les étapes de nettoyage (désactivé en production)
-            // \Log::info("Tailles Accesseur Debug", [
-            //     'raw' => $rawValue,
-            //     'cleaned' => $cleanedValue,
-            //     'decoded' => $decoded,
-            //     'json_error' => json_last_error_msg()
-            // ]);
-
-            return is_array($decoded) ? $decoded : [];
-        }
-
-        return [];
+        return is_numeric($this->prix_admin) ? (float)$this->prix_admin : (float)$this->prix_vente;
     }
 
-    /**
-     * Mutateur pour tailles - encode le tableau en JSON
-     */
-    public function setTaillesAttribute($value)
+    public function getPrixAdminArrayAttribute()
     {
-        if (is_array($value)) {
-            $this->attributes['tailles'] = json_encode($value);
-        } else {
-            $this->attributes['tailles'] = $value;
+        $prixAdminArray = json_decode($this->prix_admin, true);
+        if (is_array($prixAdminArray) && !empty($prixAdminArray)) {
+            return array_map('floatval', array_filter($prixAdminArray, fn($v) => is_numeric($v)));
         }
+        return [is_numeric($this->prix_admin) ? (float)$this->prix_admin : (float)$this->prix_vente];
     }
 
-    /**
-     * Accesseur pour les couleurs filtrées (sans stock = 0)
-     */
-    public function getCouleursFiltreesAttribute()
-    {
-        $couleurs = $this->couleur;
-        $stockCouleurs = $this->stock_couleurs;
-
-        if (!is_array($couleurs) || !is_array($stockCouleurs)) {
-            return $couleurs;
-        }
-
-        $couleursFiltrees = [];
-
-        foreach ($stockCouleurs as $index => $stock) {
-            if ($stock['quantity'] > 0 && isset($couleurs[$index])) {
-                $couleursFiltrees[] = $couleurs[$index];
-            }
-        }
-
-        return $couleursFiltrees;
-    }
-
-    /**
-     * Accesseur pour les stocks filtrés (sans stock = 0)
-     */
-    public function getStockCouleursFiltresAttribute()
-    {
-        $stockCouleurs = $this->stock_couleurs;
-
-        if (!is_array($stockCouleurs)) {
-            return $stockCouleurs;
-        }
-
-        return array_filter($stockCouleurs, function($stock) {
-            return $stock['quantity'] > 0;
-        });
-    }
-
-    /**
-     * Accesseur pour color_images - décode le JSON en tableau
-     */
-    public function getColorImagesAttribute($value)
-    {
-        // Toujours récupérer la valeur brute pour éviter le cache
-        $rawValue = $this->getRawOriginal('color_images');
-
-        if (is_array($rawValue)) {
-            return $rawValue;
-        }
-
-        if (is_string($rawValue)) {
-            // Nettoyer la chaîne JSON des caractères échappés
-            $cleanedValue = str_replace('\\"', '"', $rawValue);
-            $cleanedValue = str_replace('\\\\', '\\', $cleanedValue);
-
-            // Si la chaîne commence et se termine par des guillemets, les supprimer
-            if (strlen($cleanedValue) >= 2 && $cleanedValue[0] === '"' && $cleanedValue[-1] === '"') {
-                $cleanedValue = substr($cleanedValue, 1, -1);
-            }
-
-            $decoded = json_decode($cleanedValue, true);
-
-            // Debug: afficher les étapes de nettoyage
-            \Log::info("ColorImages Accesseur Debug", [
-                'raw' => $rawValue,
-                'cleaned' => $cleanedValue,
-                'decoded' => $decoded,
-                'json_error' => json_last_error_msg()
-            ]);
-
-            return is_array($decoded) ? $decoded : [];
-        }
-
-        return [];
-    }
-
-    /**
-     * Mutateur pour color_images - encode le tableau en JSON
-     */
-    public function setColorImagesAttribute($value)
-    {
-        if (is_array($value)) {
-            $this->attributes['color_images'] = json_encode($value);
-        } else {
-            $this->attributes['color_images'] = $value;
-        }
-    }
 
     public function category()
     {
