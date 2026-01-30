@@ -1,50 +1,107 @@
 @props(['product', 'showActions' => true, 'userType' => 'seller'])
 
-<div class="modern-product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-    <!-- Image du produit avec badge -->
-    <div class="relative h-48 bg-gray-100 overflow-hidden">
-        @if($product->image && $product->image !== '/storage/products/default-product.svg')
-            @php
-                $src = trim($product->image ?? '', '/');
-                if (preg_match('#^https?://#i', $src)) {
-                    $imageUrl = $src;
-                } elseif ($src) {
-                    $imageUrl = $product->image; // ex: /storage/products/xxx.jpg
-                } else {
-                    $imageUrl = null;
+@php
+    $allImages = [];
+    $mainImage = $product->image;
+    if ($mainImage && $mainImage !== '/storage/products/default-product.svg') {
+        $allImages[] = $mainImage;
+    }
+
+    $colorImagesData = $product->color_images ?? [];
+    foreach ($colorImagesData as $colorData) {
+        if (isset($colorData['images']) && is_array($colorData['images'])) {
+            foreach ($colorData['images'] as $img) {
+                // Normaliser le chemin
+                $img = str_replace('\\', '/', $img);
+                if (!in_array($img, $allImages)) {
+                    $allImages[] = $img;
                 }
-            @endphp
+            }
+        }
+    }
 
-            @if(!empty($imageUrl))
-                <img id="product-image-{{ $product->id }}" src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="text-gray-400 text-center absolute inset-0 items-center justify-center hidden">
-                    <i class="fas fa-image text-4xl mb-2"></i>
-                    <p class="text-sm">صورة مفقودة</p>
-                </div>
-            @else
-                <div class="text-gray-400 text-center flex items-center justify-center h-full">
-                    <div>
-                        <i class="fas fa-image text-4xl mb-2"></i>
-                        <p class="text-sm">لا توجد صورة</p>
-                    </div>
-                </div>
-            @endif
+    if (empty($allImages)) {
+        $allImages[] = '/storage/products/default-product.svg';
+    }
+    
+    $couleurs = $product->visible_colors ?? [];
+@endphp
 
-        @else
-            <div class="text-gray-400 text-center flex items-center justify-center h-full">
-                <div>
-                    <i class="fas fa-image text-4xl mb-2"></i>
-                    <p class="text-sm">لا توجد صورة</p>
+<div x-data="{ 
+    activeIndex: 0, 
+    total: {{ count($allImages) }},
+    scrollToColor(colorName) {
+        const colorImages = @json($product->color_images ?? []);
+        const colorData = colorImages.find(c => c.color === colorName || (typeof c.color === 'object' && c.color.name === colorName));
+        if (colorData && colorData.images && colorData.images.length > 0) {
+            const firstImg = colorData.images[0].replace(/\\/g, '/');
+            const images = @json($allImages);
+            const index = images.findIndex(img => img.replace(/\\/g, '/') === firstImg);
+            if (index !== -1) {
+                this.scrollToIndex(index);
+            }
+        }
+    },
+    scrollToIndex(index) {
+        if (index < 0 || index >= this.total) return;
+        this.activeIndex = index;
+        const container = this.$refs.gallery;
+        container.scrollTo({
+            left: container.offsetWidth * index,
+            behavior: 'smooth'
+        });
+    },
+    next() {
+        this.activeIndex = (this.activeIndex + 1) % this.total;
+        this.scrollToIndex(this.activeIndex);
+    },
+    prev() {
+        this.activeIndex = (this.activeIndex - 1 + this.total) % this.total;
+        this.scrollToIndex(this.activeIndex);
+    }
+}" class="modern-product-card bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+    
+    <!-- Image du produit avec Galerie -->
+    <div class="relative h-48 bg-gray-50 overflow-hidden group">
+        <!-- Galerie d'images -->
+        <div x-ref="gallery" 
+             class="flex h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
+             @scroll.debounce.100ms="activeIndex = Math.round($event.target.scrollLeft / $event.target.offsetWidth)">
+            @foreach($allImages as $index => $image)
+                <div class="flex-shrink-0 w-full h-full snap-start relative">
+                    <img src="{{ $image }}" 
+                         alt="{{ $product->name }}" 
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                         onerror="this.src='/storage/products/default-product.svg'">
                 </div>
+            @endforeach
+        </div>
+
+        @if(count($allImages) > 1)
+            <!-- Flèches de navigation -->
+            <button @click="prev()" 
+                    class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-blue-600 w-8 h-8 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 focus:outline-none">
+                <i class="fas fa-chevron-left text-xs"></i>
+            </button>
+            <button @click="next()" 
+                    class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-blue-600 w-8 h-8 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 focus:outline-none">
+                <i class="fas fa-chevron-right text-xs"></i>
+            </button>
+
+            <!-- Points de pagination -->
+            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center space-x-1.5 z-10">
+                @foreach($allImages as $index => $image)
+                    <button @click="scrollToIndex({{ $index }})" 
+                            class="h-1.5 rounded-full transition-all duration-300 focus:outline-none"
+                            :class="activeIndex === {{ $index }} ? 'bg-blue-600 w-4' : 'bg-gray-300 w-1.5'"></button>
+                @endforeach
             </div>
         @endif
 
-
-
         <!-- Badge de visibilité -->
         @if($product->visible !== null)
-            <div class="absolute top-3 right-3">
-                <span class="px-3 py-1 text-xs font-medium rounded-full shadow-lg
+            <div class="absolute top-3 left-3 z-10">
+                <span class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm
                     {{ $product->visible ? 'bg-green-500 text-white' : 'bg-red-500 text-white' }}">
                     {{ $product->visible ? 'مرئي' : 'مخفي' }}
                 </span>
@@ -52,30 +109,28 @@
         @endif
     </div>
 
-    <!-- Section d'informations avec overlay bleu -->
+    <!-- Section d'informations -->
     <div class="relative">
         <!-- Overlay bleu avec informations -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3">
-            <div class="mb-2">
-                <!-- Informations de base -->
-                <h3 class="font-bold text-base mb-1 line-clamp-1">{{ $product->name }}</h3>
+        <div class="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-4">
+            <div class="mb-3">
+                <div class="flex justify-between items-start gap-2">
+                    <h3 class="font-bold text-base leading-tight line-clamp-1 flex-1">{{ $product->name }}</h3>
+                    @if(!empty($product->id))
+                        <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">#{{ $product->id }}</span>
+                    @endif
+                </div>
                 @if($product->category)
-                    <p class="text-blue-100 text-xs">{{ $product->category->name }} / {{ $product->id ?? '01' }}</p>
+                    <p class="text-blue-100 text-[11px] mt-0.5 opacity-90">{{ $product->category->name }}</p>
                 @endif
             </div>
 
-                                    <!-- Section couleurs et stock compacte -->
-            <div class="flex items-center justify-between">
-                @php
-                    // Utiliser les couleurs visibles (excluant les couleurs masquées)
-                    $couleurs = $product->visible_colors ?? [];
-                    $couleurs = array_slice($couleurs, 0, 3); // Limiter à 3 couleurs
-                @endphp
-
-                @if(!empty($couleurs))
-                    <div class="flex items-center space-x-2">
-                        <span class="text-blue-100 text-xs">الألوان</span>
-                        <div class="flex space-x-1">
+            <!-- Section couleurs -->
+            @if(!empty($couleurs))
+                <div class="flex flex-col space-y-1.5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-blue-100 text-[10px] uppercase font-bold tracking-wider shrink-0">الألوان</span>
+                        <div class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto custom-scrollbar pr-1">
                             @foreach($couleurs as $couleur)
                                 @php
                                     $couleurData = is_array($couleur) ? $couleur : ['name' => $couleur, 'hex' => '#cccccc'];
@@ -83,100 +138,73 @@
                                     if (!str_starts_with($hex, '#')) $hex = '#' . $hex;
                                     $colorName = $couleurData['name'] ?? $couleur;
                                 @endphp
-                                <div class="w-4 h-4 border border-white shadow-sm cursor-pointer color-circle"
+                                <div class="w-4 h-4 rounded-sm border border-white/40 shadow-sm cursor-pointer color-circle transition-all duration-200 hover:scale-125 hover:border-white"
                                      style="background-color: {{ $hex }}"
                                      title="{{ $colorName }}"
-                                     onclick="changeProductImage({{ $product->id }}, '{{ $colorName }}')">
+                                     @click="scrollToColor('{{ $colorName }}')">
                                 </div>
                             @endforeach
                         </div>
                     </div>
-                @endif
-
-                <!-- Product ID compact -->
-                @if(!empty($product->id))
-                    <div class="flex items-center space-x-2">
-                        <span class="text-blue-100 text-xs">ID</span>
-                        <span class="bg-blue-800 bg-opacity-80 px-2 py-1 rounded-full text-xs font-bold text-white">
-                            #{{ $product->id }}
-                        </span>
-                    </div>
-                @endif
-            </div>
+                </div>
+            @endif
         </div>
 
         <!-- Informations de prix et détails -->
-        <div class="p-3 bg-white">
-            <!-- Prix compact -->
-            <div class="flex justify-between items-center mb-2">
-                <div class="text-center flex-1">
-                    <p class="text-gray-600 text-xs">السعر</p>
-                    <p class="font-bold text-base text-gray-800">{{ $product->prix_vente ?? 0 }} درهم</p>
+        <div class="p-4 bg-white">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="text-center p-2 rounded-lg bg-gray-50 border border-gray-100">
+                    <p class="text-gray-500 text-[10px] uppercase font-bold tracking-tight mb-1">السعر</p>
+                    <p class="font-black text-lg text-gray-800">{{ number_format($product->prix_vente ?? 0, 0, '.', ' ') }} <span class="text-xs font-normal">درهم</span></p>
                 </div>
-                <div class="text-center flex-1">
-                    <p class="text-gray-600 text-xs">تمن المقترح للبيع</p>
+                <div class="text-center p-2 rounded-lg bg-blue-50 border border-blue-100">
+                    <p class="text-blue-600 text-[10px] uppercase font-bold tracking-tight mb-1">المقترح</p>
                     @php
                         $prixAdminArray = $product->prix_admin_array ?? [];
-                        $prixAdminDisplay = '';
-                        if (count($prixAdminArray) > 1) {
-                            $prixAdminDisplay = implode(' - ', $prixAdminArray);
-                        } elseif (count($prixAdminArray) == 1) {
-                            $prixAdminDisplay = $prixAdminArray[0];
-                        } else {
-                            $prixAdminDisplay = '0';
-                        }
+                        $prixAdminDisplay = count($prixAdminArray) > 1 
+                            ? min($prixAdminArray) . '-' . max($prixAdminArray)
+                            : (count($prixAdminArray) == 1 ? $prixAdminArray[0] : '0');
                     @endphp
-                    <p class="font-bold text-base text-blue-600">{{ $prixAdminDisplay }} درهم</p>
+                    <p class="font-black text-lg text-blue-700">{{ $prixAdminDisplay }} <span class="text-xs font-normal">درهم</span></p>
                 </div>
             </div>
 
-            <!-- Marge compacte -->
+            <!-- Marge -->
             @php
-                $prixAdminArray = $product->prix_admin_array ?? [];
                 $prixVente = $product->prix_vente ?? 0;
-
                 if (!empty($prixAdminArray)) {
                     $margeMin = abs($prixVente - max($prixAdminArray));
                     $margeMax = abs($prixVente - min($prixAdminArray));
-
-                    if (count($prixAdminArray) > 1) {
-                        $margeDisplay = "+{$margeMin}";
-                        if ($margeMin != $margeMax) {
-                            $margeDisplay .= " à +{$margeMax}";
-                        }
-                        $margeDisplay .= " درهم ربح";
-                    } else {
-                        $marge = abs($prixVente - $prixAdminArray[0]);
-                        $margeDisplay = "+{$marge} درهم ربح";
-                    }
+                    $margeDisplay = count($prixAdminArray) > 1 && $margeMin != $margeMax
+                        ? "+{$margeMin} à +{$margeMax}"
+                        : "+{$margeMin}";
                 } else {
-                    $margeDisplay = "0 درهم ربح";
+                    $margeDisplay = "0";
                 }
             @endphp
-            @if(!empty($prixAdminArray))
-                <div class="text-center mb-2">
-                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                        {{ $margeDisplay }}
-                    </span>
-                </div>
-            @endif
+            <div class="flex justify-center mb-4">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200">
+                    <i class="fas fa-coins mr-1.5 text-[9px]"></i>
+                    {{ $margeDisplay }} درهم ربح
+                </span>
+            </div>
 
-            <!-- Actions compactes -->
+            <!-- Actions -->
             @if($userType === 'admin' && $showActions)
-                <div class="flex space-x-1 pt-2 border-t border-gray-100">
+                <div class="flex gap-1.5 mt-2">
                     <a href="{{ route('admin.products.edit', $product) }}"
-                       class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-1.5 px-2 rounded text-xs font-medium transition-colors">
+                       class="flex-1 bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-700 text-center py-2 rounded-lg text-xs font-bold transition-all duration-200">
                         <i class="fas fa-edit mr-1"></i>تعديل
                     </a>
                     <a href="{{ route('admin.products.assign', $product) }}"
-                       class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-1.5 px-2 rounded text-xs font-medium transition-colors">
+                       class="flex-1 bg-gray-100 hover:bg-green-600 hover:text-white text-gray-700 text-center py-2 rounded-lg text-xs font-bold transition-all duration-200">
                         <i class="fas fa-users mr-1"></i>تعيين
                     </a>
                     <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="flex-1">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
-                                class="w-full bg-red-600 hover:bg-red-700 text-white text-center py-1.5 px-2 rounded text-xs font-medium transition-colors"
+                                class="w-full bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-center py-2 rounded-lg text-xs font-bold transition-all duration-200"
                                 onclick="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
                             <i class="fas fa-trash mr-1"></i>حذف
                         </button>
@@ -185,10 +213,10 @@
             @endif
 
             @if($userType === 'seller' && $showActions)
-                <div class="pt-2 border-t border-gray-100">
-                    <button onclick="viewDetails({{ $product->id }})"
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-1.5 px-2 rounded text-xs font-medium transition-colors">
-                        <i class="fas fa-eye mr-1"></i>تفاصيل
+                <div class="mt-2">
+                    <button @click="window.location.href='/seller/products/{{ $product->id }}'"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all duration-200">
+                        <i class="fas fa-eye mr-2"></i>عرض التفاصيل
                     </button>
                 </div>
             @endif
@@ -197,80 +225,29 @@
 </div>
 
 <style>
-.modern-product-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }
-
-.modern-product-card:hover {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-
+.custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
 .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Animation pour les couleurs */
-.color-circle {
-    transition: all 0.2s ease;
-}
-
-.color-circle:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
 </style>
 
-<script>
-// Données des images par couleur pour ce produit
-const productColorImages_{{ $product->id }} = @json($product->color_images ?? []);
-
-function viewDetails(productId) {
-    // Fonction pour voir les détails du produit
-    window.location.href = `/seller/products/${productId}`;
-}
-
-function selectProduct(productId) {
-    // Fonction pour sélectionner un produit
-    if (confirm('هل تريد إضافة هذا المنتج إلى طلبيتك؟')) {
-        // Ici vous pouvez ajouter la logique pour ajouter le produit à la commande
-        console.log('Produit sélectionné:', productId);
-        // Vous pouvez faire un appel AJAX ou rediriger vers une page de commande
-    }
-}
-
-function changeProductImage(productId, colorName) {
-    const productImages = window[`productColorImages_${productId}`];
-    const imageElement = document.getElementById(`product-image-${productId}`);
-
-    if (!productImages || !imageElement) return;
-
-    // Chercher les images pour cette couleur
-    const colorData = productImages.find(item => item.color === colorName);
-
-    if (colorData && colorData.images && colorData.images.length > 0) {
-        // Changer l'image vers la première image de cette couleur
-        imageElement.src = colorData.images[0];
-
-        // Effet de transition
-        imageElement.style.opacity = '0.7';
-        setTimeout(() => {
-            imageElement.style.opacity = '1';
-        }, 200);
-
-        console.log(`Image changée pour ${colorName}:`, colorData.images[0]);
-    } else {
-        // Si pas d'image spécifique, garder l'image principale
-        console.log(`Aucune image spécifique trouvée pour ${colorName}`);
-    }
-}
-</script>

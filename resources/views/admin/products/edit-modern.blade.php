@@ -70,17 +70,42 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">الصورة الرئيسية</label>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-xl hover:border-blue-400 transition-colors duration-200 cursor-pointer bg-gray-50" onclick="document.getElementById('imageInput').click()">
                                     <div class="space-y-1 text-center">
-                                        <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+                                        <i class="fas fa-image text-gray-400 text-3xl mb-2"></i>
                                         <div class="flex text-sm text-gray-600">
-                                            <span class="text-blue-600 font-medium hover:underline">تحديث الصورة</span>
+                                            <span class="text-blue-600 font-medium hover:underline">تحديث الصورة الأساسية</span>
                                         </div>
-                                        <p class="text-xs text-gray-400">PNG, JPG</p>
                                     </div>
                                     <input id="imageInput" name="image" type="file" class="hidden" onchange="handleImageUpload(this)">
                                 </div>
                                 
                                 <div id="imagePreview" class="mt-4 {{ $product->image ? '' : 'hidden' }}">
-                                    <img src="{{ $product->image ? asset($product->image) : '' }}" class="h-32 w-32 object-cover rounded-xl border border-gray-200 mx-auto">
+                                    <img src="{{ $product->image ? asset($product->image) : '' }}" class="h-24 w-24 object-cover rounded-xl border border-gray-200 mx-auto">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">معرض صور المنتج (إضافي)</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-xl hover:border-purple-400 transition-colors duration-200 cursor-pointer bg-gray-50" onclick="document.getElementById('galleryInput').click()">
+                                    <div class="space-y-1 text-center">
+                                        <i class="fas fa-images text-gray-400 text-3xl mb-2"></i>
+                                        <div class="flex text-sm text-gray-600">
+                                            <span class="text-purple-600 font-medium hover:underline">اضغط لإضافة صور للمعرض</span>
+                                        </div>
+                                    </div>
+                                    <input id="galleryInput" name="gallery[]" type="file" class="hidden" multiple onchange="handleGalleryUpload(this)">
+                                </div>
+                                <div id="galleryPreview" class="mt-4 grid grid-cols-4 gap-2">
+                                    @php
+                                        $colorImages = is_array($product->color_images) ? $product->color_images : (json_decode($product->color_images, true) ?? []);
+                                        $galleryEntry = collect($colorImages)->firstWhere('color', 'Gallery');
+                                        $existingGallery = $galleryEntry ? ($galleryEntry['images'] ?? []) : [];
+                                    @endphp
+                                    @foreach($existingGallery as $img)
+                                        <div class="relative aspect-square existing-gallery-item" data-path="{{ $img }}">
+                                            <img src="{{ asset($img) }}" class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm">
+                                            <button type="button" onclick="this.parentElement.remove()" class="absolute -top-1 -right-1 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-sm"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -311,38 +336,42 @@
 <script>
 // --- Reusing Logic from Create Page ---
 
+// --- GUI Logic ---
 async function handleImageUpload(input) {
     const preview = document.getElementById('imagePreview');
     const previewImg = preview.querySelector('img');
-    const uploadText = document.querySelector('.fa-cloud-upload-alt').nextElementSibling;
-    const originalText = "تحديث الصورة";
+    const uploadText = document.querySelector('.fa-image')?.nextElementSibling?.querySelector('span');
 
     if (input.files && input.files[0]) {
         const file = input.files[0];
-        
-        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-        if (!validTypes.includes(file.type)) {
-            alert('يرجى اختيار صورة صالحة (JPEG, PNG, GIF)');
-            input.value = ''; 
-            return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.classList.remove('hidden');
+            if(uploadText) uploadText.innerHTML = '<span class="text-green-600 font-bold">تم اختيار الصورة الأساسية</span>';
         }
-
-        try {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                preview.classList.remove('hidden');
-                uploadText.innerHTML = '<span class="text-green-600 font-bold">تم اختيار الصورة بنجاح (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)</span>';
-            }
-            reader.readAsDataURL(file);
-            
-        } catch (error) {
-            console.error('Error handling image:', error);
-            alert('حدث خطأ أثناء معاينة الصورة.');
-            uploadText.innerHTML = originalText;
-        }
+        reader.readAsDataURL(file);
     }
 }
+
+async function handleGalleryUpload(input) {
+    const preview = document.getElementById('galleryPreview');
+    // We don't clear existing ones, we just add previews of new ones
+    if (input.files && input.files.length > 0) {
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.className = 'relative aspect-square new-gallery-preview';
+                div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-lg border border-purple-200 shadow-sm opacity-70">
+                                 <div class="absolute inset-0 flex items-center justify-center"><i class="fas fa-plus text-purple-600"></i></div>`;
+                preview.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
 
 function toggleStockDisplay(checkbox) {
     const container = checkbox.closest('.color-item').querySelector('.stock-container');
@@ -434,6 +463,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 let imagePath = null;
+                let galleryPaths = [];
+
+                // 1. Collect Existing Gallery Paths
+                document.querySelectorAll('.existing-gallery-item').forEach(el => {
+                    galleryPaths.push(el.getAttribute('data-path'));
+                });
                 
                 // STEP 1: Upload Image (Only if selected)
                 const imageInput = document.getElementById('imageInput');
@@ -464,6 +499,32 @@ document.addEventListener('DOMContentLoaded', function() {
                      console.log("New Image Uploaded:", imagePath);
                 }
 
+                // STEP 1.5: Upload Gallery
+                const galleryInput = document.getElementById('galleryInput');
+                if (galleryInput.files && galleryInput.files.length > 0) {
+                     submitBtn.innerHTML = '<i class="fas fa-images"></i> Uploading Gallery...';
+                     const galleryFormData = new FormData();
+                     Array.from(galleryInput.files).forEach(file => {
+                         galleryFormData.append('images[]', file);
+                     });
+                     
+                     const galleryResponse = await fetch("{{ route('products.upload_image_secure') }}", {
+                          method: 'POST',
+                          body: galleryFormData,
+                          headers: {
+                             'X-Requested-With': 'XMLHttpRequest',
+                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                          },
+                          credentials: 'include'
+                     });
+                     
+                     if (galleryResponse.ok) {
+                         const galleryResult = await galleryResponse.json();
+                         galleryPaths = galleryPaths.concat(galleryResult.paths || []);
+                         console.log("Gallery Uploaded:", galleryPaths);
+                     }
+                }
+
                 form.querySelector('input[name="product_payload"]').value = "processing"; 
 
                 // STEP 2: Prepare Payload
@@ -477,7 +538,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     colors: [],
                     sizes: [],
                     total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
-                    uploaded_image_path: imagePath // null if no new image
+                    uploaded_image_path: imagePath,
+                    uploaded_gallery_paths: galleryPaths
                 };
 
                 // Colors

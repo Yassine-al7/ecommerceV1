@@ -135,6 +135,7 @@ class ProductController extends Controller
                             'sizes_json' => json_encode($decoded['sizes'] ?? []),
                             'total_stock' => $decoded['total_stock'] ?? 0,
                             'uploaded_image_path' => $decoded['uploaded_image_path'] ?? null,
+                            'uploaded_gallery_paths' => $decoded['uploaded_gallery_paths'] ?? [],
                         ]);
                     }
                 }
@@ -225,6 +226,14 @@ class ProductController extends Controller
             'color_images' => []
         ];
 
+        // 6b. Add Gallery Images to color_images
+        if ($request->filled('uploaded_gallery_paths')) {
+            $productData['color_images'][] = [
+                'color' => 'Gallery',
+                'images' => $request->input('uploaded_gallery_paths')
+            ];
+        }
+
         $product = Product::create($productData);
 
         // 7. Assign to Sellers
@@ -241,6 +250,18 @@ class ProductController extends Controller
      */
     public function uploadImage(Request $request) 
     {
+        if ($request->hasFile('images')) {
+            try {
+                $paths = [];
+                foreach ($request->file('images') as $file) {
+                    $paths[] = '/storage/' . $file->store('products', 'public');
+                }
+                return response()->json(['paths' => $paths]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+
         if ($request->hasFile('image')) {
             try {
                 $path = '/storage/' . $request->file('image')->store('products', 'public');
@@ -295,6 +316,10 @@ class ProductController extends Controller
                         // Handle Image - If new one sent in payload
                         if (!empty($decoded['uploaded_image_path'])) {
                             $mergeData['uploaded_image_path'] = $decoded['uploaded_image_path'];
+                        }
+
+                        if (!empty($decoded['uploaded_gallery_paths'])) {
+                            $mergeData['uploaded_gallery_paths'] = $decoded['uploaded_gallery_paths'];
                         }
 
                         $request->merge($mergeData);
@@ -582,7 +607,21 @@ class ProductController extends Controller
 
         // Les images par couleur ne sont plus utilisées selon la demande client
         $colorImages = $product->color_images ?: [];
-        $data['color_images'] = $colorImages;
+        
+        // Gérer la galerie (Alternative: stocker dans color_images sous le nom 'Gallery')
+        if ($request->filled('uploaded_gallery_paths')) {
+            // Supprimer l'ancienne entrée Gallery si elle existe
+            $colorImages = array_filter($colorImages, function($item) {
+                return ($item['color'] ?? '') !== 'Gallery';
+            });
+            
+            $colorImages[] = [
+                'color' => 'Gallery',
+                'images' => $request->input('uploaded_gallery_paths')
+            ];
+        }
+        
+        $data['color_images'] = array_values($colorImages);
 
         // Si aucune image principale n'est fournie mais qu'il y a des images par couleur,
         // utiliser la première image comme image principale
