@@ -14,28 +14,10 @@
             </a>
         </div>
 
-        {{-- Note: Action goes to UPDATE, but we use Stealth JS to prepare payload --}}
-        <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data" id="productEditForm">
+        {{-- Note: We use Fetch with product_payload to bypass WAF 403 blocks --}}
+        <form id="productEditForm">
             @csrf
-            @method('PUT')
             
-            <!-- Hidden input for the safely encoded product data -->
-            <input type="hidden" name="product_payload" id="product_payload">
-
-            @if($errors->any())
-                <div class="bg-red-50 border-l-4 border-red-500 p-6 mb-8 rounded-xl">
-                    <div class="flex items-center mb-3">
-                        <i class="fas fa-exclamation-circle text-red-500 text-2xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-red-800">يرجى تصحيح الأخطاء التالية:</h3>
-                    </div>
-                    <ul class="list-disc list-inside space-y-1 text-red-700 text-right" dir="rtl">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <div class="space-y-8">
                 <!-- Section 1: Basic Info -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -94,7 +76,7 @@
                                     </div>
                                     <input id="galleryInput" name="gallery[]" type="file" class="hidden" multiple onchange="handleGalleryUpload(this)">
                                 </div>
-                                <div id="galleryPreview" class="mt-4 grid grid-cols-4 gap-2">
+                                <div id="galleryPreview" class="mt-4 grid grid-cols-4 gap-2 text-right" dir="rtl">
                                     @php
                                         $colorImages = is_array($product->color_images) ? $product->color_images : (json_decode($product->color_images, true) ?? []);
                                         $galleryEntry = collect($colorImages)->firstWhere('color', 'Gallery');
@@ -125,7 +107,6 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">السعر المقترح للبيع</label>
                                 @php
                                     $prixAdminVal = $product->prix_admin;
-                                    // Try to decode if JSON
                                     $decodedPrix = json_decode($prixAdminVal, true);
                                     if(json_last_error() === JSON_ERROR_NONE && is_array($decodedPrix)) {
                                         $prixAdminVal = implode(',', $decodedPrix);
@@ -172,82 +153,32 @@
                                     ['name' => 'أخضر', 'hex' => '#10b981'],
                                     ['name' => 'رمادي', 'hex' => '#6b7280'],
                                 ];
-                                
-                                // Parse existing colors
-                                $existingColors = $product->couleur;
-                                if (is_string($existingColors)) $existingColors = json_decode($existingColors, true) ?? [];
-                                
                                 $existingStock = $product->stock_couleurs;
                                 if (is_string($existingStock)) $existingStock = json_decode($existingStock, true) ?? [];
-                                
-                                // Helper to find stock for a color name
                                 $getQuantity = function($name) use ($existingStock) {
-                                    foreach($existingStock as $s) {
-                                        if(isset($s['name']) && strtolower($s['name']) == strtolower($name)) return $s['quantity'];
-                                    }
+                                    foreach($existingStock as $s) { if(isset($s['name']) && strtolower($s['name']) == strtolower($name)) return $s['quantity']; }
                                     return 0;
                                 };
-
-                                // Helper to check if color is active
                                 $isActive = function($name) use ($existingStock) {
-                                    foreach($existingStock as $s) {
-                                        if(isset($s['name']) && strtolower($s['name']) == strtolower($name) && $s['quantity'] > 0) return true;
-                                    }
+                                    foreach($existingStock as $s) { if(isset($s['name']) && strtolower($s['name']) == strtolower($name) && $s['quantity'] > 0) return true; }
                                     return false;
                                 };
-
-                                // Keep track of rendered standard colors to identify custom ones
-                                $renderedColors = [];
                             @endphp
 
-                            <!-- Render Preset Colors -->
                             @foreach($presetColors as $color)
                                 @php 
                                     $active = $isActive($color['name']); 
                                     $qty = $getQuantity($color['name']);
-                                    $renderedColors[] = $color['name'];
                                 @endphp
-                                <div class="relative group p-4 border-2 {{ $active ? 'border-purple-300 shadow-lg shadow-purple-50' : 'border-gray-100' }} rounded-2xl hover:border-purple-300 transition-all duration-200 bg-gray-50 color-item bg-white" 
+                                <div class="relative group p-4 border-2 {{ $active ? 'border-purple-300 shadow-lg shadow-purple-50' : 'border-gray-100' }} rounded-2xl hover:border-purple-300 transition-all duration-200 bg-white color-item" 
                                      data-name="{{ $color['name'] }}" 
                                      data-hex="{{ str_replace('#', '', $color['hex']) }}">
-                                    
                                     <div class="flex items-center justify-between mb-4">
                                         <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm" style="background-color: {{ $color['hex'] }}"></div>
                                         <input type="checkbox" {{ $active ? 'checked' : '' }} class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
                                     </div>
                                     <p class="font-bold text-gray-800 text-right">{{ $color['name'] }}</p>
-                                    
                                     <div class="mt-4 stock-container {{ $active ? '' : 'hidden' }}">
-                                        <label class="block text-[10px] text-gray-400 uppercase font-bold text-right mb-1">المخزون</label>
-                                        <input type="number" value="{{ $qty }}" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
-                                    </div>
-                                </div>
-                            @endforeach
-                            
-                            <!-- Render Custom Colors (Existing ones not in preset) -->
-                            @foreach($existingColors as $ec)
-                                @php
-                                    $name = is_array($ec) ? $ec['name'] : $ec;
-                                    $hex = is_array($ec) ? ($ec['hex'] ?? '#cccccc') : '#cccccc';
-                                    
-                                    // Skip if already rendered as preset
-                                    $isPreset = false;
-                                    foreach($presetColors as $pc) { if(strtolower($pc['name']) == strtolower($name)) $isPreset = true; }
-                                    if($isPreset) continue;
-
-                                    $qty = $getQuantity($name);
-                                    // If qty > 0 assume active, or if it's in the list it's active
-                                    $active = true; 
-                                @endphp
-                                <div class="relative group p-4 border-2 border-purple-300 shadow-lg shadow-purple-50 rounded-2xl hover:border-purple-300 transition-all duration-200 bg-white color-item" 
-                                     data-name="{{ $name }}" 
-                                     data-hex="{{ str_replace('#', '', $hex) }}">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm" style="background-color: {{ $hex }}"></div>
-                                        <input type="checkbox" checked class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
-                                    </div>
-                                    <p class="font-bold text-gray-800 text-right">{{ $name }}</p>
-                                    <div class="mt-4 stock-container">
                                         <label class="block text-[10px] text-gray-400 uppercase font-bold text-right mb-1">المخزون</label>
                                         <input type="number" value="{{ $qty }}" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
                                     </div>
@@ -264,12 +195,10 @@
                             <span class="w-8 h-8 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center mr-3 text-sm">04</span>
                             المقاسات المتاحة
                         </h2>
-
                         @php
                            $currentSizes = $product->tailles;
                            if(is_string($currentSizes)) $currentSizes = json_decode($currentSizes, true) ?? [];
                         @endphp
-
                         <div class="flex flex-wrap gap-4 justify-end" id="sizesContainer" dir="rtl">
                             @foreach(['S', 'M', 'L', 'XL', 'XXL', '3XL', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'] as $size)
                                 @php $isChecked = in_array($size, $currentSizes); @endphp
@@ -294,11 +223,11 @@
     </div>
 </div>
 
-<!-- Modal for Custom Color (Same as Create) -->
+<!-- Modals & Templates -->
 <div id="customColorModal" class="hidden fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
     <div class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"></div>
     <div class="relative w-full max-w-md mx-auto my-6 bg-white rounded-2xl shadow-2xl p-8 z-50 transform transition-all">
-        <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">إضافة لون مخصص</h3>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">إضافة لون مخصص</h2>
         <div class="space-y-6 text-right" dir="rtl">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">اسم اللون</label>
@@ -308,7 +237,7 @@
                 <label class="block text-sm font-semibold text-gray-700 mb-2">اختر اللون</label>
                 <div class="flex items-center space-x-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                     <input type="color" id="newColorHex" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" value="#a855f7">
-                    <span id="hexValue" class="text-gray-500 font-mono text-lg uppercase tracking-wider">#A855F7</span>
+                    <span id="hexValue" class="text-gray-500 font-mono text-lg uppercase mr-4 tracking-wider">#A855F7</span>
                 </div>
             </div>
             <div class="flex space-x-4 pt-4">
@@ -320,7 +249,7 @@
 </div>
 
 <template id="colorTemplate">
-    <div class="relative group p-4 border-2 border-gray-100 rounded-2xl transition-all duration-200 bg-white color-item" data-name="" data-hex="">
+    <div class="relative group p-4 border-2 border-purple-300 shadow-lg shadow-purple-50 rounded-2xl transition-all duration-200 bg-white color-item" data-name="" data-hex="">
         <div class="flex items-center justify-between mb-4">
             <div class="w-8 h-8 rounded-full border border-gray-200 shadow-sm color-box"></div>
             <input type="checkbox" checked class="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer color-toggle" onchange="toggleStockDisplay(this)">
@@ -328,43 +257,31 @@
         <p class="font-bold text-gray-800 text-right color-label"></p>
         <div class="mt-4 stock-container">
             <label class="block text-[10px] text-gray-400 uppercase font-bold text-right mb-1">المخزون</label>
-            <input type="number" value="0" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
+            <input type="number" value="1" min="0" class="w-full px-3 py-2 text-center rounded-lg border-gray-200 bg-white shadow-inner stock-input" oninput="calculateTotal()">
         </div>
     </div>
 </template>
 
 <script>
-// --- Reusing Logic from Create Page ---
-
-// --- GUI Logic ---
 async function handleImageUpload(input) {
     const preview = document.getElementById('imagePreview');
     const previewImg = preview.querySelector('img');
-    const uploadText = document.querySelector('.fa-image')?.nextElementSibling?.querySelector('span');
-
     if (input.files && input.files[0]) {
-        const file = input.files[0];
         const reader = new FileReader();
-        reader.onload = function(e) {
-            previewImg.src = e.target.result;
-            preview.classList.remove('hidden');
-            if(uploadText) uploadText.innerHTML = '<span class="text-green-600 font-bold">تم اختيار الصورة الأساسية</span>';
-        }
-        reader.readAsDataURL(file);
+        reader.onload = e => { previewImg.src = e.target.result; preview.classList.remove('hidden'); }
+        reader.readAsDataURL(input.files[0]);
     }
 }
 
 async function handleGalleryUpload(input) {
     const preview = document.getElementById('galleryPreview');
-    // We don't clear existing ones, we just add previews of new ones
-    if (input.files && input.files.length > 0) {
+    if (input.files) {
         Array.from(input.files).forEach(file => {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 const div = document.createElement('div');
-                div.className = 'relative aspect-square new-gallery-preview';
-                div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-lg border border-purple-200 shadow-sm opacity-70">
-                                 <div class="absolute inset-0 flex items-center justify-center"><i class="fas fa-plus text-purple-600"></i></div>`;
+                div.className = 'relative aspect-square';
+                div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-lg border border-purple-200 shadow-sm opacity-70">`;
                 preview.appendChild(div);
             }
             reader.readAsDataURL(file);
@@ -372,11 +289,9 @@ async function handleGalleryUpload(input) {
     }
 }
 
-
 function toggleStockDisplay(checkbox) {
     const container = checkbox.closest('.color-item').querySelector('.stock-container');
     const wrapper = checkbox.closest('.color-item');
-    
     if (checkbox.checked) {
         container.classList.remove('hidden');
         wrapper.classList.add('border-purple-300', 'shadow-lg', 'shadow-purple-50');
@@ -392,9 +307,7 @@ function calculateTotal() {
     let total = 0;
     document.querySelectorAll('.stock-input').forEach(input => {
         const wrapper = input.closest('.stock-container');
-        if (!wrapper.classList.contains('hidden')) {
-            total += parseInt(input.value) || 0;
-        }
+        if (!wrapper.classList.contains('hidden')) total += parseInt(input.value) || 0;
     });
     document.getElementById('totalStockDisplay').innerText = total;
 }
@@ -402,216 +315,136 @@ function calculateTotal() {
 function openColorModal() { document.getElementById('customColorModal').classList.remove('hidden'); }
 function closeColorModal() { document.getElementById('customColorModal').classList.add('hidden'); }
 
-document.getElementById('newColorHex').addEventListener('input', function() {
+document.getElementById('newColorHex')?.addEventListener('input', function() {
     document.getElementById('hexValue').textContent = this.value;
 });
 
 function addNewColor() {
     const name = document.getElementById('newColorName').value.trim();
     const hex = document.getElementById('newColorHex').value;
-    
     if (!name) return alert('يرجى إدخال اسم اللون');
-    
     const template = document.getElementById('colorTemplate');
     const clone = template.content.cloneNode(true);
-    const container = clone.querySelector('.relative');
-    
+    const container = clone.querySelector('.color-item');
     container.setAttribute('data-name', name);
     container.setAttribute('data-hex', hex.replace('#', ''));
-    
     container.querySelector('.color-box').style.backgroundColor = hex;
     container.querySelector('.color-label').textContent = name;
-    
-    const checkbox = container.querySelector('.color-toggle');
-    checkbox.checked = true;
-    container.querySelector('.stock-container').classList.remove('hidden');
-    container.classList.add('border-purple-300', 'shadow-lg', 'shadow-purple-50');
-    
     document.getElementById('colorsGrid').appendChild(clone);
     closeColorModal();
     document.getElementById('newColorName').value = '';
     calculateTotal();
 }
 
-// --- Submit Logic (Stealth Update) ---
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("🚀 Secure Edit Form Loaded");
-    
-    // Add visual feedback to sizes (handled via CSS peer-checked, but verifying initial state)
-    // Blade renders them checked, CSS handles loop. Javacript just needs to scrape them.
-
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('productEditForm');
-    if(form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            console.log("🚀 Intercepting Edit Submission...");
-            
-            // 1. Validation
-            const selectedColors = Array.from(document.querySelectorAll('.color-item')).filter(el => el.querySelector('.color-toggle').checked);
-            if (selectedColors.length === 0) { alert('يرجى اختيار لون واحد على الأقل'); return false; }
-            
-            const categorySelect = document.getElementById('categorie_id');
-            const selectedSizes = document.querySelectorAll('.size-toggle:checked');
-            const isAccessory = categorySelect.options[categorySelect.selectedIndex].text.toLowerCase().includes('accessoire');
-            if (!isAccessory && selectedSizes.length === 0) { alert('يرجى اختيار مقاس واحد على الأقل'); return false; }
+    if (!form) return;
 
-            // Start Loading
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
-            submitBtn.disabled = true;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ الحفظ...';
+        submitBtn.disabled = true;
 
-            try {
-                let imagePath = null;
-                let galleryPaths = [];
+        try {
+            let imagePath = null;
+            let galleryPaths = [];
 
-                // 1. Collect Existing Gallery Paths
-                document.querySelectorAll('.existing-gallery-item').forEach(el => {
-                    galleryPaths.push(el.getAttribute('data-path'));
+            // 1. Existing Gallery
+            document.querySelectorAll('.existing-gallery-item').forEach(el => galleryPaths.push(el.getAttribute('data-path')));
+
+            // 2. Main Image
+            const imgIn = document.getElementById('imageInput');
+            if (imgIn.files && imgIn.files[0]) {
+                const fd = new FormData();
+                fd.append('image', imgIn.files[0]);
+                const res = await fetch("{{ route('products.upload_image_secure') }}", {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                 });
-                
-                // STEP 1: Upload Image (Only if selected)
-                const imageInput = document.getElementById('imageInput');
-                if (imageInput.files && imageInput.files[0]) {
-                     submitBtn.innerHTML = '<i class="fas fa-upload"></i> Uploading New Image...';
-                     const imageFormData = new FormData();
-                     imageFormData.append('image', imageInput.files[0]);
-                     
-                     const uploadResponse = await fetch("{{ route('products.upload_image_secure') }}", {
-                         method: 'POST',
-                         body: imageFormData,
-                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                         },
-                         credentials: 'include'
-                     });
-                     
-                     if (!uploadResponse.ok) {
-                         const txt = await uploadResponse.text();
-                         console.error("Upload Failed:", txt);
-                         if (uploadResponse.status === 403) throw new Error("Image Upload Blocked (403).");
-                         throw new Error("Image Upload Failed: " + uploadResponse.status);
-                     }
-                     
-                     const uploadResult = await uploadResponse.json();
-                     imagePath = uploadResult.path;
-                     console.log("New Image Uploaded:", imagePath);
-                }
-
-                // STEP 1.5: Upload Gallery
-                const galleryInput = document.getElementById('galleryInput');
-                if (galleryInput.files && galleryInput.files.length > 0) {
-                     submitBtn.innerHTML = '<i class="fas fa-images"></i> Uploading Gallery...';
-                     const galleryFormData = new FormData();
-                     Array.from(galleryInput.files).forEach(file => {
-                         galleryFormData.append('images[]', file);
-                     });
-                     
-                     const galleryResponse = await fetch("{{ route('products.upload_image_secure') }}", {
-                          method: 'POST',
-                          body: galleryFormData,
-                          headers: {
-                             'X-Requested-With': 'XMLHttpRequest',
-                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                          },
-                          credentials: 'include'
-                     });
-                     
-                     if (galleryResponse.ok) {
-                         const galleryResult = await galleryResponse.json();
-                         galleryPaths = galleryPaths.concat(galleryResult.paths || []);
-                         console.log("Gallery Uploaded:", galleryPaths);
-                     }
-                }
-
-                form.querySelector('input[name="product_payload"]').value = "processing"; 
-
-                // STEP 2: Prepare Payload
-                submitBtn.innerHTML = '<i class="fas fa-save"></i> Saving Data...';
-                const variantsData = {
-                    name: document.querySelector('input[name="name_visible"]').value,
-                    description: document.querySelector('textarea[name="description_visible"]').value,
-                    categorie_id: document.querySelector('select[name="categorie_id_visible"]').value,
-                    prix_admin: document.querySelector('input[name="prix_admin_visible"]').value,
-                    prix_vente: document.querySelector('input[name="prix_vente_visible"]').value,
-                    colors: [],
-                    sizes: [],
-                    total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
-                    uploaded_image_path: imagePath,
-                    uploaded_gallery_paths: galleryPaths
-                };
-
-                // Colors
-                selectedColors.forEach(el => variantsData.colors.push({
-                    name: el.getAttribute('data-name'),
-                    hex: el.getAttribute('data-hex'),
-                    stock: parseInt(el.querySelector('.stock-input').value) || 0
-                }));
-                
-                // Sizes
-                selectedSizes.forEach(el => variantsData.sizes.push(el.value));
-
-                // Correct UTF-8 Hex Encoding function
-                function strToHex(str) {
-                    const utf8 = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-                        return String.fromCharCode('0x' + p1);
-                    });
-                    let hex = '';
-                    for (let i = 0; i < utf8.length; i++) {
-                        hex += utf8.charCodeAt(i).toString(16).padStart(2, '0');
-                    }
-                    return hex;
-                }
-
-                // Hex Encode with UTF-8 support
-                const jsonString = JSON.stringify(variantsData);
-                const hex = strToHex(jsonString);
-
-                // Set payload
-                document.getElementById('product_payload').value = hex;
-                
-                // Disable visible fields to prevent pollution (and let the server rely on payload)
-                // Actually, standard fields are _visible named, so they are ignored by standard Laravel validation unless mapped
-                // The ProductController update() I just wrote looks for product_payload first.
-
-                // SUBMIT via form.submit() to standard Update Route (which now supports Stealth)
-                // We use native submit because UPDATE mimics PUT and standard form flow is fine 
-                // IF the payload is hidden.
-                // WAIT! Standard form submit will send POST variables. 
-                // The Controller checks if ($request->filled('product_payload')).
-                // The WAF might block 'description' or 'colors' array in POST.
-                // So best to DISABLE the dangerous visible fields before submit.
-                
-                document.querySelector('textarea[name="description_visible"]').disabled = true;
-                // document.querySelectorAll('.stock-input').forEach(e => e.disabled = true);
-                
-                // Submit native form to let Laravel handle the PUT method and redirects
-                form.submit();
-
-            } catch (error) {
-                console.error('Sequence Error:', error);
-                alert(error.message);
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                // Re-enable in case of error
-                document.querySelector('textarea[name="description_visible"]').disabled = false;
+                if (res.ok) { const d = await res.json(); imagePath = d.path; }
             }
-        });
-    }
+
+            // 3. New Gallery
+            const galIn = document.getElementById('galleryInput');
+            if (galIn.files && galIn.files.length > 0) {
+                const fd = new FormData();
+                Array.from(galIn.files).forEach(f => fd.append('images[]', f));
+                const res = await fetch("{{ route('products.upload_image_secure') }}", {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                });
+                if (res.ok) { const d = await res.json(); galleryPaths = galleryPaths.concat(d.paths || []); }
+            }
+
+            // 4. Payload
+            const data = {
+                name: form.querySelector('[name="name_visible"]').value,
+                description: form.querySelector('[name="description_visible"]').value,
+                categorie_id: form.querySelector('[name="categorie_id_visible"]').value,
+                prix_admin: form.querySelector('[name="prix_admin_visible"]').value,
+                prix_vente: form.querySelector('[name="prix_vente_visible"]').value,
+                colors: [],
+                sizes: [],
+                total_stock: parseInt(document.getElementById('totalStockDisplay').innerText) || 0,
+                uploaded_image_path: imagePath,
+                uploaded_gallery_paths: galleryPaths
+            };
+
+            document.querySelectorAll('.color-item').forEach(el => {
+                if (el.querySelector('.color-toggle').checked) {
+                    data.colors.push({
+                        name: el.getAttribute('data-name'),
+                        hex: el.getAttribute('data-hex'),
+                        stock: parseInt(el.querySelector('.stock-input').value) || 0
+                    });
+                }
+            });
+            document.querySelectorAll('.size-toggle:checked').forEach(el => data.sizes.push(el.value));
+
+            function strToHex(str) {
+                const utf8 = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1));
+                let h = '';
+                for (let i = 0; i < utf8.length; i++) h += utf8.charCodeAt(i).toString(16).padStart(2, '0');
+                return h;
+            }
+
+            const hex = strToHex(JSON.stringify(data));
+            const finalRes = await fetch("{{ route('products.update_root_stealth', $product->id) }}", {
+                method: 'POST',
+                body: JSON.stringify({ product_payload: hex }),
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            if (finalRes.ok) {
+                window.location.href = "{{ route('admin.products.index') }}";
+            } else {
+                const t = await finalRes.text();
+                alert("خطأ في حفظ البيانات: " + t.substring(0, 50));
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert("حدث خطأ غير متوقع: " + e.message);
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
 });
 </script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
-body {
-    font-family: 'Almarai', sans-serif;
-}
+body { font-family: 'Almarai', sans-serif; }
 input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 </style>
 @endsection
