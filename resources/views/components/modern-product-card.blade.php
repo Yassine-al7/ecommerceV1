@@ -27,16 +27,16 @@
     $couleurs = $product->visible_colors ?? [];
 @endphp
 
-<div x-data="{ 
+<div x-data='{ 
     activeIndex: 0, 
     total: {{ count($allImages) }},
     scrollToColor(colorName) {
         const colorImages = @json($product->color_images ?? []);
-        const colorData = colorImages.find(c => c.color === colorName || (typeof c.color === 'object' && c.color.name === colorName));
+        const colorData = colorImages.find(c => c.color === colorName || (typeof c.color === "object" && c.color.name === colorName));
         if (colorData && colorData.images && colorData.images.length > 0) {
-            const firstImg = colorData.images[0].replace(/\\/g, '/');
+            const firstImg = colorData.images[0].replace(/\\/g, "/");
             const images = @json($allImages);
-            const index = images.findIndex(img => img.replace(/\\/g, '/') === firstImg);
+            const index = images.findIndex(img => img.replace(/\\/g, "/") === firstImg);
             if (index !== -1) {
                 this.scrollToIndex(index);
             }
@@ -48,7 +48,7 @@
         const container = this.$refs.gallery;
         container.scrollTo({
             left: container.offsetWidth * index,
-            behavior: 'smooth'
+            behavior: "smooth"
         });
     },
     next() {
@@ -59,7 +59,7 @@
         this.activeIndex = (this.activeIndex - 1 + this.total) % this.total;
         this.scrollToIndex(this.activeIndex);
     }
-}" class="modern-product-card bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+}' class="modern-product-card bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
     
     <!-- Image du produit avec Galerie -->
     <div class="relative h-48 bg-gray-50 overflow-hidden group">
