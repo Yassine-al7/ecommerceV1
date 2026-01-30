@@ -432,9 +432,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // STEP 1: Upload Image (Normal Multipart)
                 const imageInput = document.getElementById('imageInput');
                 if (imageInput.files && imageInput.files[0]) {
-                     submitBtn.innerHTML = '<i class="fas fa-upload"></i> Uploading Image...';
+                     const file = imageInput.files[0];
+                     if (file.size > 10 * 1024 * 1024) throw new Error(`الصورة الرئيسية كبيرة جداً (${(file.size/1024/1024).toFixed(2)}MB). الحد الأقصى 10MB.`);
+
+                     submitBtn.innerHTML = '<i class="fas fa-upload"></i> جارٍ رفع الصورة الرئيسية...';
                      const imageFormData = new FormData();
-                     imageFormData.append('image', imageInput.files[0]);
+                     imageFormData.append('image', file);
                      
                      const uploadResponse = await fetch("{{ route('products.upload_image_secure') }}", {
                          method: 'POST',
@@ -462,12 +465,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 // STEP 1.5: Upload Gallery (One by One to bypass WAF)
                 const galleryInput = document.getElementById('galleryInput');
                 if (galleryInput.files && galleryInput.files.length > 0) {
-                     submitBtn.innerHTML = '<i class="fas fa-images"></i> Uploading Gallery...';
+                     submitBtn.innerHTML = '<i class="fas fa-images"></i> جارٍ رفع الصور الإضافية...';
                      
                      for (let i = 0; i < galleryInput.files.length; i++) {
                          const file = galleryInput.files[i];
+                         if (file.size > 10 * 1024 * 1024) {
+                             console.warn(`Gallery Image ${i+1} too large, skipping.`);
+                             continue;
+                         }
+                         
                          const galleryFormData = new FormData();
-                         galleryFormData.append('image', file); // Use single 'image' key
+                         galleryFormData.append('image', file);
                          
                          const galleryResponse = await fetch("{{ route('products.upload_image_secure') }}", {
                               method: 'POST',
@@ -485,7 +493,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                  console.log(`Gallery Image ${i+1} Uploaded:`, res.path);
                              }
                          } else {
-                             console.warn(`Gallery Image ${i+1} failed with status: ${galleryResponse.status}`);
+                             const d = await galleryResponse.json();
+                             console.error(`Gallery Image ${i+1} failed:`, d.error || galleryResponse.status);
                          }
                      }
                 }

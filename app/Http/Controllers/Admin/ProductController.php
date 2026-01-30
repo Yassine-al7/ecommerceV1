@@ -251,6 +251,17 @@ class ProductController extends Controller
      */
     public function uploadImage(Request $request) 
     {
+        // Detect if the file was missed due to being too large for PHP settings
+        if (!$request->hasFile('image') && !$request->hasFile('images')) {
+            $contentLength = (int)$request->server('CONTENT_LENGTH');
+            if ($contentLength > 0) {
+                return response()->json([
+                    'error' => 'The uploaded file is too large for the server. (Max: ' . ini_get('upload_max_filesize') . ')'
+                ], 413);
+            }
+            return response()->json(['error' => 'No image file detected.'], 400);
+        }
+
         if ($request->hasFile('images')) {
             try {
                 $paths = [];
@@ -271,7 +282,8 @@ class ProductController extends Controller
                 return response()->json(['error' => $e->getMessage()], 500);
             }
         }
-        return response()->json(['error' => 'No image file'], 400);
+
+        return response()->json(['error' => 'Upload failed.'], 400);
     }
 
     public function edit(Product $product)

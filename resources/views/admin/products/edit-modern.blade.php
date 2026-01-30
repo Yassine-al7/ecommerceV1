@@ -357,22 +357,37 @@ document.addEventListener('DOMContentLoaded', () => {
             // 2. Main Image
             const imgIn = document.getElementById('imageInput');
             if (imgIn.files && imgIn.files[0]) {
+                const file = imgIn.files[0];
+                if (file.size > 10 * 1024 * 1024) throw new Error(`الصورة الرئيسية كبيرة جداً (${(file.size/1024/1024).toFixed(2)}MB). الحد الأقصى 10MB.`);
+
                 const fd = new FormData();
-                fd.append('image', imgIn.files[0]);
+                fd.append('image', file);
                 const res = await fetch("{{ route('products.upload_image_secure') }}", {
                     method: 'POST',
                     body: fd,
                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                 });
-                if (res.ok) { const d = await res.json(); imagePath = d.path; }
+                if (res.ok) { 
+                    const d = await res.json(); 
+                    imagePath = d.path; 
+                } else {
+                    const d = await res.json();
+                    throw new Error("خطأ في رفع الصورة: " + (d.error || res.status));
+                }
             }
 
             // 3. New Gallery (One by One to bypass WAF)
             const galIn = document.getElementById('galleryInput');
             if (galIn.files && galIn.files.length > 0) {
+                submitBtn.innerHTML = '<i class="fas fa-images"></i> جارٍ رفع الصور الإضافية...';
                 for (let i = 0; i < galIn.files.length; i++) {
+                    const file = galIn.files[i];
+                    if (file.size > 10 * 1024 * 1024) {
+                        console.warn(`Gallery Image ${i+1} too large, skipping.`);
+                        continue;
+                    }
                     const fd = new FormData();
-                    fd.append('image', galIn.files[i]);
+                    fd.append('image', file);
                     const res = await fetch("{{ route('products.upload_image_secure') }}", {
                         method: 'POST',
                         body: fd,
@@ -381,6 +396,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (res.ok) { 
                         const d = await res.json(); 
                         if(d.path) galleryPaths.push(d.path); 
+                    } else {
+                        const d = await res.json();
+                        console.error(`Gallery Image ${i+1} failed:`, d.error || res.status);
                     }
                 }
             }
